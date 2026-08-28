@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Little">
-<meta name="theme-color" content="#e8eef8">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
@@ -42,18 +42,37 @@ body {
   display:flex; flex-direction:column;
 }
 
-/* ====== 顶栏 ====== */
+/* SVG 图标基础 */
+.icon {
+  width:20px; height:20px; fill:none; stroke:currentColor;
+  stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+  display:inline-block; vertical-align:middle; flex-shrink:0;
+}
+.icon-sm { width:16px; height:16px; }
+.icon-lg { width:24px; height:24px; }
+
+/* ====== 顶栏 - 覆盖到系统状态栏 ====== */
 .header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:calc(var(--safe-top) + 8px) 16px 8px;
-  background:var(--surface); border-bottom:1px solid var(--primary-light);
-  min-height:52px; z-index:100;
+  padding:calc(var(--safe-top) + 10px) 16px 10px;
+  background:var(--surface);
+  border-bottom:1px solid var(--primary-light);
+  min-height:calc(var(--safe-top) + 52px);
+  z-index:100;
 }
-.header-title { font-size:17px; font-weight:600; color:var(--text); flex:1; text-align:center; }
+.header-title {
+  font-size:17px; font-weight:600; color:var(--text);
+  position:absolute; left:0; right:0; text-align:center;
+  pointer-events:none;
+}
+.header-left, .header-right {
+  display:flex; align-items:center; gap:4px; z-index:1;
+}
 .header-btn {
   width:36px; height:36px; border:none; background:var(--surface2);
   border-radius:50%; font-size:18px; display:flex; align-items:center;
   justify-content:center; cursor:pointer; transition:transform .15s;
+  color:var(--text-light);
 }
 .header-btn:active { transform:scale(.9); }
 
@@ -122,7 +141,7 @@ body {
 .msg-time { font-size:10px; color:var(--text-light); margin-top:4px; opacity:.7; }
 .msg.user .msg-time { text-align:right; }
 
-/* 表情包消息 - 无气泡背景 */
+/* 表情包消息 */
 .msg-sticker {
   max-width:140px; max-height:140px; cursor:pointer;
   margin-bottom:4px; display:block;
@@ -153,9 +172,7 @@ body {
 .msg.assistant .msg-bubble h1 { font-size:18px; }
 .msg.assistant .msg-bubble h2 { font-size:16px; }
 .msg.assistant .msg-bubble h3 { font-size:15px; }
-.msg.assistant .msg-bubble table {
-  border-collapse:collapse; margin:8px 0; width:100%; font-size:13px;
-}
+.msg.assistant .msg-bubble table { border-collapse:collapse; margin:8px 0; width:100%; font-size:13px; }
 .msg.assistant .msg-bubble th,.msg.assistant .msg-bubble td {
   border:1px solid var(--primary-light); padding:6px 8px; text-align:left;
 }
@@ -163,7 +180,7 @@ body {
 .msg.assistant .msg-bubble a { color:var(--primary); text-decoration:underline; }
 .msg.assistant .msg-bubble hr { border:none; border-top:1px solid var(--primary-light); margin:12px 0; }
 
-/* 消息中的图片 */
+/* 消息图片 */
 .msg-image {
   max-width:200px; max-height:200px; border-radius:12px; margin-bottom:6px;
   display:block; cursor:pointer; object-fit:cover;
@@ -219,7 +236,7 @@ body {
   cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
 
-/* ====== 底部输入区（P1 风格） ====== */
+/* ====== 底部输入区 ====== */
 .input-section {
   background:var(--surface); border-top:1px solid var(--primary-light);
   padding-bottom:calc(var(--safe-bottom) + 4px);
@@ -232,25 +249,42 @@ body {
 }
 .input-wrap {
   flex:1; background:var(--surface2); border-radius:20px;
-  padding:8px 16px; display:flex; align-items:flex-end;
-  margin:0 6px;
+  padding:8px 14px; display:flex; align-items:flex-end;
+  margin:0 6px; position:relative;
 }
 .input-wrap textarea {
   flex:1; border:none; background:none; font-size:15px; color:var(--text);
   resize:none; outline:none; max-height:120px; line-height:1.4; font-family:inherit;
+  padding-right:32px;
 }
-.input-bottom {
-  display:flex; align-items:center; padding:2px 10px 4px; gap:4px;
+.sticker-toggle-btn {
+  position:absolute; right:10px; bottom:7px;
+  width:28px; height:28px; border:none; background:none;
+  color:var(--text-light); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; border-radius:50%;
+  transition:color .15s;
 }
-.ib-btn {
-  width:38px; height:38px; border:none; background:none;
-  color:var(--text-light); font-size:20px; cursor:pointer;
+.sticker-toggle-btn:active { color:var(--primary); }
+.sticker-toggle-btn.active { color:var(--primary); }
+.send-arrow {
+  width:36px; height:36px; border:none; background:none;
+  color:var(--text-light); cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  border-radius:50%; transition:background .15s, transform .15s;
-  flex-shrink:0;
+  transition:color .15s; flex-shrink:0;
 }
-.ib-btn:active { transform:scale(.88); background:var(--surface2); }
-.ib-btn.active { color:var(--primary); background:var(--primary-light); }
+.send-arrow:active { color:var(--primary); }
+.send-arrow:disabled { opacity:.3; }
+.send-arrow.has-content { color:var(--primary); }
+.input-bottom {
+  display:flex; align-items:center; padding:2px 10px 4px; gap:6px;
+}
+.ib-plus {
+  width:34px; height:34px; border:none; background:none;
+  color:var(--text-light); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; border-radius:50%;
+  transition:transform .15s, color .15s; flex-shrink:0;
+}
+.ib-plus:active { transform:scale(.88); color:var(--primary); }
 .model-tag {
   padding:5px 12px; background:var(--surface2); border-radius:14px;
   font-size:12px; color:var(--text); font-weight:500; cursor:pointer;
@@ -258,15 +292,35 @@ body {
   border:1px solid var(--primary-light); transition:background .15s;
 }
 .model-tag:active { background:var(--primary-light); }
-.ib-spacer { flex:1; }
-.send-btn {
-  width:38px; height:38px; border:none; background:var(--primary);
-  color:var(--text-white); border-radius:50%; font-size:18px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition:transform .15s,opacity .15s; flex-shrink:0;
+
+/* ====== 加号弹出菜单 ====== */
+.plus-menu-overlay {
+  display:none; position:fixed; inset:0; z-index:149;
 }
-.send-btn:active { transform:scale(.9); }
-.send-btn:disabled { opacity:.4; }
+.plus-menu-overlay.open { display:block; }
+.plus-menu {
+  display:none; position:fixed; z-index:150;
+  bottom:calc(var(--safe-bottom) + 90px); left:12px;
+  background:var(--surface); border-radius:14px;
+  box-shadow:0 4px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  padding:8px;
+  min-width:200px;
+}
+.plus-menu.open { display:block; }
+.plus-menu-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:4px;
+}
+.plus-menu-item {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:12px 6px; border:none; background:none; cursor:pointer;
+  border-radius:12px; transition:background .15s; gap:6px; color:var(--text);
+}
+.plus-menu-item:active { background:var(--surface2); }
+.plus-menu-item .pm-icon {
+  width:40px; height:40px; border-radius:12px; border:1.5px solid #e0e4ea;
+  display:flex; align-items:center; justify-content:center; color:var(--text);
+}
+.plus-menu-item .pm-label { font-size:10px; color:var(--text-light); white-space:nowrap; }
 
 /* ====== 表情包面板 ====== */
 .sticker-panel {
@@ -277,7 +331,6 @@ body {
   padding-bottom:calc(var(--safe-bottom) + 4px);
   border-radius:16px 16px 0 0;
   box-shadow:0 -4px 20px rgba(0,0,0,.08);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
 }
 .sticker-panel.open { display:flex; }
 .sticker-panel-header {
@@ -294,7 +347,7 @@ body {
 .sticker-panel-close {
   width:28px; height:28px; border:none; background:var(--surface2);
   border-radius:50%; font-size:14px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center; color:var(--text-light);
 }
 .sticker-grid {
   flex:1; overflow-y:auto; padding:12px;
@@ -317,7 +370,7 @@ body {
 .sticker-grid.editing .sticker-grid-item .sticker-del-btn { display:flex; }
 .sticker-empty {
   grid-column:1/-1; text-align:center; color:var(--text-light);
-  padding:30px 0; font-size:14px;
+  padding:30px 0; font-size:14px; line-height:1.8;
 }
 .sticker-panel-footer {
   display:flex; align-items:center; padding:6px 12px; gap:8px;
@@ -341,7 +394,7 @@ body {
 .overlay-back {
   width:36px; height:36px; border:none; background:var(--surface);
   border-radius:50%; font-size:18px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center; color:var(--text);
 }
 .overlay-body { flex:1; overflow-y:auto; padding:0 16px 32px; -webkit-overflow-scrolling:touch; }
 
@@ -496,7 +549,9 @@ body {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; color:var(--text-light); text-align:center; padding:40px;
 }
-.empty-state .emoji { font-size:48px; margin-bottom:16px; }
+.empty-state-icon {
+  width:56px; height:56px; margin-bottom:16px; color:var(--primary-light);
+}
 .empty-state p { font-size:15px; line-height:1.6; }
 
 /* Toast */
@@ -515,10 +570,20 @@ body {
 
 <!-- 顶栏 -->
 <div class="header">
-  <button class="header-btn" onclick="toggleSidebar()">☰</button>
+  <div class="header-left">
+    <button class="header-btn" onclick="toggleSidebar()">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
   <div class="header-title" id="headerTitle">Little</div>
-  <button class="header-btn" onclick="openMemory()">🧠</button>
-  <button class="header-btn" onclick="openSettings()" style="margin-left:4px">⚙️</button>
+  <div class="header-right">
+    <button class="header-btn" onclick="openMemory()">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12a3 3 0 0 1 6 0c0 2-3 3-3 3"/><circle cx="12" cy="8" r=".5" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="header-btn" onclick="openSettings()">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- 侧栏 -->
@@ -533,31 +598,62 @@ body {
 
 <!-- 聊天区域 -->
 <div class="chat-area" id="chatArea">
-  <div class="empty-state"><div class="emoji">🌸</div><p>你好呀～<br>我是 Little，有什么想聊的？</p></div>
+  <div class="empty-state">
+    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <p>有什么想聊的？</p>
+  </div>
 </div>
 
 <!-- 附件预览条 -->
 <div class="attach-preview" id="attachPreview"></div>
 
-<!-- 底部输入区 (P1 style) -->
+<!-- 底部输入区 -->
 <div class="input-section">
   <div class="input-hint" id="inputHint">Reply to Little</div>
   <div class="input-main">
     <div class="input-wrap">
-      <textarea id="msgInput" rows="1" placeholder="说点什么..." oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+      <textarea id="msgInput" rows="1" placeholder="说点什么..." oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
+      <button class="sticker-toggle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()" title="表情包">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
+      </button>
     </div>
-    <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+    <button class="send-arrow" id="sendBtn" onclick="sendMessage()">
+      <svg class="icon-lg" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="none"/></svg>
+    </button>
   </div>
   <div class="input-bottom">
-    <button class="ib-btn" onclick="openFilePicker()" title="附件">+</button>
-    <div class="model-tag" id="modelTag" onclick="openSettings()" title="点击切换模型">未配置模型</div>
-    <div class="ib-spacer"></div>
-    <button class="ib-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()" title="表情包">😊</button>
+    <button class="ib-plus" onclick="togglePlusMenu()">
+      <svg class="icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="model-tag" id="modelTag" onclick="openSettings()" title="点击切换模型">未配置</div>
+  </div>
+</div>
+
+<!-- 加号弹出菜单 -->
+<div class="plus-menu-overlay" id="plusMenuOverlay" onclick="closePlusMenu()"></div>
+<div class="plus-menu" id="plusMenu">
+  <div class="plus-menu-grid">
+    <button class="plus-menu-item" onclick="closePlusMenu();pickPhoto()">
+      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+      <span class="pm-label">照片</span>
+    </button>
+    <button class="plus-menu-item" onclick="closePlusMenu();pickFile()">
+      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="pm-label">文件</span>
+    </button>
+    <button class="plus-menu-item" onclick="closePlusMenu();pickCamera()">
+      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <span class="pm-label">拍照</span>
+    </button>
   </div>
 </div>
 
 <!-- 隐藏的文件选择器 -->
-<input type="file" id="fileInput" accept="image/*,.txt,.md,.json,.csv,.log,.xml,.html,.css,.js,.py,.java,.c,.cpp,.ts,.yaml,.yml,.toml,.ini,.cfg,.conf" multiple style="display:none" onchange="handleFileSelect(event)">
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
+<input type="file" id="fileInput" accept=".txt,.md,.json,.csv,.log,.xml,.html,.css,.js,.py,.java,.c,.cpp,.ts,.yaml,.yml,.toml,.ini,.cfg,.conf" multiple style="display:none" onchange="handleFileSelect(event)">
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="stickerImportInput" accept="image/*" multiple style="display:none" onchange="handleStickerImport(event)">
 
 <!-- 表情包面板 -->
@@ -565,10 +661,12 @@ body {
   <div class="sticker-panel-header">
     <h3>表情包</h3>
     <button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">导入</button>
-    <button class="sticker-panel-close" onclick="toggleStickerPanel()">✕</button>
+    <button class="sticker-panel-close" onclick="toggleStickerPanel()">
+      <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
   <div class="sticker-grid" id="stickerGrid">
-    <div class="sticker-empty">还没有表情包～<br>点击「导入」从相册添加</div>
+    <div class="sticker-empty">还没有表情包<br>点击「导入」从相册添加</div>
   </div>
   <div class="sticker-panel-footer">
     <button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">管理</button>
@@ -579,7 +677,9 @@ body {
 <!-- 设置页 -->
 <div class="overlay-page" id="settingsPage">
   <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('settingsPage')">←</button>
+    <button class="overlay-back" onclick="closePage('settingsPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <h2>设置</h2>
   </div>
   <div class="overlay-body">
@@ -596,8 +696,12 @@ body {
       </div>
     </div>
     <div class="settings-group">
+      <h3>聊天对象</h3>
+      <div class="setting-row"><label>名称 / 备注（显示在顶栏）</label><input type="text" id="setCharName" placeholder="Little"></div>
+    </div>
+    <div class="settings-group">
       <h3>AI 人设</h3>
-      <div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="你是一个可爱的 AI 助手..."></textarea></div>
+      <div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="你是一个温柔的 AI 助手..."></textarea></div>
     </div>
     <div class="settings-group">
       <h3>记忆系统</h3>
@@ -608,7 +712,7 @@ body {
           <option value="off">关闭</option>
         </select>
       </div>
-      <div class="setting-row"><label>Jina API Key（向量搜索用）</label><input type="password" id="setJinaKey" placeholder="jina_...（可选，不填则用关键词匹配）"></div>
+      <div class="setting-row"><label>Jina API Key（可选，不填用关键词匹配）</label><input type="password" id="setJinaKey" placeholder="jina_..."></div>
     </div>
     <div class="settings-group">
       <h3>思维链</h3>
@@ -623,13 +727,13 @@ body {
     <div class="settings-group">
       <h3>自定义样式</h3>
       <div class="setting-row">
-        <label>自定义 CSS（保存后立即生效）</label>
+        <label>自定义 CSS</label>
         <textarea id="setCustomCSS" placeholder="/* 在这里粘贴 CSS 代码 */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea>
       </div>
     </div>
     <div class="settings-group">
       <h3>关于</h3>
-      <div class="setting-row"><label>Little v0.6.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA</p></div>
+      <div class="setting-row"><label>Little v0.7.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA</p></div>
     </div>
     <button class="save-btn" onclick="saveSettings()">保存设置</button>
   </div>
@@ -638,28 +742,28 @@ body {
 <!-- 模型选择页 -->
 <div class="overlay-page" id="modelPickerPage">
   <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('modelPickerPage')">←</button>
+    <button class="overlay-back" onclick="closePage('modelPickerPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <h2>选择模型</h2>
   </div>
   <div class="overlay-body">
-    <div class="model-search-wrap">
-      <input type="text" id="modelSearchInput" placeholder="搜索模型名称..." oninput="filterModels()">
-    </div>
-    <div id="modelListContainer">
-      <div class="model-list-empty">点击设置页的「拉取」按钮获取模型列表</div>
-    </div>
+    <div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="搜索模型名称..." oninput="filterModels()"></div>
+    <div id="modelListContainer"><div class="model-list-empty">点击设置页的「拉取」按钮获取模型列表</div></div>
   </div>
 </div>
 
 <!-- 记忆库 -->
 <div class="overlay-page" id="memoryPage">
   <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('memoryPage')">←</button>
+    <button class="overlay-back" onclick="closePage('memoryPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <h2>记忆库</h2>
   </div>
   <div class="overlay-body">
     <div class="memory-add-box">
-      <h3>手动添加记忆</h3>
+      <h3>手动添加</h3>
       <div class="memory-add-row">
         <select id="memAddCategory">
           <option value="profile">画像</option>
@@ -674,14 +778,16 @@ body {
       </div>
     </div>
     <div class="memory-stats" id="memoryStats"></div>
-    <div id="memoryList"><div class="memory-empty">还没有记忆哦～</div></div>
+    <div id="memoryList"><div class="memory-empty">还没有记忆</div></div>
   </div>
 </div>
 
 <!-- 思维链浮层 -->
 <div class="thinking-overlay" id="thinkingOverlay">
   <div class="thinking-overlay-header">
-    <button class="overlay-back" onclick="closeThinking()">✕</button>
+    <button class="overlay-back" onclick="closeThinking()">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <h2>Thought process</h2>
     <div style="width:36px"></div>
   </div>
@@ -709,315 +815,175 @@ body {
 <style id="customCSSTag"></style>
 
 <script>
-// ==================== Markdown 配置 ====================
-if (typeof marked !== 'undefined') {
-  marked.setOptions({
-    breaks: true, gfm: true,
-    highlight: function(code, lang) {
-      if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
-        try { return hljs.highlight(code, { language: lang }).value; } catch {}
-      }
-      if (typeof hljs !== 'undefined') {
-        try { return hljs.highlightAuto(code).value; } catch {}
-      }
-      return code;
-    }
-  });
-}
+// ==================== Markdown ====================
+if(typeof marked!=='undefined'){marked.setOptions({breaks:true,gfm:true,highlight:function(code,lang){
+  if(typeof hljs!=='undefined'&&lang&&hljs.getLanguage(lang)){try{return hljs.highlight(code,{language:lang}).value}catch{}}
+  if(typeof hljs!=='undefined'){try{return hljs.highlightAuto(code).value}catch{}}return code;}});}
 
 // ==================== 存储层 ====================
-const DB = {
+const DB={
   get(k,d=null){try{const v=localStorage.getItem('little_'+k);return v?JSON.parse(v):d}catch{return d}},
   set(k,v){localStorage.setItem('little_'+k,JSON.stringify(v))},
   del(k){localStorage.removeItem('little_'+k)}
 };
 
 // ==================== IndexedDB ====================
-class VectorStore {
-  constructor() { this.dbName='LittleMemoryDB'; this.storeName='memories'; this.db=null; }
-  async open() {
-    if (this.db) return this.db;
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(this.dbName, 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-          store.createIndex('category', 'category', { unique: false });
-          store.createIndex('time', 'time', { unique: false });
-        }
-      };
-      req.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
-      req.onerror = (e) => reject(e);
-    });
-  }
-  async add(memory) {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readwrite');
-      tx.objectStore(this.storeName).put(memory);
-      tx.oncomplete = () => resolve();
-      tx.onerror = (e) => reject(e);
-    });
-  }
-  async getAll() {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readonly');
-      const req = tx.objectStore(this.storeName).getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = (e) => reject(e);
-    });
-  }
-  async remove(id) {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readwrite');
-      tx.objectStore(this.storeName).delete(id);
-      tx.oncomplete = () => resolve();
-      tx.onerror = (e) => reject(e);
-    });
-  }
-  cosineSim(a, b) {
-    if (!a || !b || a.length !== b.length) return 0;
-    let dot=0,na=0,nb=0;
-    for (let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}
-    return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);
-  }
-  async search(queryVector, topK=5) {
-    const all = await this.getAll();
-    if (!queryVector || all.length===0) return all.slice(0,topK);
-    const scored = all.filter(m=>m.vector&&m.vector.length>0)
-      .map(m=>({...m,score:this.cosineSim(queryVector,m.vector)}))
-      .sort((a,b)=>b.score-a.score);
-    return scored.slice(0,topK);
-  }
-  async searchByKeyword(query, topK=5) {
-    const all = await this.getAll();
-    const keywords = query.toLowerCase().split(/\s+/);
-    const scored = all.map(m=>{
-      const text=m.text.toLowerCase(); let score=0;
-      keywords.forEach(kw=>{if(text.includes(kw))score+=1;});
-      score+=Math.max(0,1-(Date.now()-m.time)/(1000*60*60*24*365))*0.3;
-      return {...m,score};
-    }).sort((a,b)=>b.score-a.score);
-    return scored.slice(0,topK);
-  }
+class VectorStore{
+  constructor(){this.dbName='LittleMemoryDB';this.storeName='memories';this.db=null;}
+  async open(){if(this.db)return this.db;return new Promise((resolve,reject)=>{const req=indexedDB.open(this.dbName,1);
+    req.onupgradeneeded=(e)=>{const db=e.target.result;if(!db.objectStoreNames.contains(this.storeName)){const store=db.createObjectStore(this.storeName,{keyPath:'id'});store.createIndex('category','category',{unique:false});store.createIndex('time','time',{unique:false});}};
+    req.onsuccess=(e)=>{this.db=e.target.result;resolve(this.db);};req.onerror=(e)=>reject(e);});}
+  async add(m){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).put(m);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
+  async getAll(){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readonly');const req=tx.objectStore(this.storeName).getAll();req.onsuccess=()=>r(req.result);req.onerror=(e)=>j(e);});}
+  async remove(id){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).delete(id);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
+  cosineSim(a,b){if(!a||!b||a.length!==b.length)return 0;let dot=0,na=0,nb=0;for(let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);}
+  async search(qv,topK=5){const all=await this.getAll();if(!qv||all.length===0)return all.slice(0,topK);return all.filter(m=>m.vector&&m.vector.length>0).map(m=>({...m,score:this.cosineSim(qv,m.vector)})).sort((a,b)=>b.score-a.score).slice(0,topK);}
+  async searchByKeyword(q,topK=5){const all=await this.getAll();const kws=q.toLowerCase().split(/\s+/);return all.map(m=>{const t=m.text.toLowerCase();let s=0;kws.forEach(k=>{if(t.includes(k))s+=1;});s+=Math.max(0,1-(Date.now()-m.time)/(1e3*60*60*24*365))*0.3;return{...m,score:s};}).sort((a,b)=>b.score-a.score).slice(0,topK);}
 }
-const vectorStore = new VectorStore();
+const vectorStore=new VectorStore();
 
-// ==================== Sticker Store (IndexedDB) ====================
-class StickerStore {
-  constructor() { this.dbName='LittleStickerDB'; this.storeName='stickers'; this.db=null; }
-  async open() {
-    if (this.db) return this.db;
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(this.dbName, 1);
-      req.onupgradeneeded = (e) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          db.createObjectStore(this.storeName, { keyPath: 'id' });
-        }
-      };
-      req.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
-      req.onerror = (e) => reject(e);
-    });
-  }
-  async add(sticker) {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readwrite');
-      tx.objectStore(this.storeName).put(sticker);
-      tx.oncomplete = () => resolve();
-      tx.onerror = (e) => reject(e);
-    });
-  }
-  async getAll() {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readonly');
-      const req = tx.objectStore(this.storeName).getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = (e) => reject(e);
-    });
-  }
-  async remove(id) {
-    const db = await this.open();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(this.storeName, 'readwrite');
-      tx.objectStore(this.storeName).delete(id);
-      tx.oncomplete = () => resolve();
-      tx.onerror = (e) => reject(e);
-    });
-  }
+// ==================== StickerStore ====================
+class StickerStore{
+  constructor(){this.dbName='LittleStickerDB';this.storeName='stickers';this.db=null;}
+  async open(){if(this.db)return this.db;return new Promise((r,j)=>{const req=indexedDB.open(this.dbName,1);
+    req.onupgradeneeded=(e)=>{if(!e.target.result.objectStoreNames.contains(this.storeName))e.target.result.createObjectStore(this.storeName,{keyPath:'id'});};
+    req.onsuccess=(e)=>{this.db=e.target.result;r(this.db);};req.onerror=(e)=>j(e);});}
+  async add(s){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).put(s);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
+  async getAll(){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readonly');const req=tx.objectStore(this.storeName).getAll();req.onsuccess=()=>r(req.result);req.onerror=(e)=>j(e);});}
+  async remove(id){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).delete(id);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
 }
-const stickerStore = new StickerStore();
+const stickerStore=new StickerStore();
 
-// ==================== Jina Embedding ====================
-async function getEmbedding(text) {
-  const jinaKey = state.settings.jinaKey;
-  if (!jinaKey) return null;
-  try {
-    const res = await fetch('https://api.jina.ai/v1/embeddings', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+jinaKey},
-      body:JSON.stringify({model:'jina-embeddings-v3',task:'text-matching',dimensions:256,input:[{text}]})
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.data?.[0]?.embedding || null;
-  } catch { return null; }
+// ==================== Jina ====================
+async function getEmbedding(text){
+  const k=state.settings.jinaKey;if(!k)return null;
+  try{const res=await fetch('https://api.jina.ai/v1/embeddings',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'jina-embeddings-v3',task:'text-matching',dimensions:256,input:[{text}]})});
+  if(!res.ok)return null;const d=await res.json();return d.data?.[0]?.embedding||null;}catch{return null;}
 }
 
 // ==================== 状态 ====================
-let state = {
-  chats: DB.get('chats', {}),
-  currentChatId: DB.get('currentChat', null),
-  settings: DB.get('settings', {
-    apiUrl:'', apiKey:'', model:'gpt-4o',
+let state={
+  chats:DB.get('chats',{}),
+  currentChatId:DB.get('currentChat',null),
+  settings:DB.get('settings',{
+    apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
-    autoMemory:'on', jinaKey:'', thinking:'off', customCSS:''
+    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:''
   }),
-  lastChatTime: DB.get('lastChatTime', null),
-  generating: false
+  lastChatTime:DB.get('lastChatTime',null),
+  generating:false
 };
-if (state.settings.thinking === undefined) state.settings.thinking = 'off';
-if (state.settings.customCSS === undefined) state.settings.customCSS = '';
+if(!state.settings.thinking)state.settings.thinking='off';
+if(!state.settings.customCSS)state.settings.customCSS='';
+if(!state.settings.charName)state.settings.charName='Little';
 
-let fetchedModels = [];
-let pendingAttachments = [];
-let renamingChatId = null;
-let stickerEditing = false;
+let fetchedModels=[];
+let pendingAttachments=[];
+let renamingChatId=null;
+let stickerEditing=false;
 
-function saveState() {
-  DB.set('chats', state.chats);
-  DB.set('currentChat', state.currentChatId);
-  DB.set('settings', state.settings);
-  DB.set('lastChatTime', state.lastChatTime);
-}
+function saveState(){DB.set('chats',state.chats);DB.set('currentChat',state.currentChatId);DB.set('settings',state.settings);DB.set('lastChatTime',state.lastChatTime);}
 
-// ==================== 工具函数 ====================
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
+// ==================== 工具 ====================
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 function now(){return new Date();}
-function fmtTime(d){
-  const dt=new Date(d);
-  return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-}
+function fmtTime(d){const dt=new Date(d);return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}
 function getTimeContext(){
-  const n=now();
-  const wd=['日','一','二','三','四','五','六'];
+  const n=now();const wd=['日','一','二','三','四','五','六'];
   let ctx=`当前时间：${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${wd[n.getDay()]} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
-  if(state.lastChatTime){
-    const diff=Date.now()-state.lastChatTime;const mins=Math.floor(diff/60000);
+  if(state.lastChatTime){const diff=Date.now()-state.lastChatTime;const mins=Math.floor(diff/60000);
     if(mins<5)ctx+='\n（你们刚刚还在聊，话题还热着）';
     else if(mins<30)ctx+=`\n（用户离开了${mins}分钟，刚回来）`;
     else if(mins<180)ctx+=`\n（用户离开了${Math.floor(mins/60)}小时${mins%60}分钟）`;
     else if(mins<1440)ctx+=`\n（距离上次对话已经${Math.floor(mins/60)}小时了）`;
-    else{const days=Math.floor(mins/1440);ctx+=`\n（距离上次对话已经${days}天了，像隔了很久重新见面）`;}
-  }else{ctx+='\n（这是你们的第一次对话）';}
+    else ctx+=`\n（距离上次对话已经${Math.floor(mins/1440)}天了）`;
+  }else ctx+='\n（这是你们的第一次对话）';
   return ctx;
 }
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-function renderMarkdown(text){
-  if(typeof marked!=='undefined'){try{return marked.parse(text);}catch{}}
-  return escHtml(text).replace(/\n/g,'<br>');
-}
+function renderMarkdown(text){if(typeof marked!=='undefined'){try{return marked.parse(text);}catch{}}return escHtml(text).replace(/\n/g,'<br>');}
 function applyCustomCSS(){document.getElementById('customCSSTag').textContent=state.settings.customCSS||'';}
 
-// ==================== 侧栏 & 对话管理 ====================
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
-}
-function newChat(){
-  const id='chat_'+Date.now();
-  state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};
-  state.currentChatId=id;
-  saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();
-}
-function switchChat(id){
-  state.currentChatId=id;
-  saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();
-}
-function deleteChat(id,e){
-  e.stopPropagation();
-  if(!confirm('删除这个对话？'))return;
-  delete state.chats[id];
-  if(state.currentChatId===id){
-    const keys=Object.keys(state.chats);
-    state.currentChatId=keys.length>0?keys[keys.length-1]:null;
-  }
-  saveState();renderChatList();renderMessages();updateInputHint();
-}
-function renameChat(id,e){
-  e.stopPropagation();
-  renamingChatId=id;
-  document.getElementById('renameInput').value=state.chats[id]?.title||'';
-  document.getElementById('renameModal').classList.add('open');
-  setTimeout(()=>document.getElementById('renameInput').focus(),100);
-}
+// ==================== 侧栏 ====================
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
+function newChat(){const id='chat_'+Date.now();state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
+function switchChat(id){state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
+function deleteChat(id,e){e.stopPropagation();if(!confirm('删除这个对话？'))return;delete state.chats[id];if(state.currentChatId===id){const ks=Object.keys(state.chats);state.currentChatId=ks.length>0?ks[ks.length-1]:null;}saveState();renderChatList();renderMessages();updateInputHint();}
+function renameChat(id,e){e.stopPropagation();renamingChatId=id;document.getElementById('renameInput').value=state.chats[id]?.title||'';document.getElementById('renameModal').classList.add('open');setTimeout(()=>document.getElementById('renameInput').focus(),100);}
 function closeRename(){document.getElementById('renameModal').classList.remove('open');renamingChatId=null;}
-function confirmRename(){
-  const t=document.getElementById('renameInput').value.trim();
-  if(!t||!renamingChatId){closeRename();return;}
-  state.chats[renamingChatId].title=t;
-  saveState();renderChatList();
-  if(renamingChatId===state.currentChatId)document.getElementById('headerTitle').textContent=t;
-  closeRename();showToast('已重命名');
-}
+function confirmRename(){const t=document.getElementById('renameInput').value.trim();if(!t||!renamingChatId){closeRename();return;}state.chats[renamingChatId].title=t;saveState();renderChatList();closeRename();showToast('已重命名');}
 function currentChat(){return state.currentChatId?state.chats[state.currentChatId]:null;}
 function renderChatList(){
   const el=document.getElementById('chatList');
   const ids=Object.keys(state.chats).sort((a,b)=>state.chats[b].created-state.chats[a].created);
-  if(ids.length===0){el.innerHTML='<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px">还没有对话～</p>';return;}
+  if(ids.length===0){el.innerHTML='<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px">还没有对话</p>';return;}
   el.innerHTML=ids.map(id=>{const c=state.chats[id];
     return `<div class="chat-item ${id===state.currentChatId?'active':''}" onclick="switchChat('${id}')">
       <span class="chat-item-title">${escHtml(c.title)}</span>
       <div class="chat-item-actions">
-        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="重命名">✎</button>
-        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="删除">✕</button>
+        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="重命名">
+          <svg class="icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="删除">
+          <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div></div>`;
   }).join('');
 }
 
-// ==================== 底部栏 ====================
+// ==================== 顶栏 & 底部栏 ====================
+function updateHeaderTitle(){
+  // 顶栏始终显示聊天对象名称
+  document.getElementById('headerTitle').textContent=state.settings.charName||'Little';
+}
 function updateInputHint(){
-  const chat=currentChat();
-  const name=chat?chat.title:'Little';
+  const name=state.settings.charName||'Little';
   document.getElementById('inputHint').textContent='Reply to '+name;
 }
 function updateModelTag(){
   const tag=document.getElementById('modelTag');
   const m=state.settings.model;
-  tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'未配置模型';
+  tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'未配置';
+}
+function updateSendBtn(){
+  const input=document.getElementById('msgInput');
+  const btn=document.getElementById('sendBtn');
+  if(input.value.trim()||pendingAttachments.length>0)btn.classList.add('has-content');
+  else btn.classList.remove('has-content');
 }
 
+// ==================== 加号菜单 ====================
+function togglePlusMenu(){
+  const menu=document.getElementById('plusMenu');
+  const overlay=document.getElementById('plusMenuOverlay');
+  const isOpen=menu.classList.contains('open');
+  if(isOpen){menu.classList.remove('open');overlay.classList.remove('open');}
+  else{menu.classList.add('open');overlay.classList.add('open');}
+}
+function closePlusMenu(){document.getElementById('plusMenu').classList.remove('open');document.getElementById('plusMenuOverlay').classList.remove('open');}
+function pickPhoto(){document.getElementById('photoInput').click();}
+function pickFile(){document.getElementById('fileInput').click();}
+function pickCamera(){document.getElementById('cameraInput').click();}
+
 // ==================== 思维链 & 图片查看 ====================
-function openThinking(text){
-  document.getElementById('thinkingOverlayBody').textContent=text;
-  document.getElementById('thinkingOverlay').classList.add('open');
-}
+function openThinking(text){document.getElementById('thinkingOverlayBody').textContent=text;document.getElementById('thinkingOverlay').classList.add('open');}
 function closeThinking(){document.getElementById('thinkingOverlay').classList.remove('open');}
-function viewImage(src){
-  document.getElementById('imgViewerSrc').src=src;
-  document.getElementById('imgViewer').classList.add('open');
-}
+function viewImage(src){document.getElementById('imgViewerSrc').src=src;document.getElementById('imgViewer').classList.add('open');}
 function closeImgViewer(){document.getElementById('imgViewer').classList.remove('open');}
 
 // ==================== 消息渲染 ====================
 function renderMessages(){
   const area=document.getElementById('chatArea');
   const chat=currentChat();
-  const title=document.getElementById('headerTitle');
+  updateHeaderTitle();
   if(!chat||chat.messages.length===0){
-    area.innerHTML=`<div class="empty-state"><div class="emoji">🌸</div><p>你好呀～<br>我是 Little，有什么想聊的？</p></div>`;
-    title.textContent='Little';return;
+    area.innerHTML=`<div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p>有什么想聊的？</p></div>`;
+    return;
   }
-  title.textContent=chat.title;
   area.innerHTML=chat.messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>{
     let thinkingHtml='';
     if(m.role==='assistant'&&m.thinking){
@@ -1027,7 +993,6 @@ function renderMessages(){
         <span class="thinking-preview">${escHtml(preview)}</span>
         <span class="thinking-arrow">›</span></div>`;
     }
-    // 表情包消息
     if(m.sticker){
       return `<div class="msg ${m.role}"><div class="msg-inner">
         ${thinkingHtml}
@@ -1036,16 +1001,12 @@ function renderMessages(){
       </div></div>`;
     }
     let imagesHtml='';
-    if(m.images&&m.images.length>0){
-      imagesHtml=m.images.map(img=>`<img class="msg-image" src="${img}" onclick="viewImage(this.src)">`).join('');
-    }
+    if(m.images&&m.images.length>0)imagesHtml=m.images.map(img=>`<img class="msg-image" src="${img}" onclick="viewImage(this.src)">`).join('');
     let filesHtml='';
-    if(m.files&&m.files.length>0){
-      filesHtml=m.files.map(f=>`<div style="font-size:12px;color:${m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)'};margin-bottom:4px">📄 ${escHtml(f)}</div>`).join('');
-    }
+    if(m.files&&m.files.length>0)filesHtml=m.files.map(f=>`<div style="font-size:12px;color:${m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)'};margin-bottom:4px;display:flex;align-items:center;gap:4px"><svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${escHtml(f)}</div>`).join('');
     let contentHtml;
-    if(m.role==='assistant'){contentHtml=renderMarkdown(m.content);}
-    else{contentHtml=escHtml(m.content).replace(/\n/g,'<br>');}
+    if(m.role==='assistant')contentHtml=renderMarkdown(m.content);
+    else contentHtml=escHtml(m.content).replace(/\n/g,'<br>');
     return `<div class="msg ${m.role}"><div class="msg-inner">
       ${thinkingHtml}${imagesHtml}${filesHtml}
       <div class="msg-bubble">${contentHtml}</div>
@@ -1055,349 +1016,188 @@ function renderMessages(){
   +'<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
   scrollToBottom();
 }
-function scrollToBottom(){
-  const area=document.getElementById('chatArea');
-  requestAnimationFrame(()=>{area.scrollTop=area.scrollHeight;});
-}
+function scrollToBottom(){const area=document.getElementById('chatArea');requestAnimationFrame(()=>{area.scrollTop=area.scrollHeight;});}
 
 // ==================== 输入框 ====================
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 
 // ==================== 附件 ====================
-function openFilePicker(){document.getElementById('fileInput').click();}
+function handlePhotoSelect(e){
+  Array.from(e.target.files).forEach(file=>{
+    if(!file.type.startsWith('image/'))return;
+    const reader=new FileReader();
+    reader.onload=(ev)=>{pendingAttachments.push({type:'image',name:file.name,data:ev.target.result});renderAttachPreview();updateSendBtn();};
+    reader.readAsDataURL(file);
+  });e.target.value='';
+}
 function handleFileSelect(e){
-  const files=Array.from(e.target.files);if(!files.length)return;
-  files.forEach(file=>{
-    if(file.type.startsWith('image/')){
-      const reader=new FileReader();
-      reader.onload=(ev)=>{pendingAttachments.push({type:'image',name:file.name,data:ev.target.result});renderAttachPreview();};
-      reader.readAsDataURL(file);
-    }else{
-      const reader=new FileReader();
-      reader.onload=(ev)=>{pendingAttachments.push({type:'file',name:file.name,data:ev.target.result});renderAttachPreview();};
-      reader.readAsText(file);
-    }
-  });
-  e.target.value='';
+  Array.from(e.target.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=(ev)=>{pendingAttachments.push({type:'file',name:file.name,data:ev.target.result});renderAttachPreview();updateSendBtn();};
+    reader.readAsText(file);
+  });e.target.value='';
 }
 function renderAttachPreview(){
   const el=document.getElementById('attachPreview');
   if(pendingAttachments.length===0){el.classList.remove('show');el.innerHTML='';return;}
   el.classList.add('show');
   el.innerHTML=pendingAttachments.map((att,i)=>{
-    if(att.type==='image'){
-      return `<div class="attach-preview-item"><img src="${att.data}"><button class="attach-remove" onclick="removeAttach(${i})">✕</button></div>`;
-    }
-    return `<div class="attach-preview-item"><div class="file-info">📄 ${escHtml(att.name)}</div><button class="attach-remove" onclick="removeAttach(${i})">✕</button></div>`;
+    if(att.type==='image')return `<div class="attach-preview-item"><img src="${att.data}"><button class="attach-remove" onclick="removeAttach(${i})">✕</button></div>`;
+    return `<div class="attach-preview-item"><div class="file-info">${escHtml(att.name)}</div><button class="attach-remove" onclick="removeAttach(${i})">✕</button></div>`;
   }).join('');
 }
-function removeAttach(i){pendingAttachments.splice(i,1);renderAttachPreview();}
+function removeAttach(i){pendingAttachments.splice(i,1);renderAttachPreview();updateSendBtn();}
 
-// ==================== 表情包面板 ====================
+// ==================== 表情包 ====================
 function toggleStickerPanel(){
   const panel=document.getElementById('stickerPanel');
   const btn=document.getElementById('stickerToggleBtn');
-  if(panel.classList.contains('open')){
-    panel.classList.remove('open');
-    btn.classList.remove('active');
-    stickerEditing=false;
-    document.getElementById('stickerGrid').classList.remove('editing');
-    document.getElementById('stickerEditBtn').classList.remove('active');
-    document.getElementById('stickerEditBtn').textContent='管理';
-  }else{
-    panel.classList.add('open');
-    btn.classList.add('active');
-    renderStickerGrid();
-  }
+  if(panel.classList.contains('open')){panel.classList.remove('open');btn.classList.remove('active');stickerEditing=false;
+    document.getElementById('stickerGrid').classList.remove('editing');const eb=document.getElementById('stickerEditBtn');eb.classList.remove('active');eb.textContent='管理';
+  }else{panel.classList.add('open');btn.classList.add('active');renderStickerGrid();}
 }
 function toggleStickerEdit(){
-  stickerEditing=!stickerEditing;
-  const grid=document.getElementById('stickerGrid');
-  const btn=document.getElementById('stickerEditBtn');
+  stickerEditing=!stickerEditing;const grid=document.getElementById('stickerGrid');const btn=document.getElementById('stickerEditBtn');
   if(stickerEditing){grid.classList.add('editing');btn.classList.add('active');btn.textContent='完成';}
   else{grid.classList.remove('editing');btn.classList.remove('active');btn.textContent='管理';}
 }
 async function handleStickerImport(e){
-  const files=Array.from(e.target.files);if(!files.length)return;
-  let count=0;
-  for(const file of files){
-    if(!file.type.startsWith('image/'))continue;
-    const dataUrl=await new Promise((resolve)=>{
-      const reader=new FileReader();
-      reader.onload=(ev)=>resolve(ev.target.result);
-      reader.readAsDataURL(file);
-    });
-    // 压缩表情包到合理大小
-    const compressed=await compressImage(dataUrl, 256);
-    await stickerStore.add({id:'stk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),data:compressed,time:Date.now()});
-    count++;
-  }
-  e.target.value='';
-  if(count>0){showToast(`导入了 ${count} 个表情包`);renderStickerGrid();}
+  const files=Array.from(e.target.files);if(!files.length)return;let count=0;
+  for(const file of files){if(!file.type.startsWith('image/'))continue;
+    const dataUrl=await new Promise(r=>{const reader=new FileReader();reader.onload=(ev)=>r(ev.target.result);reader.readAsDataURL(file);});
+    const compressed=await compressImage(dataUrl,256);
+    await stickerStore.add({id:'stk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),data:compressed,time:Date.now()});count++;
+  }e.target.value='';if(count>0){showToast(`导入了 ${count} 个表情包`);renderStickerGrid();}
 }
-function compressImage(dataUrl, maxSize){
-  return new Promise((resolve)=>{
-    const img=new Image();
-    img.onload=()=>{
-      const canvas=document.createElement('canvas');
-      let w=img.width,h=img.height;
-      if(w>maxSize||h>maxSize){
-        if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
-        else{w=Math.round(w*maxSize/h);h=maxSize;}
-      }
-      canvas.width=w;canvas.height=h;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      resolve(canvas.toDataURL('image/webp',0.8));
-    };
-    img.src=dataUrl;
-  });
-}
+function compressImage(dataUrl,maxSize){return new Promise(r=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxSize||h>maxSize){if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);r(canvas.toDataURL('image/webp',0.8));};img.src=dataUrl;});}
 async function renderStickerGrid(){
-  const grid=document.getElementById('stickerGrid');
-  const countEl=document.getElementById('stickerCount');
-  try{
-    const all=await stickerStore.getAll();
-    all.sort((a,b)=>b.time-a.time);
-    countEl.textContent=`${all.length} 个表情包`;
-    if(all.length===0){
-      grid.innerHTML='<div class="sticker-empty">还没有表情包～<br>点击「导入」从相册添加</div>';
-      return;
-    }
-    grid.innerHTML=all.map(s=>`<div class="sticker-grid-item" onclick="sendSticker('${s.id}')">
-      <img src="${s.data}" loading="lazy">
-      <button class="sticker-del-btn" onclick="event.stopPropagation();deleteSticker('${s.id}')">✕</button>
-    </div>`).join('');
+  const grid=document.getElementById('stickerGrid');const countEl=document.getElementById('stickerCount');
+  try{const all=await stickerStore.getAll();all.sort((a,b)=>b.time-a.time);countEl.textContent=`${all.length} 个`;
+    if(all.length===0){grid.innerHTML='<div class="sticker-empty">还没有表情包<br>点击「导入」从相册添加</div>';return;}
+    grid.innerHTML=all.map(s=>`<div class="sticker-grid-item" onclick="sendSticker('${s.id}')"><img src="${s.data}" loading="lazy"><button class="sticker-del-btn" onclick="event.stopPropagation();deleteSticker('${s.id}')">✕</button></div>`).join('');
   }catch(e){grid.innerHTML='<div class="sticker-empty">加载失败</div>';console.error(e);}
 }
-async function deleteSticker(id){
-  await stickerStore.remove(id);
-  showToast('已删除');
-  renderStickerGrid();
-}
+async function deleteSticker(id){await stickerStore.remove(id);showToast('已删除');renderStickerGrid();}
 async function sendSticker(id){
-  if(state.generating)return;
-  const all=await stickerStore.getAll();
-  const sticker=all.find(s=>s.id===id);
-  if(!sticker)return;
-
+  if(state.generating)return;const all=await stickerStore.getAll();const sticker=all.find(s=>s.id===id);if(!sticker)return;
   if(!state.settings.apiUrl||!state.settings.apiKey){showToast('请先配置 API');openSettings();return;}
-
-  if(!state.currentChatId){
-    const cid='chat_'+Date.now();
-    state.chats[cid]={id:cid,title:'新对话',messages:[],created:Date.now()};
-    state.currentChatId=cid;
-  }
-
+  if(!state.currentChatId){const cid='chat_'+Date.now();state.chats[cid]={id:cid,title:'新对话',messages:[],created:Date.now()};state.currentChatId=cid;}
   const chat=currentChat();
-  // 用户发送表情包消息
   chat.messages.push({role:'user',content:'[用户发送了一个表情包]',sticker:sticker.data,time:Date.now()});
-  if(chat.messages.filter(m=>m.role==='user').length===1){chat.title='表情包对话';}
-  saveState();renderMessages();renderChatList();
-  toggleStickerPanel();
-
-  // 发给 AI（用 vision）
-  state.generating=true;
-  document.getElementById('sendBtn').disabled=true;
-  const typing=document.getElementById('typing');
-  if(typing)typing.classList.add('show');
-  scrollToBottom();
-
-  try{
-    const systemPrompt=await buildSystemPrompt('用户发送了一个表情包/图片');
-    const result=await callAPI(chat, systemPrompt);
-    const {cleanReply,newMemories}=extractMemories(result.content);
-    const replyObj={role:'assistant',content:cleanReply,time:Date.now()};
-    if(result.thinking)replyObj.thinking=result.thinking;
-    chat.messages.push(replyObj);
-    state.lastChatTime=Date.now();
-    saveState();renderMessages();renderChatList();
-    if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){showToast('请求失败: '+err.message);console.error(err);}
-  finally{
-    state.generating=false;
-    document.getElementById('sendBtn').disabled=false;
-    const t=document.getElementById('typing');if(t)t.classList.remove('show');
-  }
-}
-
-// ==================== 记忆检索 & prompt ====================
-async function retrieveMemories(query){
-  try{
-    if(state.settings.jinaKey){const qVec=await getEmbedding(query);if(qVec)return await vectorStore.search(qVec,8);}
-    return await vectorStore.searchByKeyword(query,8);
-  }catch{return [];}
-}
-async function buildSystemPrompt(userQuery){
-  const s=state.settings; let sys=s.systemPrompt||'';
-  if(s.thinking==='on')sys+='\n\n请在思考时使用中文。';
-  sys+='\n\n'+getTimeContext();
-  const memories=await retrieveMemories(userQuery);
-  if(memories.length>0){
-    const cats={profile:'👤 画像',warm:'🧡 暖记忆',fact:'📝 事实',corridor:'📮 走廊便条'};
-    sys+='\n\n[你关于用户的记忆]';
-    memories.forEach(m=>{sys+=`\n${cats[m.category]||'📝'}：${m.text}`;});
-    sys+='\n（以上是你记住的事情，像自然知道一样说话，不要说"根据记忆"）';
-  }
-  if(s.autoMemory==='on'){
-    sys+=`\n\n[记忆提取指令]
-如果用户在对话中分享了值得长期记住的信息，或者用户明确要求你记住某件事，请在回复最末尾另起一行，用以下格式标记（可多条）：
-[MEM|类别|内容]
-类别：profile(身份信息) / warm(暖记忆) / fact(事实) / corridor(走廊便条)
-如果没有值得记忆的内容，不要加标记。只记重要的。
-当用户明确说"记住这个"、"帮我存起来"之类的话时，一定要提取记忆。`;
-  }
-  return sys;
-}
-
-// ==================== 发送消息 ====================
-async function sendMessage(){
-  const input=document.getElementById('msgInput');
-  const text=input.value.trim();
-  const attachments=[...pendingAttachments];
-  if((!text&&attachments.length===0)||state.generating)return;
-  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('请先配置 API');openSettings();return;}
-  if(!state.currentChatId){
-    const id='chat_'+Date.now();
-    state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};
-    state.currentChatId=id;
-  }
-  const chat=currentChat();
-  const msgObj={role:'user',content:text||'',time:Date.now()};
-  const imageDataUrls=[];const fileNames=[];let fileContents='';
-  attachments.forEach(att=>{
-    if(att.type==='image'){imageDataUrls.push(att.data);}
-    else{fileNames.push(att.name);fileContents+=`\n\n--- 文件: ${att.name} ---\n${att.data}`;}
-  });
-  if(imageDataUrls.length>0)msgObj.images=imageDataUrls;
-  if(fileNames.length>0){msgObj.files=fileNames;msgObj.content=(text||'')+fileContents;}
-  chat.messages.push(msgObj);
-  if(chat.messages.filter(m=>m.role==='user').length===1){
-    chat.title=(text||attachments[0]?.name||'新对话').slice(0,20)+((text||'').length>20?'...':'');
-  }
-  pendingAttachments=[];renderAttachPreview();
-  saveState();input.value='';input.style.height='auto';
-  renderMessages();renderChatList();
+  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title='表情包对话';
+  saveState();renderMessages();renderChatList();toggleStickerPanel();
   state.generating=true;document.getElementById('sendBtn').disabled=true;
   const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
-  try{
-    const systemPrompt=await buildSystemPrompt(text||'(用户发送了图片)');
-    const result=await callAPI(chat,systemPrompt);
-    const {cleanReply,newMemories}=extractMemories(result.content);
-    const replyObj={role:'assistant',content:cleanReply,time:Date.now()};
-    if(result.thinking)replyObj.thinking=result.thinking;
-    chat.messages.push(replyObj);state.lastChatTime=Date.now();
-    saveState();renderMessages();renderChatList();
+  try{const sp=await buildSystemPrompt('用户发送了一个表情包');const result=await callAPI(chat,sp);
+    const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
+    if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveState();renderMessages();renderChatList();
     if(newMemories.length>0)storeMemories(newMemories);
   }catch(err){showToast('请求失败: '+err.message);console.error(err);}
-  finally{state.generating=false;document.getElementById('sendBtn').disabled=false;
-    const t=document.getElementById('typing');if(t)t.classList.remove('show');}
-}
-
-// ==================== API 调用 ====================
-async function callAPI(chat, systemPrompt){
-  const s=state.settings;
-  const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
-  const messages=[{role:'system',content:systemPrompt}];
-  chat.messages.slice(-30).forEach(m=>{
-    if(m.role==='user'&&(m.images?.length>0||m.sticker)){
-      const contentParts=[];
-      if(m.content&&m.content!=='[用户发送了一个表情包]'){
-        contentParts.push({type:'text',text:m.content});
-      }else if(m.sticker){
-        contentParts.push({type:'text',text:'用户发送了一个表情包图片，请看图片内容并自然地回应。如果是搞笑/可爱的表情包，可以用轻松的方式回应。'});
-      }
-      if(m.images){m.images.forEach(img=>{contentParts.push({type:'image_url',image_url:{url:img}});});}
-      if(m.sticker){contentParts.push({type:'image_url',image_url:{url:m.sticker}});}
-      messages.push({role:'user',content:contentParts});
-    }else{
-      messages.push({role:m.role,content:m.content});
-    }
-  });
-  const body={model:s.model,messages,stream:false};
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},body:JSON.stringify(body)});
-  if(!res.ok){const errText=await res.text();throw new Error(`${res.status} ${errText.slice(0,100)}`);}
-  const data=await res.json();
-  const msg=data.choices?.[0]?.message;
-  const content=msg?.content||'(无回复)';
-  let thinking=null;
-  if(s.thinking==='on'){
-    if(msg?.reasoning_content)thinking=msg.reasoning_content;
-    else if(msg?.reasoning)thinking=msg.reasoning;
-    else if(msg?.thinking)thinking=msg.thinking;
-  }
-  return {content,thinking};
+  finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
 // ==================== 记忆 ====================
-function extractMemories(reply){
-  const memRegex=/\[MEM\|(\w+)\|(.+?)\]/g;let match;let cleanReply=reply;const newMemories=[];
-  while((match=memRegex.exec(reply))!==null){
-    newMemories.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:match[1].trim(),text:match[2].trim(),time:Date.now(),vector:null});
-    cleanReply=cleanReply.replace(match[0],'');
-  }
-  cleanReply=cleanReply.replace(/\n+$/,'').trim();
-  return {cleanReply,newMemories};
+async function retrieveMemories(q){try{if(state.settings.jinaKey){const qv=await getEmbedding(q);if(qv)return await vectorStore.search(qv,8);}return await vectorStore.searchByKeyword(q,8);}catch{return[];}}
+async function buildSystemPrompt(uq){
+  const s=state.settings;let sys=s.systemPrompt||'';
+  if(s.thinking==='on')sys+='\n\n请在思考时使用中文。';
+  sys+='\n\n'+getTimeContext();
+  const mems=await retrieveMemories(uq);
+  if(mems.length>0){sys+='\n\n[你关于用户的记忆]';mems.forEach(m=>{const cats={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};sys+=`\n${cats[m.category]||'事实'}：${m.text}`;});sys+='\n（以上是你记住的事情，像自然知道一样说话）';}
+  if(s.autoMemory==='on')sys+=`\n\n[记忆提取指令]\n如果用户分享了值得记住的信息，或明确要求记住，请在回复最末尾另起一行标记：\n[MEM|类别|内容]\n类别：profile/warm/fact/corridor\n没有值得记忆的不要加。只记重要的。`;
+  return sys;
 }
-async function storeMemories(memories){
-  let stored=0;
-  for(const mem of memories){
-    try{if(state.settings.jinaKey)mem.vector=await getEmbedding(mem.text);await vectorStore.add(mem);stored++;}
-    catch(e){console.error('存储记忆失败:',e);}
-  }
-  if(stored>0){
-    const catNames={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
-    const cats=[...new Set(memories.map(m=>catNames[m.category]||m.category))];
-    showToast(`记住了 ${stored} 条${cats.join('/')}`);
-  }
+
+// ==================== 发送 ====================
+async function sendMessage(){
+  const input=document.getElementById('msgInput');const text=input.value.trim();const attachments=[...pendingAttachments];
+  if((!text&&attachments.length===0)||state.generating)return;
+  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('请先配置 API');openSettings();return;}
+  if(!state.currentChatId){const id='chat_'+Date.now();state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};state.currentChatId=id;}
+  const chat=currentChat();const msgObj={role:'user',content:text||'',time:Date.now()};
+  const imgs=[];const fns=[];let fc='';
+  attachments.forEach(a=>{if(a.type==='image')imgs.push(a.data);else{fns.push(a.name);fc+=`\n\n--- 文件: ${a.name} ---\n${a.data}`;}});
+  if(imgs.length>0)msgObj.images=imgs;
+  if(fns.length>0){msgObj.files=fns;msgObj.content=(text||'')+fc;}
+  chat.messages.push(msgObj);
+  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=(text||attachments[0]?.name||'新对话').slice(0,20);
+  pendingAttachments=[];renderAttachPreview();saveState();input.value='';input.style.height='auto';updateSendBtn();
+  renderMessages();renderChatList();
+  state.generating=true;document.getElementById('sendBtn').disabled=true;
+  const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
+  try{const sp=await buildSystemPrompt(text||'(图片)');const result=await callAPI(chat,sp);
+    const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
+    if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
+    saveState();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
+  }catch(err){showToast('请求失败: '+err.message);console.error(err);}
+  finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
+}
+
+// ==================== API ====================
+async function callAPI(chat,systemPrompt){
+  const s=state.settings;const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
+  const messages=[{role:'system',content:systemPrompt}];
+  chat.messages.slice(-30).forEach(m=>{
+    if(m.role==='user'&&(m.images?.length>0||m.sticker)){
+      const cp=[];
+      if(m.content&&m.content!=='[用户发送了一个表情包]')cp.push({type:'text',text:m.content});
+      else if(m.sticker)cp.push({type:'text',text:'用户发送了一个表情包图片，请看图片内容自然回应。'});
+      if(m.images)m.images.forEach(img=>cp.push({type:'image_url',image_url:{url:img}}));
+      if(m.sticker)cp.push({type:'image_url',image_url:{url:m.sticker}});
+      messages.push({role:'user',content:cp});
+    }else messages.push({role:m.role,content:m.content});
+  });
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},body:JSON.stringify({model:s.model,messages,stream:false})});
+  if(!res.ok){const et=await res.text();throw new Error(`${res.status} ${et.slice(0,100)}`);}
+  const data=await res.json();const msg=data.choices?.[0]?.message;const content=msg?.content||'(无回复)';
+  let thinking=null;if(s.thinking==='on'){thinking=msg?.reasoning_content||msg?.reasoning||msg?.thinking||null;}
+  return{content,thinking};
+}
+
+// ==================== 记忆提取 ====================
+function extractMemories(reply){
+  const re=/\[MEM\|(\w+)\|(.+?)\]/g;let m;let clean=reply;const mems=[];
+  while((m=re.exec(reply))!==null){mems.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:m[1].trim(),text:m[2].trim(),time:Date.now(),vector:null});clean=clean.replace(m[0],'');}
+  return{cleanReply:clean.replace(/\n+$/,'').trim(),newMemories:mems};
+}
+async function storeMemories(mems){
+  let n=0;for(const m of mems){try{if(state.settings.jinaKey)m.vector=await getEmbedding(m.text);await vectorStore.add(m);n++;}catch(e){console.error(e);}}
+  if(n>0)showToast(`记住了 ${n} 条`);
 }
 async function addManualMemory(){
-  const category=document.getElementById('memAddCategory').value;
-  const text=document.getElementById('memAddText').value.trim();
-  if(!text){showToast('请输入记忆内容');return;}
-  const mem={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category,text,time:Date.now(),vector:null};
-  try{
-    if(state.settings.jinaKey)mem.vector=await getEmbedding(text);
-    await vectorStore.add(mem);
+  const cat=document.getElementById('memAddCategory').value;const text=document.getElementById('memAddText').value.trim();
+  if(!text){showToast('请输入内容');return;}
+  const m={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:cat,text,time:Date.now(),vector:null};
+  try{if(state.settings.jinaKey)m.vector=await getEmbedding(text);await vectorStore.add(m);
     document.getElementById('memAddText').value='';document.getElementById('memAddText').style.height='auto';
-    showToast('记忆已添加');await renderMemoryList();
-  }catch(e){showToast('添加失败: '+e.message);console.error(e);}
+    showToast('已添加');await renderMemoryList();
+  }catch(e){showToast('失败: '+e.message);}
 }
 
 // ==================== 模型列表 ====================
 async function fetchModels(){
-  const apiUrl=document.getElementById('setApiUrl').value.trim();
-  const apiKey=document.getElementById('setApiKey').value.trim();
-  if(!apiUrl||!apiKey){showToast('请先填写接口地址和 API Key');return;}
+  const apiUrl=document.getElementById('setApiUrl').value.trim();const apiKey=document.getElementById('setApiKey').value.trim();
+  if(!apiUrl||!apiKey){showToast('请先填写接口地址和 Key');return;}
   const btn=document.getElementById('fetchModelBtn');btn.disabled=true;btn.textContent='拉取中...';
-  try{
-    const url=apiUrl.replace(/\/+$/,'')+'/models';
-    const res=await fetch(url,{headers:{'Authorization':'Bearer '+apiKey}});
-    if(!res.ok)throw new Error(`${res.status}`);
-    const data=await res.json();let models=[];
+  try{const url=apiUrl.replace(/\/+$/,'')+'/models';const res=await fetch(url,{headers:{'Authorization':'Bearer '+apiKey}});
+    if(!res.ok)throw new Error(`${res.status}`);const data=await res.json();let models=[];
     if(Array.isArray(data.data))models=data.data.map(m=>m.id).filter(Boolean);
     else if(Array.isArray(data))models=data.map(m=>typeof m==='string'?m:m.id).filter(Boolean);
     if(models.length===0){showToast('没有获取到模型');return;}
-    models.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
-    fetchedModels=models;showToast(`获取到 ${models.length} 个模型`);
-    renderModelList();document.getElementById('modelPickerPage').classList.add('open');
-  }catch(err){showToast('拉取失败: '+err.message);console.error(err);}
+    models.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));fetchedModels=models;
+    showToast(`获取到 ${models.length} 个模型`);renderModelList();document.getElementById('modelPickerPage').classList.add('open');
+  }catch(err){showToast('拉取失败: '+err.message);}
   finally{btn.disabled=false;btn.textContent='拉取';}
 }
 function renderModelList(){
-  const container=document.getElementById('modelListContainer');
-  const searchVal=(document.getElementById('modelSearchInput').value||'').toLowerCase();
-  const currentModel=document.getElementById('setModel').value.trim();
-  let filtered=fetchedModels;
-  if(searchVal)filtered=fetchedModels.filter(m=>m.toLowerCase().includes(searchVal));
-  if(filtered.length===0){container.innerHTML='<div class="model-list-empty">没有匹配的模型</div>';return;}
-  container.innerHTML=filtered.map(m=>{const isCurrent=m===currentModel;
-    return `<div class="model-list-item ${isCurrent?'current':''}" onclick="pickModel(this.dataset.model)" data-model="${escHtml(m)}">${escHtml(m)}${isCurrent?' ✓':''}</div>`;
-  }).join('');
+  const c=document.getElementById('modelListContainer');const sv=(document.getElementById('modelSearchInput').value||'').toLowerCase();
+  const cm=document.getElementById('setModel').value.trim();let filtered=fetchedModels;if(sv)filtered=fetchedModels.filter(m=>m.toLowerCase().includes(sv));
+  if(filtered.length===0){c.innerHTML='<div class="model-list-empty">没有匹配的模型</div>';return;}
+  c.innerHTML=filtered.map(m=>`<div class="model-list-item ${m===cm?'current':''}" onclick="pickModel(this.dataset.model)" data-model="${escHtml(m)}">${escHtml(m)}${m===cm?' ✓':''}</div>`).join('');
 }
 function filterModels(){renderModelList();}
-function pickModel(modelId){document.getElementById('setModel').value=modelId;showToast('已选择: '+modelId);closePage('modelPickerPage');}
+function pickModel(id){document.getElementById('setModel').value=id;showToast('已选择: '+id);closePage('modelPickerPage');}
 
 // ==================== 页面 ====================
 function openSettings(){
@@ -1405,6 +1205,7 @@ function openSettings(){
   document.getElementById('setApiUrl').value=s.apiUrl||'';
   document.getElementById('setApiKey').value=s.apiKey||'';
   document.getElementById('setModel').value=s.model||'';
+  document.getElementById('setCharName').value=s.charName||'Little';
   document.getElementById('setSystemPrompt').value=s.systemPrompt||'';
   document.getElementById('setAutoMemory').value=s.autoMemory||'on';
   document.getElementById('setJinaKey').value=s.jinaKey||'';
@@ -1417,45 +1218,42 @@ function saveSettings(){
     apiUrl:document.getElementById('setApiUrl').value.trim(),
     apiKey:document.getElementById('setApiKey').value.trim(),
     model:document.getElementById('setModel').value.trim(),
+    charName:document.getElementById('setCharName').value.trim()||'Little',
     systemPrompt:document.getElementById('setSystemPrompt').value,
     autoMemory:document.getElementById('setAutoMemory').value,
     jinaKey:document.getElementById('setJinaKey').value.trim(),
     thinking:document.getElementById('setThinking').value,
     customCSS:document.getElementById('setCustomCSS').value
   };
-  saveState();applyCustomCSS();updateModelTag();
+  saveState();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();
   showToast('设置已保存');closePage('settingsPage');
 }
 async function openMemory(){await renderMemoryList();document.getElementById('memoryPage').classList.add('open');}
 function closePage(id){document.getElementById(id).classList.remove('open');}
 async function renderMemoryList(){
   const el=document.getElementById('memoryList');const statsEl=document.getElementById('memoryStats');
-  try{
-    const all=await vectorStore.getAll();
-    if(all.length===0){statsEl.innerHTML='';el.innerHTML='<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息<br>也可以在上方手动添加</div>';return;}
-    const counts={profile:0,warm:0,fact:0,corridor:0};
-    all.forEach(m=>{counts[m.category]=(counts[m.category]||0)+1;});
+  try{const all=await vectorStore.getAll();
+    if(all.length===0){statsEl.innerHTML='';el.innerHTML='<div class="memory-empty">还没有记忆<br>开启自动记忆后 AI 会自动记住重要信息</div>';return;}
+    const counts={profile:0,warm:0,fact:0,corridor:0};all.forEach(m=>{counts[m.category]=(counts[m.category]||0)+1;});
     statsEl.innerHTML=`<div><div class="memory-stat-num">${all.length}</div><div class="memory-stat-label">总记忆</div></div>
       <div><div class="memory-stat-num">${counts.profile}</div><div class="memory-stat-label">画像</div></div>
       <div><div class="memory-stat-num">${counts.fact}</div><div class="memory-stat-label">事实</div></div>
       <div><div class="memory-stat-num">${counts.warm}</div><div class="memory-stat-label">暖记忆</div></div>
       <div><div class="memory-stat-num">${counts.corridor}</div><div class="memory-stat-label">便条</div></div>`;
     all.sort((a,b)=>b.time-a.time);
-    el.innerHTML=all.map(m=>{
-      const catNames={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
-      return `<div class="memory-item"><div>
-        <div class="memory-item-text"><span class="memory-tag ${m.category}">${catNames[m.category]||m.category}</span>${escHtml(m.text)}</div>
-        <div class="memory-item-meta">${fmtTime(m.time)}${m.vector?' · 已向量化':''}</div>
-      </div><button class="memory-item-del" onclick="deleteMemory('${m.id}')">✕</button></div>`;
+    el.innerHTML=all.map(m=>{const cn={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
+      return `<div class="memory-item"><div><div class="memory-item-text"><span class="memory-tag ${m.category}">${cn[m.category]||m.category}</span>${escHtml(m.text)}</div>
+      <div class="memory-item-meta">${fmtTime(m.time)}${m.vector?' · 已向量化':''}</div></div>
+      <button class="memory-item-del" onclick="deleteMemory('${m.id}')">✕</button></div>`;
     }).join('');
-  }catch(e){el.innerHTML='<div class="memory-empty">加载记忆时出错了</div>';console.error(e);}
+  }catch(e){el.innerHTML='<div class="memory-empty">加载出错</div>';console.error(e);}
 }
 async function deleteMemory(id){await vectorStore.remove(id);showToast('已删除');renderMemoryList();}
 
 // ==================== 初始化 ====================
 function init(){
-  renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateInputHint();
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+  renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 init();
 </script>
