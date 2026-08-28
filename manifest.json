@@ -1,0 +1,18 @@
+{
+  "name": "Little",
+  "short_name": "Little",
+  "description": "一个轻量的 AI 聊天助手 🌸",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fdf6f0",
+  "theme_color": "#faf0f4",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23fdf6f0'/><text x='50' y='68' text-anchor='middle' font-size='55'>🌸</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
