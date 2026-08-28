@@ -113,6 +113,20 @@ body {
 .msg-time { font-size:10px; color:var(--text-light); margin-top:4px; opacity:.7; }
 .msg.user .msg-time { text-align:right; }
 
+/* 思维链折叠行 */
+.thinking-toggle {
+  display:flex; align-items:center; gap:6px;
+  padding:6px 0; margin-bottom:2px; cursor:pointer;
+  font-size:13px; color:var(--text-light); max-width:82%;
+  -webkit-user-select:none; user-select:none;
+}
+.thinking-toggle:active { opacity:.6; }
+.thinking-label { font-weight:600; color:#999; flex-shrink:0; }
+.thinking-preview {
+  flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.thinking-arrow { flex-shrink:0; font-size:12px; color:#bbb; }
+
 .typing-indicator {
   display:none; padding:10px 14px; background:var(--surface);
   border-radius:var(--radius); border-bottom-left-radius:4px;
@@ -191,9 +205,7 @@ body {
 }
 
 /* 模型选择行 */
-.model-row {
-  display:flex; gap:8px; align-items:flex-start;
-}
+.model-row { display:flex; gap:8px; align-items:flex-start; }
 .model-row input { flex:1; }
 .fetch-model-btn {
   padding:10px 14px; border:none; background:var(--primary);
@@ -281,6 +293,25 @@ body {
 }
 .memory-add-btn:active { transform:scale(.95); }
 
+/* 思维链浮层 */
+.thinking-overlay {
+  display:none; position:fixed; inset:0;
+  background:var(--bg); z-index:400;
+  flex-direction:column; padding-top:calc(var(--safe-top) + 8px);
+}
+.thinking-overlay.open { display:flex; }
+.thinking-overlay-header {
+  display:flex; align-items:center; padding:8px 16px 16px; gap:12px;
+  border-bottom:1px solid var(--primary-light);
+}
+.thinking-overlay-header h2 { font-size:18px; flex:1; text-align:center; font-weight:700; }
+.thinking-overlay-body {
+  flex:1; overflow-y:auto; padding:20px 16px 32px;
+  -webkit-overflow-scrolling:touch;
+  font-size:15px; line-height:1.7; color:var(--text);
+  white-space:pre-wrap; word-break:break-word;
+}
+
 /* 空状态 */
 .empty-state {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -303,7 +334,7 @@ body {
 </head>
 <body>
 
-  <!-- 顶栏 -->
+<!-- 顶栏 -->
 <div class="header">
   <button class="header-btn" onclick="toggleSidebar()">☰</button>
   <div class="header-title" id="headerTitle">Little</div>
@@ -369,6 +400,16 @@ body {
       <div class="setting-row"><label>Jina API Key（向量搜索用）</label><input type="password" id="setJinaKey" placeholder="jina_...（可选，不填则用关键词匹配）"></div>
     </div>
     <div class="settings-group">
+      <h3>思维链</h3>
+      <div class="setting-row">
+        <label>显示思维链</label>
+        <select id="setThinking">
+          <option value="off">关闭</option>
+          <option value="on">开启 - 显示 AI 的思考过程</option>
+        </select>
+      </div>
+    </div>
+    <div class="settings-group">
       <h3>自定义样式</h3>
       <div class="setting-row">
         <label>自定义 CSS（保存后立即生效）</label>
@@ -381,7 +422,7 @@ body {
     </div>
     <div class="settings-group">
       <h3>关于</h3>
-      <div class="setting-row"><label>Little v0.3.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA 🌸</p></div>
+      <div class="setting-row"><label>Little v0.4.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA 🌸</p></div>
     </div>
     <button class="save-btn" onclick="saveSettings()">保存设置</button>
   </div>
@@ -410,25 +451,34 @@ body {
     <h2>🧠 记忆库</h2>
   </div>
   <div class="overlay-body">
-    <!-- 手动添加记忆 -->
     <div class="memory-add-box">
-      <h3>✏️ 手动添加记忆</h3>
+      <h3>手动添加记忆</h3>
       <div class="memory-add-row">
         <select id="memAddCategory">
-          <option value="profile">👤 画像</option>
-          <option value="fact" selected>📝 事实</option>
-          <option value="warm">🧡 暖记忆</option>
-          <option value="corridor">📮 便条</option>
+          <option value="profile">画像</option>
+          <option value="fact" selected>事实</option>
+          <option value="warm">暖记忆</option>
+          <option value="corridor">便条</option>
         </select>
         <textarea id="memAddText" rows="1" placeholder="输入记忆内容..." oninput="autoResize(this)"></textarea>
       </div>
       <div style="display:flex;justify-content:flex-end;">
-        <button class="memory-add-btn" onclick="addManualMemory()">添加 +</button>
+        <button class="memory-add-btn" onclick="addManualMemory()">添加</button>
       </div>
     </div>
     <div class="memory-stats" id="memoryStats"></div>
     <div id="memoryList"><div class="memory-empty">还没有记忆哦～</div></div>
   </div>
+</div>
+
+<!-- 思维链浮层 -->
+<div class="thinking-overlay" id="thinkingOverlay">
+  <div class="thinking-overlay-header">
+    <button class="overlay-back" onclick="closeThinking()">✕</button>
+    <h2>Thought process</h2>
+    <div style="width:36px"></div>
+  </div>
+  <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
 </div>
 
 <!-- Toast -->
@@ -514,12 +564,10 @@ class VectorStore {
   async search(queryVector, topK = 5) {
     const all = await this.getAll();
     if (!queryVector || all.length === 0) return all.slice(0, topK);
-
     const scored = all
       .filter(m => m.vector && m.vector.length > 0)
       .map(m => ({ ...m, score: this.cosineSim(queryVector, m.vector) }))
       .sort((a, b) => b.score - a.score);
-
     return scored.slice(0, topK);
   }
 
@@ -544,7 +592,6 @@ const vectorStore = new VectorStore();
 async function getEmbedding(text) {
   const jinaKey = state.settings.jinaKey;
   if (!jinaKey) return null;
-
   try {
     const res = await fetch('https://api.jina.ai/v1/embeddings', {
       method: 'POST',
@@ -578,13 +625,17 @@ let state = {
     systemPrompt: '你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
     autoMemory: 'on',
     jinaKey: '',
+    thinking: 'off',
     customCSS: ''
   }),
   lastChatTime: DB.get('lastChatTime', null),
   generating: false
 };
 
-// 拉取到的模型列表（临时，不持久化）
+// 确保旧版设置兼容（升级时补字段）
+if (state.settings.thinking === undefined) state.settings.thinking = 'off';
+if (state.settings.customCSS === undefined) state.settings.customCSS = '';
+
 let fetchedModels = [];
 
 function saveState() {
@@ -688,6 +739,16 @@ function renderChatList() {
   }).join('');
 }
 
+// ==================== 思维链显示 ====================
+function openThinking(text) {
+  document.getElementById('thinkingOverlayBody').textContent = text;
+  document.getElementById('thinkingOverlay').classList.add('open');
+}
+
+function closeThinking() {
+  document.getElementById('thinkingOverlay').classList.remove('open');
+}
+
 // ==================== 消息渲染 ====================
 function renderMessages() {
   const area = document.getElementById('chatArea');
@@ -703,10 +764,22 @@ function renderMessages() {
   title.textContent = chat.title;
   area.innerHTML = chat.messages
     .filter(m => m.role === 'user' || m.role === 'assistant')
-    .map(m => `<div class="msg ${m.role}"><div>
-      <div class="msg-bubble">${escHtml(m.content)}</div>
-      <div class="msg-time">${m.time ? fmtTime(m.time) : ''}</div>
-    </div></div>`).join('')
+    .map((m, i) => {
+      let thinkingHtml = '';
+      if (m.role === 'assistant' && m.thinking) {
+        const preview = m.thinking.slice(0, 30).replace(/\n/g, ' ') + (m.thinking.length > 30 ? '…' : '');
+        thinkingHtml = `<div class="thinking-toggle" onclick="openThinking(this.dataset.think)" data-think="${escHtml(m.thinking)}">
+          <span class="thinking-label">Thinking</span>
+          <span class="thinking-preview">${escHtml(preview)}</span>
+          <span class="thinking-arrow">›</span>
+        </div>`;
+      }
+      return `<div class="msg ${m.role}"><div>
+        ${thinkingHtml}
+        <div class="msg-bubble">${escHtml(m.content)}</div>
+        <div class="msg-time">${m.time ? fmtTime(m.time) : ''}</div>
+      </div></div>`;
+    }).join('')
     + '<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
   scrollToBottom();
 }
@@ -737,6 +810,11 @@ async function buildSystemPrompt(userQuery) {
   const s = state.settings;
   let sys = s.systemPrompt || '';
 
+  // 思维链中文引导（注入到 system prompt，让 thinking 用中文）
+  if (s.thinking === 'on') {
+    sys += '\n\n请在思考时使用中文。';
+  }
+
   sys += '\n\n' + getTimeContext();
 
   const memories = await retrieveMemories(userQuery);
@@ -752,7 +830,7 @@ async function buildSystemPrompt(userQuery) {
 
   if (s.autoMemory === 'on') {
     sys += `\n\n[记忆提取指令]
-如果用户在对话中分享了值得长期记住的信息，请在回复最末尾另起一行，用以下格式标记（可多条）：
+如果用户在对话中分享了值得长期记住的信息，或者用户明确要求你记住某件事，请在回复最末尾另起一行，用以下格式标记（可多条）：
 [MEM|类别|内容]
 类别说明：
 - profile：用户的身份、名字、职业、年龄等基本信息
@@ -765,7 +843,8 @@ async function buildSystemPrompt(userQuery) {
 示例：[MEM|warm|用户今天通过了驾照考试，很开心]
 示例：[MEM|corridor|用户在纠结要不要考研]
 
-如果没有值得记忆的内容，不要加标记。只记重要的，不要记无聊的寒暄。`;
+如果没有值得记忆的内容，不要加标记。只记重要的，不要记无聊的寒暄。
+当用户明确说"记住这个"、"帮我存起来"之类的话时，一定要提取记忆。`;
   }
 
   return sys;
@@ -810,11 +889,17 @@ async function sendMessage() {
 
   try {
     const systemPrompt = await buildSystemPrompt(text);
-    const reply = await callAPI(chat, systemPrompt);
-    const { cleanReply, newMemories } = extractMemories(reply);
+    const result = await callAPI(chat, systemPrompt);
 
-    chat.messages.push({ role: 'assistant', content: cleanReply, time: Date.now() });
+    const { cleanReply, newMemories } = extractMemories(result.content);
 
+    const msgObj = { role: 'assistant', content: cleanReply, time: Date.now() };
+    // 存储思维链内容
+    if (result.thinking) {
+      msgObj.thinking = result.thinking;
+    }
+
+    chat.messages.push(msgObj);
     state.lastChatTime = Date.now();
     saveState();
     renderMessages();
@@ -845,13 +930,15 @@ async function callAPI(chat, systemPrompt) {
     messages.push({ role: m.role, content: m.content });
   });
 
+  const body = { model: s.model, messages, stream: false };
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + s.apiKey
     },
-    body: JSON.stringify({ model: s.model, messages, stream: false })
+    body: JSON.stringify(body)
   });
 
   if (!res.ok) {
@@ -860,7 +947,27 @@ async function callAPI(chat, systemPrompt) {
   }
 
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || '(无回复)';
+  const msg = data.choices?.[0]?.message;
+  const content = msg?.content || '(无回复)';
+
+  // 提取思维链：兼容多种中转站返回格式
+  let thinking = null;
+  if (s.thinking === 'on') {
+    // 格式1: message.reasoning_content（OpenAI 兼容格式，DeepSeek 风格）
+    if (msg?.reasoning_content) {
+      thinking = msg.reasoning_content;
+    }
+    // 格式2: message.reasoning（有些中转站用这个）
+    else if (msg?.reasoning) {
+      thinking = msg.reasoning;
+    }
+    // 格式3: message.thinking（有些中转站用这个）
+    else if (msg?.thinking) {
+      thinking = msg.thinking;
+    }
+  }
+
+  return { content, thinking };
 }
 
 // ==================== 记忆提取 & 存储 ====================
@@ -882,7 +989,6 @@ function extractMemories(reply) {
   }
 
   cleanReply = cleanReply.replace(/\n+$/, '').trim();
-
   return { cleanReply, newMemories };
 }
 
@@ -924,7 +1030,6 @@ async function addManualMemory() {
   };
 
   try {
-    // 尝试向量化
     if (state.settings.jinaKey) {
       mem.vector = await getEmbedding(text);
     }
@@ -959,9 +1064,7 @@ async function fetchModels() {
       headers: { 'Authorization': 'Bearer ' + apiKey }
     });
 
-    if (!res.ok) {
-      throw new Error(`${res.status}`);
-    }
+    if (!res.ok) throw new Error(`${res.status}`);
 
     const data = await res.json();
     let models = [];
@@ -977,10 +1080,8 @@ async function fetchModels() {
       return;
     }
 
-    // 排序
     models.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     fetchedModels = models;
-
     showToast(`获取到 ${models.length} 个模型`);
     renderModelList();
     document.getElementById('modelPickerPage').classList.add('open');
@@ -1011,13 +1112,11 @@ function renderModelList() {
 
   container.innerHTML = filtered.map(m => {
     const isCurrent = m === currentModel;
-    return `<div class="model-list-item ${isCurrent ? 'current' : ''}" onclick="pickModel('${escHtml(m)}')">${escHtml(m)}${isCurrent ? ' ✓' : ''}</div>`;
+    return `<div class="model-list-item ${isCurrent ? 'current' : ''}" onclick="pickModel(this.dataset.model)" data-model="${escHtml(m)}">${escHtml(m)}${isCurrent ? ' ✓' : ''}</div>`;
   }).join('');
 }
 
-function filterModels() {
-  renderModelList();
-}
+function filterModels() { renderModelList(); }
 
 function pickModel(modelId) {
   document.getElementById('setModel').value = modelId;
@@ -1034,6 +1133,7 @@ function openSettings() {
   document.getElementById('setSystemPrompt').value = s.systemPrompt || '';
   document.getElementById('setAutoMemory').value = s.autoMemory || 'on';
   document.getElementById('setJinaKey').value = s.jinaKey || '';
+  document.getElementById('setThinking').value = s.thinking || 'off';
   document.getElementById('setCustomCSS').value = s.customCSS || '';
   document.getElementById('settingsPage').classList.add('open');
 }
@@ -1046,6 +1146,7 @@ function saveSettings() {
     systemPrompt: document.getElementById('setSystemPrompt').value,
     autoMemory: document.getElementById('setAutoMemory').value,
     jinaKey: document.getElementById('setJinaKey').value.trim(),
+    thinking: document.getElementById('setThinking').value,
     customCSS: document.getElementById('setCustomCSS').value
   };
   saveState();
@@ -1072,7 +1173,7 @@ async function renderMemoryList() {
 
     if (all.length === 0) {
       statsEl.innerHTML = '';
-      el.innerHTML = '<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息<br>也可以在上方手动添加 ✏️</div>';
+      el.innerHTML = '<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息<br>也可以在上方手动添加</div>';
       return;
     }
 
