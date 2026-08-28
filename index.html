@@ -190,6 +190,39 @@ body {
   font-weight:600; cursor:pointer; margin-top:8px;
 }
 
+/* 模型选择行 */
+.model-row {
+  display:flex; gap:8px; align-items:flex-start;
+}
+.model-row input { flex:1; }
+.fetch-model-btn {
+  padding:10px 14px; border:none; background:var(--primary);
+  color:var(--text-white); border-radius:var(--radius-sm); font-size:13px;
+  font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0;
+  transition:transform .15s, opacity .15s;
+}
+.fetch-model-btn:active { transform:scale(.95); }
+.fetch-model-btn:disabled { opacity:.5; }
+
+/* 模型选择页 */
+.model-search-wrap {
+  position:sticky; top:0; background:var(--bg); padding:0 0 12px; z-index:10;
+}
+.model-search-wrap input {
+  width:100%; padding:10px 14px; border:1.5px solid var(--primary-light);
+  border-radius:20px; font-size:14px; color:var(--text);
+  background:var(--surface); outline:none;
+}
+.model-search-wrap input:focus { border-color:var(--primary); }
+.model-list-item {
+  padding:14px 16px; background:var(--surface); border-radius:var(--radius-sm);
+  margin-bottom:6px; font-size:14px; color:var(--text); cursor:pointer;
+  transition:background .15s; word-break:break-all; line-height:1.4;
+}
+.model-list-item:active { background:var(--primary-light); }
+.model-list-item.current { border:2px solid var(--primary); background:var(--primary-light); }
+.model-list-empty { text-align:center; color:var(--text-light); padding:40px; font-size:14px; }
+
 /* 记忆库 */
 .memory-item {
   background:var(--surface); border-radius:var(--radius-sm);
@@ -218,6 +251,35 @@ body {
 }
 .memory-stat-num { font-size:22px; font-weight:700; color:var(--primary); }
 .memory-stat-label { font-size:11px; color:var(--text-light); margin-top:2px; }
+
+/* 手动添加记忆 */
+.memory-add-box {
+  background:var(--surface); border-radius:var(--radius); padding:14px;
+  margin-bottom:16px;
+}
+.memory-add-box h3 {
+  font-size:13px; color:var(--text-light); text-transform:uppercase;
+  letter-spacing:.5px; margin-bottom:10px;
+}
+.memory-add-row { display:flex; gap:8px; margin-bottom:8px; }
+.memory-add-row select {
+  width:100px; padding:8px 6px; border:1.5px solid var(--primary-light);
+  border-radius:var(--radius-sm); font-size:13px; color:var(--text);
+  background:var(--bg); outline:none; flex-shrink:0;
+}
+.memory-add-row textarea {
+  flex:1; padding:8px 10px; border:1.5px solid var(--primary-light);
+  border-radius:var(--radius-sm); font-size:13px; color:var(--text);
+  background:var(--bg); outline:none; font-family:inherit;
+  resize:vertical; min-height:40px; max-height:100px;
+}
+.memory-add-row textarea:focus, .memory-add-row select:focus { border-color:var(--primary); }
+.memory-add-btn {
+  padding:8px 18px; border:none; background:var(--primary);
+  color:var(--text-white); border-radius:var(--radius-sm); font-size:13px;
+  font-weight:600; cursor:pointer; transition:transform .15s;
+}
+.memory-add-btn:active { transform:scale(.95); }
 
 /* 空状态 */
 .empty-state {
@@ -283,7 +345,13 @@ body {
       <h3>API 配置</h3>
       <div class="setting-row"><label>接口地址</label><input type="url" id="setApiUrl" placeholder="https://your-proxy.com/v1"></div>
       <div class="setting-row"><label>API Key</label><input type="password" id="setApiKey" placeholder="sk-..."></div>
-      <div class="setting-row"><label>模型</label><input type="text" id="setModel" placeholder="gpt-4o / claude-sonnet-4-20250514"></div>
+      <div class="setting-row">
+        <label>模型</label>
+        <div class="model-row">
+          <input type="text" id="setModel" placeholder="gpt-4o / claude-sonnet-4-20250514">
+          <button class="fetch-model-btn" id="fetchModelBtn" onclick="fetchModels()">拉取</button>
+        </div>
+      </div>
     </div>
     <div class="settings-group">
       <h3>AI 人设</h3>
@@ -301,10 +369,37 @@ body {
       <div class="setting-row"><label>Jina API Key（向量搜索用）</label><input type="password" id="setJinaKey" placeholder="jina_...（可选，不填则用关键词匹配）"></div>
     </div>
     <div class="settings-group">
+      <h3>自定义样式</h3>
+      <div class="setting-row">
+        <label>自定义 CSS（保存后立即生效）</label>
+        <textarea id="setCustomCSS" placeholder="/* 在这里粘贴 CSS 代码 */
+/* 例如改背景色: */
+/* body { background: #fce4ec; } */
+/* 改气泡颜色: */
+/* .msg.user .msg-bubble { background: #e91e63; } */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea>
+      </div>
+    </div>
+    <div class="settings-group">
       <h3>关于</h3>
-      <div class="setting-row"><label>Little v0.2.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA 🌸</p></div>
+      <div class="setting-row"><label>Little v0.3.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA 🌸</p></div>
     </div>
     <button class="save-btn" onclick="saveSettings()">保存设置</button>
+  </div>
+</div>
+
+<!-- 模型选择页 -->
+<div class="overlay-page" id="modelPickerPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('modelPickerPage')">←</button>
+    <h2>选择模型</h2>
+  </div>
+  <div class="overlay-body">
+    <div class="model-search-wrap">
+      <input type="text" id="modelSearchInput" placeholder="搜索模型名称..." oninput="filterModels()">
+    </div>
+    <div id="modelListContainer">
+      <div class="model-list-empty">点击设置页的「拉取」按钮获取模型列表</div>
+    </div>
   </div>
 </div>
 
@@ -315,6 +410,22 @@ body {
     <h2>🧠 记忆库</h2>
   </div>
   <div class="overlay-body">
+    <!-- 手动添加记忆 -->
+    <div class="memory-add-box">
+      <h3>✏️ 手动添加记忆</h3>
+      <div class="memory-add-row">
+        <select id="memAddCategory">
+          <option value="profile">👤 画像</option>
+          <option value="fact" selected>📝 事实</option>
+          <option value="warm">🧡 暖记忆</option>
+          <option value="corridor">📮 便条</option>
+        </select>
+        <textarea id="memAddText" rows="1" placeholder="输入记忆内容..." oninput="autoResize(this)"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="memory-add-btn" onclick="addManualMemory()">添加 +</button>
+      </div>
+    </div>
     <div class="memory-stats" id="memoryStats"></div>
     <div id="memoryList"><div class="memory-empty">还没有记忆哦～</div></div>
   </div>
@@ -322,6 +433,10 @@ body {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- 自定义 CSS 注入点 -->
+<style id="customCSSTag"></style>
+
 <script>
 // ==================== 存储层 ====================
 const DB = {
@@ -385,7 +500,6 @@ class VectorStore {
     });
   }
 
-  // 余弦相似度
   cosineSim(a, b) {
     if (!a || !b || a.length !== b.length) return 0;
     let dot = 0, na = 0, nb = 0;
@@ -397,7 +511,6 @@ class VectorStore {
     return dot / (Math.sqrt(na) * Math.sqrt(nb) || 1);
   }
 
-  // 向量搜索：找最相关的 N 条记忆
   async search(queryVector, topK = 5) {
     const all = await this.getAll();
     if (!queryVector || all.length === 0) return all.slice(0, topK);
@@ -410,7 +523,6 @@ class VectorStore {
     return scored.slice(0, topK);
   }
 
-  // 关键词回退搜索（不用向量时）
   async searchByKeyword(query, topK = 5) {
     const all = await this.getAll();
     const keywords = query.toLowerCase().split(/\s+/);
@@ -418,7 +530,6 @@ class VectorStore {
       const text = m.text.toLowerCase();
       let score = 0;
       keywords.forEach(kw => { if (text.includes(kw)) score += 1; });
-      // 时间衰减：越新的记忆权重稍高
       const daysSince = (Date.now() - m.time) / (1000 * 60 * 60 * 24);
       score += Math.max(0, 1 - daysSince / 365) * 0.3;
       return { ...m, score };
@@ -466,11 +577,15 @@ let state = {
     model: 'gpt-4o',
     systemPrompt: '你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
     autoMemory: 'on',
-    jinaKey: ''
+    jinaKey: '',
+    customCSS: ''
   }),
   lastChatTime: DB.get('lastChatTime', null),
   generating: false
 };
+
+// 拉取到的模型列表（临时，不持久化）
+let fetchedModels = [];
 
 function saveState() {
   DB.set('chats', state.chats);
@@ -497,7 +612,6 @@ function getTimeContext() {
   const wd = ['日','一','二','三','四','五','六'];
   let ctx = `当前时间：${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${wd[n.getDay()]} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
 
-  // 时间心跳：距离上次对话多久
   if (state.lastChatTime) {
     const diff = Date.now() - state.lastChatTime;
     const mins = Math.floor(diff / 60000);
@@ -520,6 +634,12 @@ function getTimeContext() {
 }
 
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ==================== 自定义 CSS ====================
+function applyCustomCSS() {
+  const tag = document.getElementById('customCSSTag');
+  tag.textContent = state.settings.customCSS || '';
+}
 
 // ==================== 侧栏 & 对话管理 ====================
 function toggleSidebar() {
@@ -603,12 +723,10 @@ function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault
 // ==================== 记忆检索 & 构建 prompt ====================
 async function retrieveMemories(query) {
   try {
-    // 尝试向量搜索
     if (state.settings.jinaKey) {
       const qVec = await getEmbedding(query);
       if (qVec) return await vectorStore.search(qVec, 8);
     }
-    // 回退到关键词搜索
     return await vectorStore.searchByKeyword(query, 8);
   } catch {
     return [];
@@ -619,10 +737,8 @@ async function buildSystemPrompt(userQuery) {
   const s = state.settings;
   let sys = s.systemPrompt || '';
 
-  // 注入时间感知
   sys += '\n\n' + getTimeContext();
 
-  // 检索相关记忆
   const memories = await retrieveMemories(userQuery);
   if (memories.length > 0) {
     const cats = { profile: '👤 画像', warm: '🧡 暖记忆', fact: '📝 事实', corridor: '📮 走廊便条' };
@@ -634,7 +750,6 @@ async function buildSystemPrompt(userQuery) {
     sys += '\n（以上是你记住的事情，像自然知道一样说话，不要说"根据记忆"）';
   }
 
-  // 自动记忆提取指令
   if (s.autoMemory === 'on') {
     sys += `\n\n[记忆提取指令]
 如果用户在对话中分享了值得长期记住的信息，请在回复最末尾另起一行，用以下格式标记（可多条）：
@@ -694,23 +809,17 @@ async function sendMessage() {
   scrollToBottom();
 
   try {
-    // 构建带记忆的 system prompt
     const systemPrompt = await buildSystemPrompt(text);
-
     const reply = await callAPI(chat, systemPrompt);
-
-    // 提取记忆标记
     const { cleanReply, newMemories } = extractMemories(reply);
 
     chat.messages.push({ role: 'assistant', content: cleanReply, time: Date.now() });
 
-    // 更新上次对话时间
     state.lastChatTime = Date.now();
     saveState();
     renderMessages();
     renderChatList();
 
-    // 异步存储新记忆（不阻塞界面）
     if (newMemories.length > 0) {
       storeMemories(newMemories);
     }
@@ -772,7 +881,6 @@ function extractMemories(reply) {
     cleanReply = cleanReply.replace(match[0], '');
   }
 
-  // 清理末尾空行
   cleanReply = cleanReply.replace(/\n+$/, '').trim();
 
   return { cleanReply, newMemories };
@@ -782,7 +890,6 @@ async function storeMemories(memories) {
   let stored = 0;
   for (const mem of memories) {
     try {
-      // 尝试获取向量
       if (state.settings.jinaKey) {
         mem.vector = await getEmbedding(mem.text);
       }
@@ -799,6 +906,125 @@ async function storeMemories(memories) {
   }
 }
 
+// ==================== 手动添加记忆 ====================
+async function addManualMemory() {
+  const category = document.getElementById('memAddCategory').value;
+  const text = document.getElementById('memAddText').value.trim();
+  if (!text) {
+    showToast('请输入记忆内容');
+    return;
+  }
+
+  const mem = {
+    id: 'mem_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    category: category,
+    text: text,
+    time: Date.now(),
+    vector: null
+  };
+
+  try {
+    // 尝试向量化
+    if (state.settings.jinaKey) {
+      mem.vector = await getEmbedding(text);
+    }
+    await vectorStore.add(mem);
+    document.getElementById('memAddText').value = '';
+    document.getElementById('memAddText').style.height = 'auto';
+    showToast('记忆已添加 ✓');
+    await renderMemoryList();
+  } catch (e) {
+    showToast('添加失败: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ==================== 拉取模型列表 ====================
+async function fetchModels() {
+  const apiUrl = document.getElementById('setApiUrl').value.trim();
+  const apiKey = document.getElementById('setApiKey').value.trim();
+
+  if (!apiUrl || !apiKey) {
+    showToast('请先填写接口地址和 API Key');
+    return;
+  }
+
+  const btn = document.getElementById('fetchModelBtn');
+  btn.disabled = true;
+  btn.textContent = '拉取中...';
+
+  try {
+    const url = apiUrl.replace(/\/+$/, '') + '/models';
+    const res = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + apiKey }
+    });
+
+    if (!res.ok) {
+      throw new Error(`${res.status}`);
+    }
+
+    const data = await res.json();
+    let models = [];
+
+    if (Array.isArray(data.data)) {
+      models = data.data.map(m => m.id).filter(Boolean);
+    } else if (Array.isArray(data)) {
+      models = data.map(m => typeof m === 'string' ? m : m.id).filter(Boolean);
+    }
+
+    if (models.length === 0) {
+      showToast('没有获取到模型');
+      return;
+    }
+
+    // 排序
+    models.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    fetchedModels = models;
+
+    showToast(`获取到 ${models.length} 个模型`);
+    renderModelList();
+    document.getElementById('modelPickerPage').classList.add('open');
+
+  } catch (err) {
+    showToast('拉取失败: ' + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '拉取';
+  }
+}
+
+function renderModelList() {
+  const container = document.getElementById('modelListContainer');
+  const searchVal = (document.getElementById('modelSearchInput').value || '').toLowerCase();
+  const currentModel = document.getElementById('setModel').value.trim();
+
+  let filtered = fetchedModels;
+  if (searchVal) {
+    filtered = fetchedModels.filter(m => m.toLowerCase().includes(searchVal));
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="model-list-empty">没有匹配的模型</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(m => {
+    const isCurrent = m === currentModel;
+    return `<div class="model-list-item ${isCurrent ? 'current' : ''}" onclick="pickModel('${escHtml(m)}')">${escHtml(m)}${isCurrent ? ' ✓' : ''}</div>`;
+  }).join('');
+}
+
+function filterModels() {
+  renderModelList();
+}
+
+function pickModel(modelId) {
+  document.getElementById('setModel').value = modelId;
+  showToast('已选择: ' + modelId);
+  closePage('modelPickerPage');
+}
+
 // ==================== 页面切换 ====================
 function openSettings() {
   const s = state.settings;
@@ -808,6 +1034,7 @@ function openSettings() {
   document.getElementById('setSystemPrompt').value = s.systemPrompt || '';
   document.getElementById('setAutoMemory').value = s.autoMemory || 'on';
   document.getElementById('setJinaKey').value = s.jinaKey || '';
+  document.getElementById('setCustomCSS').value = s.customCSS || '';
   document.getElementById('settingsPage').classList.add('open');
 }
 
@@ -818,9 +1045,11 @@ function saveSettings() {
     model: document.getElementById('setModel').value.trim(),
     systemPrompt: document.getElementById('setSystemPrompt').value,
     autoMemory: document.getElementById('setAutoMemory').value,
-    jinaKey: document.getElementById('setJinaKey').value.trim()
+    jinaKey: document.getElementById('setJinaKey').value.trim(),
+    customCSS: document.getElementById('setCustomCSS').value
   };
   saveState();
+  applyCustomCSS();
   showToast('设置已保存 ✓');
   closePage('settingsPage');
 }
@@ -843,11 +1072,10 @@ async function renderMemoryList() {
 
     if (all.length === 0) {
       statsEl.innerHTML = '';
-      el.innerHTML = '<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息</div>';
+      el.innerHTML = '<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息<br>也可以在上方手动添加 ✏️</div>';
       return;
     }
 
-    // 统计
     const counts = { profile: 0, warm: 0, fact: 0, corridor: 0 };
     all.forEach(m => { counts[m.category] = (counts[m.category] || 0) + 1; });
 
@@ -858,7 +1086,6 @@ async function renderMemoryList() {
       <div><div class="memory-stat-num">${counts.warm}</div><div class="memory-stat-label">暖记忆</div></div>
       <div><div class="memory-stat-num">${counts.corridor}</div><div class="memory-stat-label">便条</div></div>`;
 
-    // 按时间倒序
     all.sort((a, b) => b.time - a.time);
 
     el.innerHTML = all.map(m => {
@@ -887,6 +1114,7 @@ async function deleteMemory(id) {
 function init() {
   renderChatList();
   renderMessages();
+  applyCustomCSS();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
