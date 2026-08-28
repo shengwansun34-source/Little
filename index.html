@@ -51,25 +51,25 @@ body {
 .icon-sm { width:16px; height:16px; }
 .icon-lg { width:24px; height:24px; }
 
-/* ====== 顶栏 - 覆盖到系统状态栏 ====== */
+/* ====== 顶栏 - 更紧凑 ====== */
 .header {
   display:flex; align-items:center; justify-content:space-between;
-  padding:calc(var(--safe-top) + 10px) 16px 10px;
+  padding:calc(var(--safe-top) + 6px) 12px 6px;
   background:var(--surface);
   border-bottom:1px solid var(--primary-light);
-  min-height:calc(var(--safe-top) + 52px);
+  min-height:calc(var(--safe-top) + 44px);
   z-index:100;
 }
 .header-title {
-  font-size:17px; font-weight:600; color:var(--text);
+  font-size:16px; font-weight:600; color:var(--text);
   position:absolute; left:0; right:0; text-align:center;
-  pointer-events:none;
+  pointer-events:none; letter-spacing:0.3px;
 }
 .header-left, .header-right {
-  display:flex; align-items:center; gap:4px; z-index:1;
+  display:flex; align-items:center; gap:2px; z-index:1;
 }
 .header-btn {
-  width:36px; height:36px; border:none; background:var(--surface2);
+  width:32px; height:32px; border:none; background:var(--surface2);
   border-radius:50%; font-size:18px; display:flex; align-items:center;
   justify-content:center; cursor:pointer; transition:transform .15s;
   color:var(--text-light);
@@ -91,7 +91,7 @@ body {
 }
 .sidebar.open { left:0; }
 .sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 16px; }
-.sidebar-header h2 { font-size:20px; color:var(--text); }
+.sidebar-header h2 { font-size:20px; color:var(--text); letter-spacing:0.5px; }
 .new-chat-btn {
   width:36px; height:36px; border:none; background:var(--primary);
   color:var(--text-white); border-radius:50%; font-size:20px; cursor:pointer;
@@ -236,38 +236,61 @@ body {
   cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
 
-/* ====== 底部输入区 ====== */
+/* ====== 底部输入区 - P2 风格重排 ====== */
 .input-section {
   background:var(--surface); border-top:1px solid var(--primary-light);
-  padding-bottom:calc(var(--safe-bottom) + 4px);
+  padding-bottom:calc(var(--safe-bottom) + 2px);
 }
 .input-hint {
-  padding:8px 16px 0; font-size:13px; color:var(--text-light); font-weight:500;
+  padding:6px 16px 0; font-size:15px; color:var(--text); font-weight:500;
+  letter-spacing:0.2px;
 }
+.input-bottom {
+  display:flex; align-items:center; padding:6px 10px 4px; gap:8px;
+}
+.ib-plus {
+  width:32px; height:32px; border:none; background:none;
+  color:var(--text-light); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; border-radius:50%;
+  transition:transform .15s, color .15s; flex-shrink:0;
+}
+.ib-plus:active { transform:scale(.88); color:var(--primary); }
+.model-tag {
+  padding:5px 12px; background:var(--surface); border-radius:20px;
+  font-size:12px; color:var(--text); font-weight:500; cursor:pointer;
+  max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  border:1.5px solid #dde2ea; transition:background .15s;
+}
+.model-tag:active { background:var(--surface2); }
+.ib-right-actions {
+  margin-left:auto; display:flex; align-items:center; gap:6px;
+}
+.ib-circle-btn {
+  width:36px; height:36px; border:none; background:none;
+  border-radius:50%; border:1.5px solid #dde2ea;
+  color:var(--text-light); cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  transition:color .15s, border-color .15s;
+}
+.ib-circle-btn:active { color:var(--primary); border-color:var(--primary); }
+.ib-circle-btn.active { color:var(--primary); border-color:var(--primary); }
+.ib-circle-btn.has-content { color:var(--primary); border-color:var(--primary); }
+
+/* 隐藏旧的 input-main（现在输入框移到弹出模式或保持隐藏文本区域） */
 .input-main {
-  display:flex; align-items:flex-end; gap:0; padding:6px 8px;
+  display:flex; align-items:flex-end; gap:0; padding:0 8px 2px;
 }
 .input-wrap {
   flex:1; background:var(--surface2); border-radius:20px;
   padding:8px 14px; display:flex; align-items:flex-end;
-  margin:0 6px; position:relative;
+  margin:0 4px; position:relative;
 }
 .input-wrap textarea {
   flex:1; border:none; background:none; font-size:15px; color:var(--text);
   resize:none; outline:none; max-height:120px; line-height:1.4; font-family:inherit;
-  padding-right:32px;
 }
-.sticker-toggle-btn {
-  position:absolute; right:10px; bottom:7px;
-  width:28px; height:28px; border:none; background:none;
-  color:var(--text-light); cursor:pointer; display:flex;
-  align-items:center; justify-content:center; border-radius:50%;
-  transition:color .15s;
-}
-.sticker-toggle-btn:active { color:var(--primary); }
-.sticker-toggle-btn.active { color:var(--primary); }
 .send-arrow {
-  width:36px; height:36px; border:none; background:none;
+  width:32px; height:32px; border:none; background:none;
   color:var(--text-light); cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:color .15s; flex-shrink:0;
@@ -275,23 +298,6 @@ body {
 .send-arrow:active { color:var(--primary); }
 .send-arrow:disabled { opacity:.3; }
 .send-arrow.has-content { color:var(--primary); }
-.input-bottom {
-  display:flex; align-items:center; padding:2px 10px 4px; gap:6px;
-}
-.ib-plus {
-  width:34px; height:34px; border:none; background:none;
-  color:var(--text-light); cursor:pointer; display:flex;
-  align-items:center; justify-content:center; border-radius:50%;
-  transition:transform .15s, color .15s; flex-shrink:0;
-}
-.ib-plus:active { transform:scale(.88); color:var(--primary); }
-.model-tag {
-  padding:5px 12px; background:var(--surface2); border-radius:14px;
-  font-size:12px; color:var(--text); font-weight:500; cursor:pointer;
-  max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  border:1px solid var(--primary-light); transition:background .15s;
-}
-.model-tag:active { background:var(--primary-light); }
 
 /* ====== 加号弹出菜单 ====== */
 .plus-menu-overlay {
@@ -300,7 +306,7 @@ body {
 .plus-menu-overlay.open { display:block; }
 .plus-menu {
   display:none; position:fixed; z-index:150;
-  bottom:calc(var(--safe-bottom) + 90px); left:12px;
+  bottom:calc(var(--safe-bottom) + 70px); left:12px;
   background:var(--surface); border-radius:14px;
   box-shadow:0 4px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
   padding:8px;
@@ -337,7 +343,7 @@ body {
   display:flex; align-items:center; padding:12px 16px 8px; gap:10px;
   border-bottom:1px solid var(--primary-light);
 }
-.sticker-panel-header h3 { flex:1; font-size:15px; font-weight:600; }
+.sticker-panel-header h3 { flex:1; font-size:15px; font-weight:600; letter-spacing:0.3px; }
 .sticker-import-btn {
   padding:6px 14px; border:none; background:var(--primary);
   color:var(--text-white); border-radius:14px; font-size:12px;
@@ -390,7 +396,7 @@ body {
 }
 .overlay-page.open { display:flex; }
 .overlay-header { display:flex; align-items:center; padding:8px 16px 16px; gap:12px; }
-.overlay-header h2 { font-size:20px; flex:1; }
+.overlay-header h2 { font-size:20px; flex:1; letter-spacing:0.5px; }
 .overlay-back {
   width:36px; height:36px; border:none; background:var(--surface);
   border-radius:50%; font-size:18px; cursor:pointer;
@@ -400,7 +406,7 @@ body {
 
 /* ====== 设置 ====== */
 .settings-group { background:var(--surface); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
-.settings-group h3 { font-size:13px; color:var(--text-light); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
+.settings-group h3 { font-size:12px; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; font-weight:600; }
 .setting-row { margin-bottom:12px; }
 .setting-row:last-child { margin-bottom:0; }
 .setting-row label { display:block; font-size:14px; font-weight:500; margin-bottom:6px; color:var(--text); }
@@ -414,7 +420,7 @@ body {
 .save-btn {
   width:100%; padding:14px; border:none; background:var(--primary);
   color:var(--text-white); border-radius:var(--radius); font-size:16px;
-  font-weight:600; cursor:pointer; margin-top:8px;
+  font-weight:600; cursor:pointer; margin-top:8px; letter-spacing:0.5px;
 }
 .model-row { display:flex; gap:8px; align-items:flex-start; }
 .model-row input { flex:1; }
@@ -452,7 +458,7 @@ body {
 .memory-item-meta { font-size:11px; color:var(--text-light); margin-top:4px; }
 .memory-tag {
   display:inline-block; font-size:10px; padding:2px 6px; border-radius:8px;
-  color:var(--text-white); margin-right:4px;
+  color:var(--text-white); margin-right:4px; letter-spacing:0.3px;
 }
 .memory-tag.profile { background:#7aa2d4; }
 .memory-tag.warm { background:#f4b8c1; }
@@ -469,9 +475,9 @@ body {
   margin-bottom:16px; display:flex; justify-content:space-around; text-align:center;
 }
 .memory-stat-num { font-size:22px; font-weight:700; color:var(--primary); }
-.memory-stat-label { font-size:11px; color:var(--text-light); margin-top:2px; }
+.memory-stat-label { font-size:11px; color:var(--text-light); margin-top:2px; letter-spacing:0.3px; }
 .memory-add-box { background:var(--surface); border-radius:var(--radius); padding:14px; margin-bottom:16px; }
-.memory-add-box h3 { font-size:13px; color:var(--text-light); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+.memory-add-box h3 { font-size:12px; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-weight:600; }
 .memory-add-row { display:flex; gap:8px; margin-bottom:8px; }
 .memory-add-row select {
   width:100px; padding:8px 6px; border:1.5px solid var(--primary-light);
@@ -488,7 +494,7 @@ body {
 .memory-add-btn {
   padding:8px 18px; border:none; background:var(--primary);
   color:var(--text-white); border-radius:var(--radius-sm); font-size:13px;
-  font-weight:600; cursor:pointer;
+  font-weight:600; cursor:pointer; letter-spacing:0.3px;
 }
 .memory-add-btn:active { transform:scale(.95); }
 
@@ -502,7 +508,7 @@ body {
   display:flex; align-items:center; padding:8px 16px 16px; gap:12px;
   border-bottom:1px solid var(--primary-light);
 }
-.thinking-overlay-header h2 { font-size:18px; flex:1; text-align:center; font-weight:700; }
+.thinking-overlay-header h2 { font-size:18px; flex:1; text-align:center; font-weight:700; letter-spacing:0.5px; }
 .thinking-overlay-body {
   flex:1; overflow-y:auto; padding:20px 16px 32px;
   font-size:15px; line-height:1.7; color:var(--text);
@@ -550,9 +556,9 @@ body {
   height:100%; color:var(--text-light); text-align:center; padding:40px;
 }
 .empty-state-icon {
-  width:56px; height:56px; margin-bottom:16px; color:var(--primary-light);
+  width:48px; height:48px; margin-bottom:14px; color:var(--primary-light);
 }
-.empty-state p { font-size:15px; line-height:1.6; }
+.empty-state p { font-size:15px; line-height:1.6; letter-spacing:0.3px; }
 
 /* Toast */
 .toast {
@@ -578,7 +584,7 @@ body {
   <div class="header-title" id="headerTitle">Little</div>
   <div class="header-right">
     <button class="header-btn" onclick="openMemory()">
-      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12a3 3 0 0 1 6 0c0 2-3 3-3 3"/><circle cx="12" cy="8" r=".5" fill="currentColor" stroke="none"/></svg>
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="24" x2="14" y2="24"/></svg>
     </button>
     <button class="header-btn" onclick="openSettings()">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -590,7 +596,7 @@ body {
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <h2>对话</h2>
+    <h2>Chats</h2>
     <button class="new-chat-btn" onclick="newChat()">+</button>
   </div>
   <div class="chat-list" id="chatList"></div>
@@ -602,32 +608,34 @@ body {
     <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
-    <p>有什么想聊的？</p>
+    <p>What's on your mind?</p>
   </div>
 </div>
 
 <!-- 附件预览条 -->
 <div class="attach-preview" id="attachPreview"></div>
 
-<!-- 底部输入区 -->
+<!-- 底部输入区 - P2 风格 -->
 <div class="input-section">
-  <div class="input-hint" id="inputHint">Reply to Little</div>
   <div class="input-main">
     <div class="input-wrap">
-      <textarea id="msgInput" rows="1" placeholder="说点什么..." oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
-      <button class="sticker-toggle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()" title="表情包">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
-      </button>
+      <textarea id="msgInput" rows="1" placeholder="Message..." oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
     </div>
     <button class="send-arrow" id="sendBtn" onclick="sendMessage()">
       <svg class="icon-lg" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="none"/></svg>
     </button>
   </div>
+  <div class="input-hint" id="inputHint">Reply to Little</div>
   <div class="input-bottom">
     <button class="ib-plus" onclick="togglePlusMenu()">
       <svg class="icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
-    <div class="model-tag" id="modelTag" onclick="openSettings()" title="点击切换模型">未配置</div>
+    <div class="model-tag" id="modelTag" onclick="openSettings()" title="Switch model">未配置</div>
+    <div class="ib-right-actions">
+      <button class="ib-circle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()" title="Stickers">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -637,15 +645,15 @@ body {
   <div class="plus-menu-grid">
     <button class="plus-menu-item" onclick="closePlusMenu();pickPhoto()">
       <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
-      <span class="pm-label">照片</span>
+      <span class="pm-label">Photo</span>
     </button>
     <button class="plus-menu-item" onclick="closePlusMenu();pickFile()">
       <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-      <span class="pm-label">文件</span>
+      <span class="pm-label">File</span>
     </button>
     <button class="plus-menu-item" onclick="closePlusMenu();pickCamera()">
       <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-      <span class="pm-label">拍照</span>
+      <span class="pm-label">Camera</span>
     </button>
   </div>
 </div>
@@ -659,17 +667,17 @@ body {
 <!-- 表情包面板 -->
 <div class="sticker-panel" id="stickerPanel">
   <div class="sticker-panel-header">
-    <h3>表情包</h3>
-    <button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">导入</button>
+    <h3>Stickers</h3>
+    <button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">Import</button>
     <button class="sticker-panel-close" onclick="toggleStickerPanel()">
       <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
   <div class="sticker-grid" id="stickerGrid">
-    <div class="sticker-empty">还没有表情包<br>点击「导入」从相册添加</div>
+    <div class="sticker-empty">No stickers yet<br>Tap "Import" to add from album</div>
   </div>
   <div class="sticker-panel-footer">
-    <button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">管理</button>
+    <button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">Manage</button>
     <span style="flex:1;font-size:11px;color:var(--text-light);text-align:right" id="stickerCount"></span>
   </div>
 </div>
@@ -680,62 +688,72 @@ body {
     <button class="overlay-back" onclick="closePage('settingsPage')">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <h2>设置</h2>
+    <h2>Settings</h2>
   </div>
   <div class="overlay-body">
     <div class="settings-group">
-      <h3>API 配置</h3>
-      <div class="setting-row"><label>接口地址</label><input type="url" id="setApiUrl" placeholder="https://your-proxy.com/v1"></div>
+      <h3>API Configuration</h3>
+      <div class="setting-row"><label>Endpoint</label><input type="url" id="setApiUrl" placeholder="https://your-proxy.com/v1"></div>
       <div class="setting-row"><label>API Key</label><input type="password" id="setApiKey" placeholder="sk-..."></div>
       <div class="setting-row">
-        <label>模型</label>
+        <label>Model</label>
         <div class="model-row">
           <input type="text" id="setModel" placeholder="gpt-4o / claude-sonnet-4-20250514">
-          <button class="fetch-model-btn" id="fetchModelBtn" onclick="fetchModels()">拉取</button>
+          <button class="fetch-model-btn" id="fetchModelBtn" onclick="fetchModels()">Fetch</button>
         </div>
       </div>
     </div>
     <div class="settings-group">
-      <h3>聊天对象</h3>
-      <div class="setting-row"><label>名称 / 备注（显示在顶栏）</label><input type="text" id="setCharName" placeholder="Little"></div>
+      <h3>Character</h3>
+      <div class="setting-row"><label>Name (displayed in header)</label><input type="text" id="setCharName" placeholder="Little"></div>
     </div>
     <div class="settings-group">
-      <h3>AI 人设</h3>
-      <div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="你是一个温柔的 AI 助手..."></textarea></div>
+      <h3>Persona</h3>
+      <div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="You are a gentle AI assistant..."></textarea></div>
     </div>
     <div class="settings-group">
-      <h3>记忆系统</h3>
+      <h3>Memory</h3>
       <div class="setting-row">
-        <label>自动记忆</label>
+        <label>Auto Memory</label>
         <select id="setAutoMemory">
-          <option value="on">开启 - AI 自动提取重要信息</option>
-          <option value="off">关闭</option>
+          <option value="on">On - AI auto-extracts key info</option>
+          <option value="off">Off</option>
         </select>
       </div>
-      <div class="setting-row"><label>Jina API Key（可选，不填用关键词匹配）</label><input type="password" id="setJinaKey" placeholder="jina_..."></div>
+      <div class="setting-row"><label>Jina API Key (optional)</label><input type="password" id="setJinaKey" placeholder="jina_..."></div>
     </div>
     <div class="settings-group">
-      <h3>思维链</h3>
+      <h3>Thinking</h3>
       <div class="setting-row">
-        <label>显示思维链</label>
+        <label>Chain of Thought</label>
         <select id="setThinking">
-          <option value="off">关闭</option>
-          <option value="on">开启 - 显示 AI 的思考过程</option>
+          <option value="off">Off</option>
+          <option value="on">On - Show AI's reasoning</option>
         </select>
       </div>
     </div>
     <div class="settings-group">
-      <h3>自定义样式</h3>
+      <h3>Reply Style</h3>
       <div class="setting-row">
-        <label>自定义 CSS</label>
-        <textarea id="setCustomCSS" placeholder="/* 在这里粘贴 CSS 代码 */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea>
+        <label>Split Reply</label>
+        <select id="setSplitReply">
+          <option value="off">Off - Single bubble</option>
+          <option value="on">On - Split into multiple bubbles</option>
+        </select>
       </div>
     </div>
     <div class="settings-group">
-      <h3>关于</h3>
-      <div class="setting-row"><label>Little v0.7.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA</p></div>
+      <h3>Custom Style</h3>
+      <div class="setting-row">
+        <label>Custom CSS</label>
+        <textarea id="setCustomCSS" placeholder="/* Paste your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea>
+      </div>
     </div>
-    <button class="save-btn" onclick="saveSettings()">保存设置</button>
+    <div class="settings-group">
+      <h3>About</h3>
+      <div class="setting-row"><label>Little v0.8.0</label><p style="font-size:13px;color:var(--text-light)">A minimal AI chat PWA with memory.</p></div>
+    </div>
+    <button class="save-btn" onclick="saveSettings()">Save</button>
   </div>
 </div>
 
@@ -745,11 +763,11 @@ body {
     <button class="overlay-back" onclick="closePage('modelPickerPage')">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <h2>选择模型</h2>
+    <h2>Select Model</h2>
   </div>
   <div class="overlay-body">
-    <div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="搜索模型名称..." oninput="filterModels()"></div>
-    <div id="modelListContainer"><div class="model-list-empty">点击设置页的「拉取」按钮获取模型列表</div></div>
+    <div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="Search models..." oninput="filterModels()"></div>
+    <div id="modelListContainer"><div class="model-list-empty">Tap "Fetch" in settings to load models</div></div>
   </div>
 </div>
 
@@ -759,26 +777,26 @@ body {
     <button class="overlay-back" onclick="closePage('memoryPage')">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <h2>记忆库</h2>
+    <h2>Memory</h2>
   </div>
   <div class="overlay-body">
     <div class="memory-add-box">
-      <h3>手动添加</h3>
+      <h3>Add Manually</h3>
       <div class="memory-add-row">
         <select id="memAddCategory">
-          <option value="profile">画像</option>
-          <option value="fact" selected>事实</option>
-          <option value="warm">暖记忆</option>
-          <option value="corridor">便条</option>
+          <option value="profile">Profile</option>
+          <option value="fact" selected>Fact</option>
+          <option value="warm">Warm</option>
+          <option value="corridor">Note</option>
         </select>
-        <textarea id="memAddText" rows="1" placeholder="输入记忆内容..." oninput="autoResize(this)"></textarea>
+        <textarea id="memAddText" rows="1" placeholder="Enter memory content..." oninput="autoResize(this)"></textarea>
       </div>
       <div style="display:flex;justify-content:flex-end;">
-        <button class="memory-add-btn" onclick="addManualMemory()">添加</button>
+        <button class="memory-add-btn" onclick="addManualMemory()">Add</button>
       </div>
     </div>
     <div class="memory-stats" id="memoryStats"></div>
-    <div id="memoryList"><div class="memory-empty">还没有记忆</div></div>
+    <div id="memoryList"><div class="memory-empty">No memories yet</div></div>
   </div>
 </div>
 
@@ -788,7 +806,7 @@ body {
     <button class="overlay-back" onclick="closeThinking()">
       <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <h2>Thought process</h2>
+    <h2>Thought Process</h2>
     <div style="width:36px"></div>
   </div>
   <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
@@ -802,11 +820,11 @@ body {
 <!-- 重命名弹窗 -->
 <div class="rename-modal" id="renameModal">
   <div class="rename-box">
-    <h3>重命名对话</h3>
-    <input type="text" id="renameInput" placeholder="输入新名称..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()">
+    <h3>Rename</h3>
+    <input type="text" id="renameInput" placeholder="Enter new name..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()">
     <div class="rename-btns">
-      <button class="rename-cancel" onclick="closeRename()">取消</button>
-      <button class="rename-confirm" onclick="confirmRename()">确定</button>
+      <button class="rename-cancel" onclick="closeRename()">Cancel</button>
+      <button class="rename-confirm" onclick="confirmRename()">Done</button>
     </div>
   </div>
 </div>
@@ -868,7 +886,7 @@ let state={
   settings:DB.get('settings',{
     apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
-    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:''
+    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off'
   }),
   lastChatTime:DB.get('lastChatTime',null),
   generating:false
@@ -876,6 +894,7 @@ let state={
 if(!state.settings.thinking)state.settings.thinking='off';
 if(!state.settings.customCSS)state.settings.customCSS='';
 if(!state.settings.charName)state.settings.charName='Little';
+if(!state.settings.splitReply)state.settings.splitReply='off';
 
 let fetchedModels=[];
 let pendingAttachments=[];
@@ -906,25 +925,25 @@ function applyCustomCSS(){document.getElementById('customCSSTag').textContent=st
 
 // ==================== 侧栏 ====================
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
-function newChat(){const id='chat_'+Date.now();state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
+function newChat(){const id='chat_'+Date.now();state.chats[id]={id,title:'New Chat',messages:[],created:Date.now()};state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
 function switchChat(id){state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
-function deleteChat(id,e){e.stopPropagation();if(!confirm('删除这个对话？'))return;delete state.chats[id];if(state.currentChatId===id){const ks=Object.keys(state.chats);state.currentChatId=ks.length>0?ks[ks.length-1]:null;}saveState();renderChatList();renderMessages();updateInputHint();}
+function deleteChat(id,e){e.stopPropagation();if(!confirm('Delete this chat?'))return;delete state.chats[id];if(state.currentChatId===id){const ks=Object.keys(state.chats);state.currentChatId=ks.length>0?ks[ks.length-1]:null;}saveState();renderChatList();renderMessages();updateInputHint();}
 function renameChat(id,e){e.stopPropagation();renamingChatId=id;document.getElementById('renameInput').value=state.chats[id]?.title||'';document.getElementById('renameModal').classList.add('open');setTimeout(()=>document.getElementById('renameInput').focus(),100);}
 function closeRename(){document.getElementById('renameModal').classList.remove('open');renamingChatId=null;}
-function confirmRename(){const t=document.getElementById('renameInput').value.trim();if(!t||!renamingChatId){closeRename();return;}state.chats[renamingChatId].title=t;saveState();renderChatList();closeRename();showToast('已重命名');}
+function confirmRename(){const t=document.getElementById('renameInput').value.trim();if(!t||!renamingChatId){closeRename();return;}state.chats[renamingChatId].title=t;saveState();renderChatList();closeRename();showToast('Renamed');}
 function currentChat(){return state.currentChatId?state.chats[state.currentChatId]:null;}
 function renderChatList(){
   const el=document.getElementById('chatList');
   const ids=Object.keys(state.chats).sort((a,b)=>state.chats[b].created-state.chats[a].created);
-  if(ids.length===0){el.innerHTML='<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px">还没有对话</p>';return;}
+  if(ids.length===0){el.innerHTML='<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px;letter-spacing:0.3px">No chats yet</p>';return;}
   el.innerHTML=ids.map(id=>{const c=state.chats[id];
     return `<div class="chat-item ${id===state.currentChatId?'active':''}" onclick="switchChat('${id}')">
       <span class="chat-item-title">${escHtml(c.title)}</span>
       <div class="chat-item-actions">
-        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="重命名">
+        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="Rename">
           <svg class="icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
-        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="删除">
+        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="Delete">
           <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div></div>`;
@@ -933,7 +952,6 @@ function renderChatList(){
 
 // ==================== 顶栏 & 底部栏 ====================
 function updateHeaderTitle(){
-  // 顶栏始终显示聊天对象名称
   document.getElementById('headerTitle').textContent=state.settings.charName||'Little';
 }
 function updateInputHint(){
@@ -943,7 +961,7 @@ function updateInputHint(){
 function updateModelTag(){
   const tag=document.getElementById('modelTag');
   const m=state.settings.model;
-  tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'未配置';
+  tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'Not set';
 }
 function updateSendBtn(){
   const input=document.getElementById('msgInput');
@@ -981,10 +999,11 @@ function renderMessages(){
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
-      <p>有什么想聊的？</p></div>`;
+      <p>What's on your mind?</p></div>`;
     return;
   }
-  area.innerHTML=chat.messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>{
+  let html='';
+  chat.messages.filter(m=>m.role==='user'||m.role==='assistant').forEach(m=>{
     let thinkingHtml='';
     if(m.role==='assistant'&&m.thinking){
       const preview=m.thinking.slice(0,30).replace(/\n/g,' ')+(m.thinking.length>30?'…':'');
@@ -994,26 +1013,41 @@ function renderMessages(){
         <span class="thinking-arrow">›</span></div>`;
     }
     if(m.sticker){
-      return `<div class="msg ${m.role}"><div class="msg-inner">
+      html+=`<div class="msg ${m.role}"><div class="msg-inner">
         ${thinkingHtml}
         <img class="msg-sticker" src="${m.sticker}" onclick="viewImage(this.src)">
         <div class="msg-time">${m.time?fmtTime(m.time):''}</div>
       </div></div>`;
+      return;
     }
     let imagesHtml='';
     if(m.images&&m.images.length>0)imagesHtml=m.images.map(img=>`<img class="msg-image" src="${img}" onclick="viewImage(this.src)">`).join('');
     let filesHtml='';
     if(m.files&&m.files.length>0)filesHtml=m.files.map(f=>`<div style="font-size:12px;color:${m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)'};margin-bottom:4px;display:flex;align-items:center;gap:4px"><svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${escHtml(f)}</div>`).join('');
+
+    // 分条发送逻辑
+    if(m.role==='assistant'&&state.settings.splitReply==='on'){
+      const parts=m.content.split(/\n\n+/).filter(p=>p.trim());
+      if(parts.length>1){
+        html+=`<div class="msg assistant"><div class="msg-inner">${thinkingHtml}${imagesHtml}${filesHtml}`;
+        parts.forEach((part,i)=>{
+          html+=`<div class="msg-bubble" style="${i>0?'margin-top:6px;':''}">${renderMarkdown(part)}</div>`;
+        });
+        html+=`<div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;
+        return;
+      }
+    }
+
     let contentHtml;
     if(m.role==='assistant')contentHtml=renderMarkdown(m.content);
     else contentHtml=escHtml(m.content).replace(/\n/g,'<br>');
-    return `<div class="msg ${m.role}"><div class="msg-inner">
+    html+=`<div class="msg ${m.role}"><div class="msg-inner">
       ${thinkingHtml}${imagesHtml}${filesHtml}
       <div class="msg-bubble">${contentHtml}</div>
       <div class="msg-time">${m.time?fmtTime(m.time):''}</div>
     </div></div>`;
-  }).join('')
-  +'<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+  });
+  area.innerHTML=html+'<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
   scrollToBottom();
 }
 function scrollToBottom(){const area=document.getElementById('chatArea');requestAnimationFrame(()=>{area.scrollTop=area.scrollHeight;});}
@@ -1054,13 +1088,13 @@ function toggleStickerPanel(){
   const panel=document.getElementById('stickerPanel');
   const btn=document.getElementById('stickerToggleBtn');
   if(panel.classList.contains('open')){panel.classList.remove('open');btn.classList.remove('active');stickerEditing=false;
-    document.getElementById('stickerGrid').classList.remove('editing');const eb=document.getElementById('stickerEditBtn');eb.classList.remove('active');eb.textContent='管理';
+    document.getElementById('stickerGrid').classList.remove('editing');const eb=document.getElementById('stickerEditBtn');eb.classList.remove('active');eb.textContent='Manage';
   }else{panel.classList.add('open');btn.classList.add('active');renderStickerGrid();}
 }
 function toggleStickerEdit(){
   stickerEditing=!stickerEditing;const grid=document.getElementById('stickerGrid');const btn=document.getElementById('stickerEditBtn');
-  if(stickerEditing){grid.classList.add('editing');btn.classList.add('active');btn.textContent='完成';}
-  else{grid.classList.remove('editing');btn.classList.remove('active');btn.textContent='管理';}
+  if(stickerEditing){grid.classList.add('editing');btn.classList.add('active');btn.textContent='Done';}
+  else{grid.classList.remove('editing');btn.classList.remove('active');btn.textContent='Manage';}
 }
 async function handleStickerImport(e){
   const files=Array.from(e.target.files);if(!files.length)return;let count=0;
@@ -1068,24 +1102,24 @@ async function handleStickerImport(e){
     const dataUrl=await new Promise(r=>{const reader=new FileReader();reader.onload=(ev)=>r(ev.target.result);reader.readAsDataURL(file);});
     const compressed=await compressImage(dataUrl,256);
     await stickerStore.add({id:'stk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),data:compressed,time:Date.now()});count++;
-  }e.target.value='';if(count>0){showToast(`导入了 ${count} 个表情包`);renderStickerGrid();}
+  }e.target.value='';if(count>0){showToast(`Imported ${count} sticker${count>1?'s':''}`);renderStickerGrid();}
 }
 function compressImage(dataUrl,maxSize){return new Promise(r=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxSize||h>maxSize){if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);r(canvas.toDataURL('image/webp',0.8));};img.src=dataUrl;});}
 async function renderStickerGrid(){
   const grid=document.getElementById('stickerGrid');const countEl=document.getElementById('stickerCount');
-  try{const all=await stickerStore.getAll();all.sort((a,b)=>b.time-a.time);countEl.textContent=`${all.length} 个`;
-    if(all.length===0){grid.innerHTML='<div class="sticker-empty">还没有表情包<br>点击「导入」从相册添加</div>';return;}
+  try{const all=await stickerStore.getAll();all.sort((a,b)=>b.time-a.time);countEl.textContent=`${all.length}`;
+    if(all.length===0){grid.innerHTML='<div class="sticker-empty">No stickers yet<br>Tap "Import" to add from album</div>';return;}
     grid.innerHTML=all.map(s=>`<div class="sticker-grid-item" onclick="sendSticker('${s.id}')"><img src="${s.data}" loading="lazy"><button class="sticker-del-btn" onclick="event.stopPropagation();deleteSticker('${s.id}')">✕</button></div>`).join('');
-  }catch(e){grid.innerHTML='<div class="sticker-empty">加载失败</div>';console.error(e);}
+  }catch(e){grid.innerHTML='<div class="sticker-empty">Failed to load</div>';console.error(e);}
 }
-async function deleteSticker(id){await stickerStore.remove(id);showToast('已删除');renderStickerGrid();}
+async function deleteSticker(id){await stickerStore.remove(id);showToast('Deleted');renderStickerGrid();}
 async function sendSticker(id){
   if(state.generating)return;const all=await stickerStore.getAll();const sticker=all.find(s=>s.id===id);if(!sticker)return;
-  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('请先配置 API');openSettings();return;}
-  if(!state.currentChatId){const cid='chat_'+Date.now();state.chats[cid]={id:cid,title:'新对话',messages:[],created:Date.now()};state.currentChatId=cid;}
+  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('Please configure API first');openSettings();return;}
+  if(!state.currentChatId){const cid='chat_'+Date.now();state.chats[cid]={id:cid,title:'New Chat',messages:[],created:Date.now()};state.currentChatId=cid;}
   const chat=currentChat();
   chat.messages.push({role:'user',content:'[用户发送了一个表情包]',sticker:sticker.data,time:Date.now()});
-  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title='表情包对话';
+  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title='Sticker chat';
   saveState();renderMessages();renderChatList();toggleStickerPanel();
   state.generating=true;document.getElementById('sendBtn').disabled=true;
   const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
@@ -1093,7 +1127,7 @@ async function sendSticker(id){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveState();renderMessages();renderChatList();
     if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){showToast('请求失败: '+err.message);console.error(err);}
+  }catch(err){showToast('Error: '+err.message);console.error(err);}
   finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
@@ -1113,15 +1147,15 @@ async function buildSystemPrompt(uq){
 async function sendMessage(){
   const input=document.getElementById('msgInput');const text=input.value.trim();const attachments=[...pendingAttachments];
   if((!text&&attachments.length===0)||state.generating)return;
-  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('请先配置 API');openSettings();return;}
-  if(!state.currentChatId){const id='chat_'+Date.now();state.chats[id]={id,title:'新对话',messages:[],created:Date.now()};state.currentChatId=id;}
+  if(!state.settings.apiUrl||!state.settings.apiKey){showToast('Please configure API first');openSettings();return;}
+  if(!state.currentChatId){const id='chat_'+Date.now();state.chats[id]={id,title:'New Chat',messages:[],created:Date.now()};state.currentChatId=id;}
   const chat=currentChat();const msgObj={role:'user',content:text||'',time:Date.now()};
   const imgs=[];const fns=[];let fc='';
   attachments.forEach(a=>{if(a.type==='image')imgs.push(a.data);else{fns.push(a.name);fc+=`\n\n--- 文件: ${a.name} ---\n${a.data}`;}});
   if(imgs.length>0)msgObj.images=imgs;
   if(fns.length>0){msgObj.files=fns;msgObj.content=(text||'')+fc;}
   chat.messages.push(msgObj);
-  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=(text||attachments[0]?.name||'新对话').slice(0,20);
+  if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=(text||attachments[0]?.name||'New Chat').slice(0,20);
   pendingAttachments=[];renderAttachPreview();saveState();input.value='';input.style.height='auto';updateSendBtn();
   renderMessages();renderChatList();
   state.generating=true;document.getElementById('sendBtn').disabled=true;
@@ -1130,7 +1164,7 @@ async function sendMessage(){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
     saveState();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){showToast('请求失败: '+err.message);console.error(err);}
+  }catch(err){showToast('Error: '+err.message);console.error(err);}
   finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
@@ -1138,7 +1172,7 @@ async function sendMessage(){
 async function callAPI(chat,systemPrompt){
   const s=state.settings;const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
   const messages=[{role:'system',content:systemPrompt}];
-  chat.messages.slice(-30).forEach(m=>{
+  chat.messages.slice(-100).forEach(m=>{
     if(m.role==='user'&&(m.images?.length>0||m.sticker)){
       const cp=[];
       if(m.content&&m.content!=='[用户发送了一个表情包]')cp.push({type:'text',text:m.content});
@@ -1150,7 +1184,7 @@ async function callAPI(chat,systemPrompt){
   });
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},body:JSON.stringify({model:s.model,messages,stream:false})});
   if(!res.ok){const et=await res.text();throw new Error(`${res.status} ${et.slice(0,100)}`);}
-  const data=await res.json();const msg=data.choices?.[0]?.message;const content=msg?.content||'(无回复)';
+  const data=await res.json();const msg=data.choices?.[0]?.message;const content=msg?.content||'(No response)';
   let thinking=null;if(s.thinking==='on'){thinking=msg?.reasoning_content||msg?.reasoning||msg?.thinking||null;}
   return{content,thinking};
 }
@@ -1163,41 +1197,41 @@ function extractMemories(reply){
 }
 async function storeMemories(mems){
   let n=0;for(const m of mems){try{if(state.settings.jinaKey)m.vector=await getEmbedding(m.text);await vectorStore.add(m);n++;}catch(e){console.error(e);}}
-  if(n>0)showToast(`记住了 ${n} 条`);
+  if(n>0)showToast(`Memorized ${n} item${n>1?'s':''}`);
 }
 async function addManualMemory(){
   const cat=document.getElementById('memAddCategory').value;const text=document.getElementById('memAddText').value.trim();
-  if(!text){showToast('请输入内容');return;}
+  if(!text){showToast('Please enter content');return;}
   const m={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:cat,text,time:Date.now(),vector:null};
   try{if(state.settings.jinaKey)m.vector=await getEmbedding(text);await vectorStore.add(m);
     document.getElementById('memAddText').value='';document.getElementById('memAddText').style.height='auto';
-    showToast('已添加');await renderMemoryList();
-  }catch(e){showToast('失败: '+e.message);}
+    showToast('Added');await renderMemoryList();
+  }catch(e){showToast('Failed: '+e.message);}
 }
 
 // ==================== 模型列表 ====================
 async function fetchModels(){
   const apiUrl=document.getElementById('setApiUrl').value.trim();const apiKey=document.getElementById('setApiKey').value.trim();
-  if(!apiUrl||!apiKey){showToast('请先填写接口地址和 Key');return;}
-  const btn=document.getElementById('fetchModelBtn');btn.disabled=true;btn.textContent='拉取中...';
+  if(!apiUrl||!apiKey){showToast('Please fill in endpoint and key first');return;}
+  const btn=document.getElementById('fetchModelBtn');btn.disabled=true;btn.textContent='Loading...';
   try{const url=apiUrl.replace(/\/+$/,'')+'/models';const res=await fetch(url,{headers:{'Authorization':'Bearer '+apiKey}});
     if(!res.ok)throw new Error(`${res.status}`);const data=await res.json();let models=[];
     if(Array.isArray(data.data))models=data.data.map(m=>m.id).filter(Boolean);
     else if(Array.isArray(data))models=data.map(m=>typeof m==='string'?m:m.id).filter(Boolean);
-    if(models.length===0){showToast('没有获取到模型');return;}
+    if(models.length===0){showToast('No models found');return;}
     models.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));fetchedModels=models;
-    showToast(`获取到 ${models.length} 个模型`);renderModelList();document.getElementById('modelPickerPage').classList.add('open');
-  }catch(err){showToast('拉取失败: '+err.message);}
-  finally{btn.disabled=false;btn.textContent='拉取';}
+    showToast(`Found ${models.length} models`);renderModelList();document.getElementById('modelPickerPage').classList.add('open');
+  }catch(err){showToast('Fetch failed: '+err.message);}
+  finally{btn.disabled=false;btn.textContent='Fetch';}
 }
 function renderModelList(){
   const c=document.getElementById('modelListContainer');const sv=(document.getElementById('modelSearchInput').value||'').toLowerCase();
   const cm=document.getElementById('setModel').value.trim();let filtered=fetchedModels;if(sv)filtered=fetchedModels.filter(m=>m.toLowerCase().includes(sv));
-  if(filtered.length===0){c.innerHTML='<div class="model-list-empty">没有匹配的模型</div>';return;}
+  if(filtered.length===0){c.innerHTML='<div class="model-list-empty">No matching models</div>';return;}
   c.innerHTML=filtered.map(m=>`<div class="model-list-item ${m===cm?'current':''}" onclick="pickModel(this.dataset.model)" data-model="${escHtml(m)}">${escHtml(m)}${m===cm?' ✓':''}</div>`).join('');
 }
 function filterModels(){renderModelList();}
-function pickModel(id){document.getElementById('setModel').value=id;showToast('已选择: '+id);closePage('modelPickerPage');}
+function pickModel(id){document.getElementById('setModel').value=id;showToast('Selected: '+id);closePage('modelPickerPage');}
 
 // ==================== 页面 ====================
 function openSettings(){
@@ -1210,6 +1244,7 @@ function openSettings(){
   document.getElementById('setAutoMemory').value=s.autoMemory||'on';
   document.getElementById('setJinaKey').value=s.jinaKey||'';
   document.getElementById('setThinking').value=s.thinking||'off';
+  document.getElementById('setSplitReply').value=s.splitReply||'off';
   document.getElementById('setCustomCSS').value=s.customCSS||'';
   document.getElementById('settingsPage').classList.add('open');
 }
@@ -1223,32 +1258,34 @@ function saveSettings(){
     autoMemory:document.getElementById('setAutoMemory').value,
     jinaKey:document.getElementById('setJinaKey').value.trim(),
     thinking:document.getElementById('setThinking').value,
+    splitReply:document.getElementById('setSplitReply').value,
     customCSS:document.getElementById('setCustomCSS').value
   };
   saveState();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();
-  showToast('设置已保存');closePage('settingsPage');
+  showToast('Saved');closePage('settingsPage');
 }
 async function openMemory(){await renderMemoryList();document.getElementById('memoryPage').classList.add('open');}
 function closePage(id){document.getElementById(id).classList.remove('open');}
 async function renderMemoryList(){
   const el=document.getElementById('memoryList');const statsEl=document.getElementById('memoryStats');
   try{const all=await vectorStore.getAll();
-    if(all.length===0){statsEl.innerHTML='';el.innerHTML='<div class="memory-empty">还没有记忆<br>开启自动记忆后 AI 会自动记住重要信息</div>';return;}
+    if(all.length===0){statsEl.innerHTML='';el.innerHTML='<div class="memory-empty">No memories yet<br>Enable auto memory and AI will remember key info</div>';return;}
     const counts={profile:0,warm:0,fact:0,corridor:0};all.forEach(m=>{counts[m.category]=(counts[m.category]||0)+1;});
-    statsEl.innerHTML=`<div><div class="memory-stat-num">${all.length}</div><div class="memory-stat-label">总记忆</div></div>
-      <div><div class="memory-stat-num">${counts.profile}</div><div class="memory-stat-label">画像</div></div>
-      <div><div class="memory-stat-num">${counts.fact}</div><div class="memory-stat-label">事实</div></div>
-      <div><div class="memory-stat-num">${counts.warm}</div><div class="memory-stat-label">暖记忆</div></div>
-      <div><div class="memory-stat-num">${counts.corridor}</div><div class="memory-stat-label">便条</div></div>`;
+    const catLabels={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
+    statsEl.innerHTML=`<div><div class="memory-stat-num">${all.length}</div><div class="memory-stat-label">Total</div></div>
+      <div><div class="memory-stat-num">${counts.profile}</div><div class="memory-stat-label">Profile</div></div>
+      <div><div class="memory-stat-num">${counts.fact}</div><div class="memory-stat-label">Fact</div></div>
+      <div><div class="memory-stat-num">${counts.warm}</div><div class="memory-stat-label">Warm</div></div>
+      <div><div class="memory-stat-num">${counts.corridor}</div><div class="memory-stat-label">Note</div></div>`;
     all.sort((a,b)=>b.time-a.time);
-    el.innerHTML=all.map(m=>{const cn={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
+    el.innerHTML=all.map(m=>{const cn={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
       return `<div class="memory-item"><div><div class="memory-item-text"><span class="memory-tag ${m.category}">${cn[m.category]||m.category}</span>${escHtml(m.text)}</div>
-      <div class="memory-item-meta">${fmtTime(m.time)}${m.vector?' · 已向量化':''}</div></div>
+      <div class="memory-item-meta">${fmtTime(m.time)}${m.vector?' · vectorized':''}</div></div>
       <button class="memory-item-del" onclick="deleteMemory('${m.id}')">✕</button></div>`;
     }).join('');
-  }catch(e){el.innerHTML='<div class="memory-empty">加载出错</div>';console.error(e);}
+  }catch(e){el.innerHTML='<div class="memory-empty">Load error</div>';console.error(e);}
 }
-async function deleteMemory(id){await vectorStore.remove(id);showToast('已删除');renderMemoryList();}
+async function deleteMemory(id){await vectorStore.remove(id);showToast('Deleted');renderMemoryList();}
 
 // ==================== 初始化 ====================
 function init(){
