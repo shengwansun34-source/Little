@@ -133,19 +133,6 @@ body {
 .msg.user .msg-time { text-align:right; }
 .msg-sticker { max-width:140px; max-height:140px; cursor:pointer; margin-bottom:4px; display:block; }
 
-/* AI 气泡操作栏 */
-.msg-actions {
-  display:flex; gap:2px; margin-top:4px; align-items:center;
-}
-.msg-action-btn {
-  width:28px; height:28px; border:none; background:none;
-  color:var(--text-light); cursor:pointer; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  transition:color .15s, background .15s;
-}
-.msg-action-btn:active { color:var(--primary); background:var(--surface2); }
-.msg-action-btn.copied { color:var(--accent2); }
-
 .msg.assistant .msg-bubble p { margin:0 0 8px 0; }
 .msg.assistant .msg-bubble p:last-child { margin-bottom:0; }
 .msg.assistant .msg-bubble ul, .msg.assistant .msg-bubble ol { margin:0 0 8px 18px; }
@@ -174,58 +161,6 @@ body {
 .msg.assistant .msg-bubble hr { border:none; border-top:1px solid var(--primary-light); margin:12px 0; }
 .msg-image { max-width:200px; max-height:200px; border-radius:12px; margin-bottom:6px; display:block; cursor:pointer; object-fit:cover; }
 .msg.user .msg-image { border-radius:12px 4px 12px 12px; }
-
-/* HTML 预览文件卡片 */
-.html-file-card {
-  display:flex; align-items:center; gap:10px;
-  background:var(--surface2); border-radius:12px; padding:10px 14px;
-  margin:8px 0; cursor:pointer; transition:background .15s;
-  border:1.5px solid var(--primary-light);
-}
-.html-file-card:active { background:var(--primary-light); }
-.html-file-card-icon {
-  width:36px; height:36px; border-radius:10px; background:var(--primary);
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  color:var(--text-white);
-}
-.html-file-card-info { flex:1; min-width:0; }
-.html-file-card-name { font-size:13px; font-weight:600; color:var(--text); }
-.html-file-card-meta { font-size:11px; color:var(--text-light); margin-top:1px; }
-.html-file-card-arrow { color:var(--text-light); flex-shrink:0; }
-.html-files-toggle {
-  font-size:12px; color:var(--primary); cursor:pointer;
-  margin:4px 0; padding:4px 0; display:flex; align-items:center; gap:4px;
-  -webkit-user-select:none; user-select:none;
-}
-.html-files-toggle:active { opacity:.6; }
-.html-files-collapse { display:none; }
-.html-files-collapse.open { display:block; }
-
-/* HTML 预览浮层 */
-.html-preview-overlay {
-  display:none; position:fixed; inset:0; background:var(--bg); z-index:400;
-  flex-direction:column;
-}
-.html-preview-overlay.open { display:flex; }
-.html-preview-toolbar {
-  display:flex; align-items:center; gap:8px;
-  padding:calc(var(--safe-top) + 8px) 12px 8px;
-  background:var(--surface); border-bottom:1px solid var(--primary-light);
-  min-height:calc(var(--safe-top) + 44px);
-}
-.html-preview-toolbar-title {
-  flex:1; font-size:14px; font-weight:600; color:var(--text);
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center;
-}
-.html-preview-toolbar-btn {
-  width:32px; height:32px; border:none; background:var(--surface2);
-  border-radius:50%; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; color:var(--text-light); transition:transform .15s;
-}
-.html-preview-toolbar-btn:active { transform:scale(.9); }
-.html-preview-iframe {
-  flex:1; border:none; width:100%; background:#fff;
-}
 
 .thinking-toggle {
   display:flex; align-items:center; gap:6px; padding:6px 0; margin-bottom:2px; cursor:pointer;
@@ -275,33 +210,24 @@ body {
   background:var(--surface); border-top:1px solid var(--primary-light);
   padding-bottom:calc(var(--safe-bottom) + 2px);
 }
-.input-main { display:flex; align-items:flex-end; gap:6px; padding:6px 8px 2px; }
+.input-main { display:flex; align-items:flex-end; gap:0; padding:6px 8px 2px; }
 .input-wrap {
   flex:1; background:var(--surface2); border-radius:20px;
-  padding:8px 14px; display:flex; align-items:flex-end;
+  padding:8px 14px; display:flex; align-items:flex-end; margin:0 4px;
 }
 .input-wrap textarea {
   flex:1; border:none; background:none; font-size:15px; color:var(--text);
   resize:none; outline:none; max-height:120px; line-height:1.4; font-family:inherit;
 }
-/* 新版发送/停止按钮 */
-.send-circle-btn {
-  width:32px; height:32px; border:none; border-radius:50%;
-  display:none; align-items:center; justify-content:center;
-  cursor:pointer; flex-shrink:0; transition:transform .15s, background .2s;
+.send-arrow {
+  width:32px; height:32px; border:none; background:none;
+  color:var(--text-light); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:color .15s; flex-shrink:0;
 }
-.send-circle-btn:active { transform:scale(.88); }
-.send-circle-btn.show { display:flex; }
-.send-circle-btn.send-mode {
-  background:var(--primary); color:var(--text-white);
-}
-.send-circle-btn.stop-mode {
-  background:#fff; border:2px solid #e8e8ea;
-}
-.send-circle-btn .stop-square {
-  width:12px; height:12px; border-radius:2px; background:var(--accent);
-}
-
+.send-arrow:active { color:var(--primary); }
+.send-arrow:disabled { opacity:.3; }
+.send-arrow.has-content { color:var(--primary); }
 .input-bottom { display:flex; align-items:center; padding:2px 10px 4px; gap:8px; }
 .ib-plus {
   width:32px; height:32px; border:none; background:none;
@@ -584,9 +510,7 @@ body {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <h2>Chats</h2>
-    <button class="new-chat-btn" onclick="newChat()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
+    <button class="new-chat-btn" onclick="newChat()">+</button>
   </div>
   <div class="chat-list" id="chatList"></div>
 </div>
@@ -607,9 +531,8 @@ body {
     <div class="input-wrap">
       <textarea id="msgInput" rows="1" placeholder="Reply to Little" oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
     </div>
-    <button class="send-circle-btn send-mode" id="sendBtn" onclick="handleSendStop()">
-      <svg class="icon" viewBox="0 0 24 24" id="sendBtnIcon"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-      <div class="stop-square" id="sendBtnStop" style="display:none"></div>
+    <button class="send-arrow" id="sendBtn" onclick="sendMessage()">
+      <svg class="icon-lg" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="none"/></svg>
     </button>
   </div>
   <div class="input-bottom">
@@ -657,10 +580,12 @@ body {
       <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
-  <div class="sticker-grid" id="stickerGrid"></div>
+  <div class="sticker-grid" id="stickerGrid">
+    <div class="sticker-empty">No stickers yet<br>Tap "Import" to add</div>
+  </div>
   <div class="sticker-panel-footer">
-    <span style="font-size:12px;color:var(--text-light)" id="stickerCount">0</span>
     <button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">Manage</button>
+    <span style="flex:1;font-size:11px;color:var(--text-light);text-align:right" id="stickerCount"></span>
   </div>
 </div>
 
@@ -698,35 +623,39 @@ body {
     </div>
     <div class="settings-group">
       <h3>Reply Style</h3>
-      <div class="setting-row"><label>Split Reply</label><select id="setSplitReply"><option value="off">Off</option><option value="on">On</option></select></div>
+      <div class="setting-row"><label>Split Reply</label><select id="setSplitReply"><option value="off">Off — Single bubble</option><option value="on">On — Multiple bubbles</option></select></div>
     </div>
     <div class="settings-group">
       <h3>Custom CSS</h3>
-      <div class="setting-row"><textarea id="setCustomCSS" placeholder=".msg.user .msg-bubble { background: #e8a; }"></textarea></div>
+      <div class="setting-row"><textarea id="setCustomCSS" placeholder="/* Your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea></div>
     </div>
     <div class="settings-group">
       <h3>Import</h3>
-      <div class="setting-row"><label>Claude Conversations</label><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select JSON File</button></div>
+      <div class="setting-row">
+        <label>Import Claude conversations</label>
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data (conversations.json)</p>
+        <button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button>
+      </div>
     </div>
     <button class="save-btn" onclick="saveSettings()">Save</button>
   </div>
 </div>
 
-<!-- 模型选择 -->
+<!-- 模型选择页 -->
 <div class="overlay-page" id="modelPickerPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('modelPickerPage')">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <h2>Models</h2>
+    <h2>Select Model</h2>
   </div>
   <div class="overlay-body">
     <div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="Search models..." oninput="filterModels()"></div>
-    <div id="modelListContainer"></div>
+    <div id="modelListContainer"><div class="model-list-empty">Tap "Fetch" to load</div></div>
   </div>
 </div>
 
-<!-- 记忆页 -->
+<!-- 记忆库 -->
 <div class="overlay-page" id="memoryPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('memoryPage')">
@@ -735,45 +664,16 @@ body {
     <h2>Memory</h2>
   </div>
   <div class="overlay-body">
-    <div class="memory-stats" id="memoryStats"></div>
     <div class="memory-add-box">
-      <h3>Add Memory</h3>
+      <h3>Add Manually</h3>
       <div class="memory-add-row">
-        <select id="memAddCategory"><option value="profile">Profile</option><option value="warm">Warm</option><option value="fact">Fact</option><option value="corridor">Note</option></select>
-        <textarea id="memAddText" placeholder="What to remember..."></textarea>
+        <select id="memAddCategory"><option value="profile">Profile</option><option value="fact" selected>Fact</option><option value="warm">Warm</option><option value="corridor">Note</option></select>
+        <textarea id="memAddText" rows="1" placeholder="Memory content..." oninput="autoResize(this)"></textarea>
       </div>
-      <button class="memory-add-btn" onclick="addMemoryManual()">Add</button>
+      <div style="display:flex;justify-content:flex-end;"><button class="memory-add-btn" onclick="addManualMemory()">Add</button></div>
     </div>
-    <div id="memoryList"></div>
-  </div>
-</div>
-
-<!-- 思维链浮层 -->
-<div class="thinking-overlay" id="thinkingOverlay">
-  <div class="thinking-overlay-header">
-    <button class="overlay-back" onclick="closeThinking()">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Thought Process</h2>
-    <div style="width:36px"></div>
-  </div>
-  <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
-</div>
-
-<!-- 图片查看器 -->
-<div class="img-viewer" id="imgViewer" onclick="closeImgViewer()">
-  <img id="imgViewerSrc" src="">
-</div>
-
-<!-- 重命名弹窗 -->
-<div class="rename-modal" id="renameModal">
-  <div class="rename-box">
-    <h3>Rename</h3>
-    <input type="text" id="renameInput" placeholder="Chat title" onkeydown="if(event.key==='Enter')confirmRename()">
-    <div class="rename-btns">
-      <button class="rename-cancel" onclick="closeRename()">Cancel</button>
-      <button class="rename-confirm" onclick="confirmRename()">Done</button>
-    </div>
+    <div class="memory-stats" id="memoryStats"></div>
+    <div id="memoryList"><div class="memory-empty">No memories yet</div></div>
   </div>
 </div>
 
@@ -783,46 +683,60 @@ body {
     <button class="overlay-back" onclick="closeImport()">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <h2>Import</h2>
+    <h2>Import Chats</h2>
   </div>
+  <div style="padding:0 16px 8px;font-size:13px;color:var(--text-light)" id="importInfo"></div>
   <div class="import-list" id="importList"></div>
   <div class="import-actions">
     <button class="import-cancel-btn" onclick="closeImport()">Cancel</button>
-    <button class="import-confirm-btn" id="importConfirmBtn" onclick="confirmImport()" disabled>Import</button>
+    <button class="import-confirm-btn" id="importConfirmBtn" onclick="confirmImport()" disabled>Import Selected</button>
   </div>
 </div>
 
-<!-- HTML 预览浮层 -->
-<div class="html-preview-overlay" id="htmlPreviewOverlay">
-  <div class="html-preview-toolbar">
-    <button class="html-preview-toolbar-btn" onclick="closeHtmlPreview()">
+<div class="thinking-overlay" id="thinkingOverlay">
+  <div class="thinking-overlay-header">
+    <button class="overlay-back" onclick="closeThinking()">
       <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <div class="html-preview-toolbar-title" id="htmlPreviewTitle">Preview</div>
-    <button class="html-preview-toolbar-btn" onclick="openHtmlNewTab()" title="Open in new tab">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-    </button>
-    <button class="html-preview-toolbar-btn" onclick="downloadHtml()" title="Download">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    </button>
+    <h2>Thought Process</h2>
+    <div style="width:36px"></div>
   </div>
-  <iframe class="html-preview-iframe" id="htmlPreviewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+  <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
+</div>
+
+<div class="img-viewer" id="imgViewer" onclick="closeImgViewer()"><img id="imgViewerSrc" src=""></div>
+
+<div class="rename-modal" id="renameModal">
+  <div class="rename-box">
+    <h3>Rename</h3>
+    <input type="text" id="renameInput" placeholder="New name..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()">
+    <div class="rename-btns">
+      <button class="rename-cancel" onclick="closeRename()">Cancel</button>
+      <button class="rename-confirm" onclick="confirmRename()">Done</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 <style id="customCSSTag"></style>
 
 <script>
-// ==================== 存储 ====================
-const DB={get(k,d){try{const v=localStorage.getItem('little_'+k);return v?JSON.parse(v):d;}catch{return d;}},set(k,v){try{localStorage.setItem('little_'+k,JSON.stringify(v));}catch{}}};
+if(typeof marked!=='undefined'){marked.setOptions({breaks:true,gfm:true,highlight:function(code,lang){
+  if(typeof hljs!=='undefined'&&lang&&hljs.getLanguage(lang)){try{return hljs.highlight(code,{language:lang}).value}catch{}}
+  if(typeof hljs!=='undefined'){try{return hljs.highlightAuto(code).value}catch{}}return code;}});}
 
-// ==================== VectorStore ====================
+const DB={
+  get(k,d=null){try{const v=localStorage.getItem('little_'+k);return v?JSON.parse(v):d}catch{return d}},
+  set(k,v){localStorage.setItem('little_'+k,JSON.stringify(v))},
+  del(k){localStorage.removeItem('little_'+k)}
+};
+
 class VectorStore{
   constructor(){this.dbName='LittleMemoryDB';this.storeName='memories';this.db=null;}
-  async open(){if(this.db)return this.db;return new Promise((r,j)=>{const req=indexedDB.open(this.dbName,1);
-    req.onupgradeneeded=(e)=>{if(!e.target.result.objectStoreNames.contains(this.storeName))e.target.result.createObjectStore(this.storeName,{keyPath:'id'});};
-    req.onsuccess=(e)=>{this.db=e.target.result;r(this.db);};req.onerror=(e)=>j(e);});}
-  async add(mem){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).put(mem);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
+  async open(){if(this.db)return this.db;return new Promise((resolve,reject)=>{const req=indexedDB.open(this.dbName,1);
+    req.onupgradeneeded=(e)=>{const db=e.target.result;if(!db.objectStoreNames.contains(this.storeName)){const store=db.createObjectStore(this.storeName,{keyPath:'id'});store.createIndex('category','category',{unique:false});store.createIndex('time','time',{unique:false});}};
+    req.onsuccess=(e)=>{this.db=e.target.result;resolve(this.db);};req.onerror=(e)=>reject(e);});}
+  async add(m){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).put(m);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
   async getAll(){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readonly');const req=tx.objectStore(this.storeName).getAll();req.onsuccess=()=>r(req.result);req.onerror=(e)=>j(e);});}
   async remove(id){const db=await this.open();return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).delete(id);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});}
   cosineSim(a,b){if(!a||!b||a.length!==b.length)return 0;let dot=0,na=0,nb=0;for(let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);}
@@ -869,8 +783,6 @@ let pendingAttachments=[];
 let renamingChatId=null;
 let stickerEditing=false;
 let pendingImportData=[];
-let currentAbortController=null;
-let currentHtmlPreviewCode='';
 
 function saveState(){DB.set('chats',state.chats);DB.set('currentChat',state.currentChatId);DB.set('settings',state.settings);DB.set('lastChatTime',state.lastChatTime);}
 
@@ -929,39 +841,12 @@ function updateHeaderTitle(){document.getElementById('headerTitle').textContent=
 function updateInputHint(){document.getElementById('msgInput').placeholder='Reply to '+(state.settings.charName||'Little');}
 function updateModelTag(){
   const tag=document.getElementById('modelTag');const m=state.settings.model;
-  tag.textContent=m?m.replace(/^$$.*?$$/,'').slice(0,18):'Not set';
+  tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'Not set';
 }
 function updateSendBtn(){
   const input=document.getElementById('msgInput');const btn=document.getElementById('sendBtn');
-  const hasContent=input.value.trim()||pendingAttachments.length>0;
-  if(state.generating){
-    btn.classList.add('show');
-    btn.classList.remove('send-mode');
-    btn.classList.add('stop-mode');
-    document.getElementById('sendBtnIcon').style.display='none';
-    document.getElementById('sendBtnStop').style.display='';
-  }else if(hasContent){
-    btn.classList.add('show');
-    btn.classList.add('send-mode');
-    btn.classList.remove('stop-mode');
-    document.getElementById('sendBtnIcon').style.display='';
-    document.getElementById('sendBtnStop').style.display='none';
-  }else{
-    btn.classList.remove('show');
-  }
-}
-
-function handleSendStop(){
-  if(state.generating){
-    // 停止生成
-    if(currentAbortController){currentAbortController.abort();currentAbortController=null;}
-    state.generating=false;
-    const t=document.getElementById('typing');if(t)t.classList.remove('show');
-    updateSendBtn();
-    showToast('Stopped');
-  }else{
-    sendMessage();
-  }
+  if(input.value.trim()||pendingAttachments.length>0)btn.classList.add('has-content');
+  else btn.classList.remove('has-content');
 }
 
 function togglePlusMenu(){
@@ -979,108 +864,13 @@ function closeThinking(){document.getElementById('thinkingOverlay').classList.re
 function viewImage(src){document.getElementById('imgViewerSrc').src=src;document.getElementById('imgViewer').classList.add('open');}
 function closeImgViewer(){document.getElementById('imgViewer').classList.remove('open');}
 
-// ==================== HTML 预览系统 ====================
-function processHtmlBlocks(html){
-  // 查找渲染后的 HTML code blocks（<pre><code class="language-html">...</code></pre>）
-  const div=document.createElement('div');
-  div.innerHTML=html;
-  const codeBlocks=div.querySelectorAll('pre code.language-html, pre code.hljs.language-html');
-  const htmlCodes=[];
-  codeBlocks.forEach(codeEl=>{
-    const rawCode=codeEl.textContent;
-    if(rawCode.trim().length<20)return;// 太短的忽略
-    htmlCodes.push(rawCode);
-  });
-  if(htmlCodes.length===0)return html;
-
-  // 用占位符替换
-  let result=html;
-  let idx=0;
-  // 用正则匹配 <pre><code class="...html...">...</code></pre>
-  result=result.replace(/<pre><code class="[^"]*language-html[^"]*">([\s\S]*?)<\/code><\/pre>/g,(match)=>{
-    if(idx>=htmlCodes.length)return match;
-    const code=htmlCodes[idx];
-    const sizeKb=(new Blob([code])).size;
-    const sizeStr=sizeKb<1024?sizeKb+' B':(sizeKb/1024).toFixed(1)+' KB';
-    const cardId='htmlcard_'+Date.now()+'_'+idx;
-    idx++;
-    const card=`<div class="html-file-card" onclick="previewHtml('${cardId}')" id="${cardId}" data-code="${escHtml(code)}">
-      <div class="html-file-card-icon"><svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
-      <div class="html-file-card-info"><div class="html-file-card-name">index.html</div><div class="html-file-card-meta">HTML Document · ${sizeStr}</div></div>
-      <div class="html-file-card-arrow"><svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-    </div>`;
-    return card;
-  });
-
-  // 多个卡片折叠
-  if(htmlCodes.length>1){
-    // 包裹在折叠容器中：第一个显示，其余折叠
-    const cards=[];
-    const tempDiv=document.createElement('div');
-    tempDiv.innerHTML=result;
-    const allCards=tempDiv.querySelectorAll('.html-file-card');
-    if(allCards.length>1){
-      const foldId='htmlfold_'+Date.now();
-      let firstCard='';
-      let restCards='';
-      allCards.forEach((c,i)=>{
-        if(i===0)firstCard=c.outerHTML;
-        else restCards+=c.outerHTML;
-      });
-      // 替换结果中的所有卡片为折叠版
-      // 简单方案：把原来的 result 中连续卡片包裹
-      const allCardsHtml=[...tempDiv.querySelectorAll('.html-file-card')].map(c=>c.outerHTML).join('');
-      const collapsed=firstCard+`<div class="html-files-toggle" onclick="toggleHtmlFold('${foldId}')"><svg style="width:14px;height:14px;transition:transform .2s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span>${htmlCodes.length-1} more file${htmlCodes.length>2?'s':''}</span></div><div class="html-files-collapse" id="${foldId}">${restCards}</div>`;
-      // 逐一替换卡片为空，然后在第一个位置插入collapsed
-      let replaced=false;
-      result=result.replace(/<div class="html-file-card"[^]*?<\/div>\s*<\/div>\s*<\/div>/g,()=>{
-        if(!replaced){replaced=true;return collapsed;}
-        return '';
-      });
-    }
-  }
-  return result;
-}
-
-function previewHtml(cardId){
-  const card=document.getElementById(cardId);
-  if(!card)return;
-  // 从 data-code 解码
-  const textarea=document.createElement('textarea');
-  textarea.innerHTML=card.getAttribute('data-code');
-  currentHtmlPreviewCode=textarea.value;
-  document.getElementById('htmlPreviewTitle').textContent='Preview';
-  const frame=document.getElementById('htmlPreviewFrame');
-  frame.srcdoc=currentHtmlPreviewCode;
-  document.getElementById('htmlPreviewOverlay').classList.add('open');
-}
-function closeHtmlPreview(){
-  document.getElementById('htmlPreviewOverlay').classList.remove('open');
-  document.getElementById('htmlPreviewFrame').srcdoc='';
-}
-function openHtmlNewTab(){
-  const blob=new Blob([currentHtmlPreviewCode],{type:'text/html'});
-  const url=URL.createObjectURL(blob);
-  window.open(url,'_blank');
-}
-function downloadHtml(){
-  const blob=new Blob([currentHtmlPreviewCode],{type:'text/html'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='index.html';a.click();URL.revokeObjectURL(a.href);
-}
-function toggleHtmlFold(id){
-  const el=document.getElementById(id);
-  if(el)el.classList.toggle('open');
-}
-
-// ==================== 消息渲染 ====================
 function renderMessages(){
   const area=document.getElementById('chatArea');const chat=currentChat();updateHeaderTitle();
   if(!chat||chat.messages.length===0){
     area.innerHTML=`<div class="empty-state"><svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>What's on your mind?</p></div>`;return;
   }
   let html='';
-  chat.messages.filter(m=>m.role==='user'||m.role==='assistant').forEach((m,mi)=>{
+  chat.messages.filter(m=>m.role==='user'||m.role==='assistant').forEach(m=>{
     let thinkingHtml='';
     if(m.role==='assistant'&&m.thinking){
       const preview=m.thinking.slice(0,30).replace(/\n/g,' ')+(m.thinking.length>30?'…':'');
@@ -1089,41 +879,16 @@ function renderMessages(){
     if(m.sticker){html+=`<div class="msg ${m.role}"><div class="msg-inner">${thinkingHtml}<img class="msg-sticker" src="${m.sticker}" onclick="viewImage(this.src)"><div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;return;}
     let imagesHtml='';if(m.images&&m.images.length>0)imagesHtml=m.images.map(img=>`<img class="msg-image" src="${img}" onclick="viewImage(this.src)">`).join('');
     let filesHtml='';if(m.files&&m.files.length>0)filesHtml=m.files.map(f=>`<div style="font-size:12px;color:${m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)'};margin-bottom:4px;display:flex;align-items:center;gap:4px"><svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${escHtml(f)}</div>`).join('');
-
-    // 操作栏（仅 AI 消息）
-    const msgIdx=chat.messages.indexOf(m);
-    let actionsHtml='';
-    if(m.role==='assistant'){
-      actionsHtml=`<div class="msg-actions">
-        <button class="msg-action-btn" onclick="copyMsgText(${msgIdx})" title="Copy">
-          <svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        </button>
-        <button class="msg-action-btn" onclick="regenerateMsg(${msgIdx})" title="Regenerate">
-          <svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        </button>
-      </div>`;
-    }
-
     if(m.role==='assistant'&&state.settings.splitReply==='on'){
       const parts=m.content.split(/\n\n+/).filter(p=>p.trim());
       if(parts.length>1){
         html+=`<div class="msg assistant"><div class="msg-inner">${thinkingHtml}${imagesHtml}${filesHtml}`;
-        parts.forEach((part,i)=>{
-          let rendered=renderMarkdown(part);
-          rendered=processHtmlBlocks(rendered);
-          html+=`<div class="msg-bubble" style="${i>0?'margin-top:6px;':''}">${rendered}</div>`;
-        });
-        html+=`${actionsHtml}<div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;return;
+        parts.forEach((part,i)=>{html+=`<div class="msg-bubble" style="${i>0?'margin-top:6px;':''}">${renderMarkdown(part)}</div>`;});
+        html+=`<div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;return;
       }
     }
-    let contentHtml;
-    if(m.role==='assistant'){
-      contentHtml=renderMarkdown(m.content);
-      contentHtml=processHtmlBlocks(contentHtml);
-    }else{
-      contentHtml=escHtml(m.content).replace(/\n/g,'<br>');
-    }
-    html+=`<div class="msg ${m.role}"><div class="msg-inner">${thinkingHtml}${imagesHtml}${filesHtml}<div class="msg-bubble">${contentHtml}</div>${actionsHtml}<div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;
+    let contentHtml;if(m.role==='assistant')contentHtml=renderMarkdown(m.content);else contentHtml=escHtml(m.content).replace(/\n/g,'<br>');
+    html+=`<div class="msg ${m.role}"><div class="msg-inner">${thinkingHtml}${imagesHtml}${filesHtml}<div class="msg-bubble">${contentHtml}</div><div class="msg-time">${m.time?fmtTime(m.time):''}</div></div></div>`;
   });
   area.innerHTML=html+'<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
   scrollToBottom();
@@ -1131,43 +896,6 @@ function renderMessages(){
 function scrollToBottom(){const area=document.getElementById('chatArea');requestAnimationFrame(()=>{area.scrollTop=area.scrollHeight;});}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
-
-// ==================== 复制 & 重新回复 ====================
-function copyMsgText(msgIdx){
-  const chat=currentChat();if(!chat)return;
-  const m=chat.messages[msgIdx];if(!m)return;
-  navigator.clipboard.writeText(m.content).then(()=>{showToast('Copied');}).catch(()=>{
-    // fallback
-    const ta=document.createElement('textarea');ta.value=m.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied');
-  });
-}
-async function regenerateMsg(msgIdx){
-  if(state.generating)return;
-  const chat=currentChat();if(!chat)return;
-  // 删除该条 AI 回复
-  chat.messages.splice(msgIdx,1);
-  saveState();renderMessages();
-  // 找到最后一条用户消息来重新生成
-  const lastUserMsg=chat.messages.filter(m=>m.role==='user').pop();
-  const queryText=lastUserMsg?lastUserMsg.content:'';
-  state.generating=true;updateSendBtn();
-  const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
-  try{
-    const sp=await buildSystemPrompt(queryText||'(重新生成)');
-    const result=await callAPI(chat,sp);
-    const{cleanReply,newMemories}=extractMemories(result.content);
-    const ro={role:'assistant',content:cleanReply,time:Date.now()};
-    if(result.thinking)ro.thinking=result.thinking;
-    chat.messages.push(ro);state.lastChatTime=Date.now();
-    saveState();renderMessages();renderChatList();
-    if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){
-    if(err.name!=='AbortError')showToast('Error: '+err.message);
-  }finally{
-    state.generating=false;updateSendBtn();
-    const t=document.getElementById('typing');if(t)t.classList.remove('show');
-  }
-}
 
 function handlePhotoSelect(e){
   Array.from(e.target.files).forEach(file=>{if(!file.type.startsWith('image/'))return;
@@ -1201,16 +929,14 @@ function toggleStickerEdit(){
   else{grid.classList.remove('editing');btn.classList.remove('active');btn.textContent='Manage';}
 }
 async function handleStickerImport(e){
-  const files=Array.from(e.target.files);if(files.length===0)return;
-  let added=0;
+  const files=Array.from(e.target.files);if(!files.length)return;let count=0;
   for(const file of files){if(!file.type.startsWith('image/'))continue;
-    const data=await new Promise(r=>{const reader=new FileReader();reader.onload=()=>{
-      const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const max=256;let w=img.width,h=img.height;if(w>h){if(w>max){h*=max/w;w=max;}}else{if(h>max){w*=max/h;h=max;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);r(c.toDataURL('image/webp',0.8));};img.src=reader.result;};reader.readAsDataURL(file);});
-    await stickerStore.add({id:'stk_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),data,time:Date.now()});added++;
-  }
-  if(added>0){showToast(`Added ${added} sticker${added>1?'s':''}`);renderStickerGrid();}
-  e.target.value='';
+    const dataUrl=await new Promise(r=>{const reader=new FileReader();reader.onload=(ev)=>r(ev.target.result);reader.readAsDataURL(file);});
+    const compressed=await compressImage(dataUrl,256);
+    await stickerStore.add({id:'stk_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),data:compressed,time:Date.now()});count++;
+  }e.target.value='';if(count>0){showToast(`Imported ${count}`);renderStickerGrid();}
 }
+function compressImage(dataUrl,maxSize){return new Promise(r=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxSize||h>maxSize){if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}else{w=Math.round(w*maxSize/h);h=maxSize;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);r(canvas.toDataURL('image/webp',0.8));};img.src=dataUrl;});}
 async function renderStickerGrid(){
   const grid=document.getElementById('stickerGrid');const countEl=document.getElementById('stickerCount');
   try{const all=await stickerStore.getAll();all.sort((a,b)=>b.time-a.time);countEl.textContent=all.length;
@@ -1227,14 +953,14 @@ async function sendSticker(id){
   chat.messages.push({role:'user',content:'[用户发送了一个表情包]',sticker:sticker.data,time:Date.now()});
   if(chat.messages.filter(m=>m.role==='user').length===1)chat.title='Sticker chat';
   saveState();renderMessages();renderChatList();toggleStickerPanel();
-  state.generating=true;updateSendBtn();
+  state.generating=true;document.getElementById('sendBtn').disabled=true;
   const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
   try{const sp=await buildSystemPrompt('用户发送了一个表情包');const result=await callAPI(chat,sp);
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveState();renderMessages();renderChatList();
     if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
-  finally{state.generating=false;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
+  }catch(err){showToast('Error: '+err.message);}
+  finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
 async function retrieveMemories(q){try{if(state.settings.jinaKey){const qv=await getEmbedding(q);if(qv)return await vectorStore.search(qv,8);}return await vectorStore.searchByKeyword(q,8);}catch{return[];}}
@@ -1262,14 +988,14 @@ async function sendMessage(){
   if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=(text||attachments[0]?.name||'New Chat').slice(0,20);
   pendingAttachments=[];renderAttachPreview();saveState();input.value='';input.style.height='auto';updateSendBtn();
   renderMessages();renderChatList();
-  state.generating=true;updateSendBtn();
+  state.generating=true;document.getElementById('sendBtn').disabled=true;
   const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
   try{const sp=await buildSystemPrompt(text||'(图片)');const result=await callAPI(chat,sp);
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
     saveState();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
-  }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
-  finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
+  }catch(err){showToast('Error: '+err.message);}
+  finally{state.generating=false;document.getElementById('sendBtn').disabled=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
 async function callAPI(chat,systemPrompt){
@@ -1285,8 +1011,7 @@ async function callAPI(chat,systemPrompt){
       messages.push({role:'user',content:cp});
     }else messages.push({role:m.role,content:m.content});
   });
-  currentAbortController=new AbortController();
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},body:JSON.stringify({model:s.model,messages,stream:false}),signal:currentAbortController.signal});
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},body:JSON.stringify({model:s.model,messages,stream:false})});
   if(!res.ok){const et=await res.text();throw new Error(`${res.status} ${et.slice(0,100)}`);}
   const data=await res.json();const msg=data.choices?.[0]?.message;const content=msg?.content||'(No response)';
   let thinking=null;if(s.thinking==='on'){thinking=msg?.reasoning_content||msg?.reasoning||msg?.thinking||null;}
@@ -1294,56 +1019,85 @@ async function callAPI(chat,systemPrompt){
 }
 
 function extractMemories(reply){
-  const re=/$$MEM\|(\w+)\|(.+?)$$/g;let m;let clean=reply;const mems=[];
+  const re=/\[MEM\|(\w+)\|(.+?)\]/g;let m;let clean=reply;const mems=[];
   while((m=re.exec(reply))!==null){mems.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:m[1].trim(),text:m[2].trim(),time:Date.now(),vector:null});clean=clean.replace(m[0],'');}
   return{cleanReply:clean.replace(/\n+$/,'').trim(),newMemories:mems};
 }
-
 async function storeMemories(mems){
-  for(const m of mems){
-    if(state.settings.jinaKey){const v=await getEmbedding(m.text);if(v)m.vector=v;}
-    await vectorStore.add(m);
-  }
-  showToast(`Remembered ${mems.length} thing${mems.length>1?'s':''}`);
+  let n=0;for(const m of mems){try{if(state.settings.jinaKey)m.vector=await getEmbedding(m.text);await vectorStore.add(m);n++;}catch(e){console.error(e);}}
+  if(n>0)showToast(`Memorized ${n}`);
 }
-
-async function addMemoryManual(){
+async function addManualMemory(){
   const cat=document.getElementById('memAddCategory').value;const text=document.getElementById('memAddText').value.trim();
-  if(!text){showToast('Enter something');return;}
+  if(!text){showToast('Enter content');return;}
   const m={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:cat,text,time:Date.now(),vector:null};
-  if(state.settings.jinaKey){const v=await getEmbedding(text);if(v)m.vector=v;}
-  await vectorStore.add(m);document.getElementById('memAddText').value='';showToast('Added');renderMemoryList();
+  try{if(state.settings.jinaKey)m.vector=await getEmbedding(text);await vectorStore.add(m);
+    document.getElementById('memAddText').value='';document.getElementById('memAddText').style.height='auto';
+    showToast('Added');await renderMemoryList();
+  }catch(e){showToast('Failed: '+e.message);}
 }
 
+// ==================== Claude 导入 ====================
 function handleClaudeImport(e){
   const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();reader.onload=(ev)=>{
-    try{const data=JSON.parse(ev.target.result);if(!Array.isArray(data)){showToast('Invalid format');return;}
-      pendingImportData=data;renderImportList();document.getElementById('importOverlay').classList.add('open');
-    }catch{showToast('Parse error');}};reader.readAsText(file);e.target.value='';
+  e.target.value='';
+  showToast('Reading file...');
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data)){showToast('Invalid format');return;}
+      pendingImportData=data;
+      renderImportList(data);
+      document.getElementById('importOverlay').classList.add('open');
+    }catch(err){showToast('Parse error: '+err.message);}
+  };
+  reader.onerror=()=>showToast('Read failed');
+  reader.readAsText(file);
 }
-function renderImportList(){
-  const el=document.getElementById('importList');
-  el.innerHTML=pendingImportData.map((conv,i)=>{
-    const msgs=conv.chat_messages||[];const title=conv.name||conv.title||`Chat ${i+1}`;
-    const date=msgs[0]?.created_at?new Date(msgs[0].created_at).toLocaleDateString():'';
-    const preview=msgs.find(m=>m.sender==='assistant')?.text?.slice(0,60)||'';
-    return `<div class="import-item" onclick="toggleImportItem(this)" data-idx="${i}">
+function renderImportList(conversations){
+  const list=document.getElementById('importList');
+  const info=document.getElementById('importInfo');
+  info.textContent=`Found ${conversations.length} conversations. Select which to import:`;
+  list.innerHTML=conversations.map((c,i)=>{
+    const msgs=c.chat_messages||[];
+    const msgCount=msgs.length;
+    const title=c.name||c.title||`Chat ${i+1}`;
+    const firstDate=msgs.length>0&&msgs[0].created_at?new Date(msgs[0].created_at).toLocaleDateString():'';
+    const preview=(msgs.find(m=>m.sender==='human')?.text||'').slice(0,60);
+    return `<div class="import-item" data-idx="${i}" onclick="toggleImportItem(this)">
       <div class="import-check"></div>
-      <div class="import-info"><div class="import-title">${escHtml(title)}</div><div class="import-meta">${msgs.length} messages · ${date}</div>${preview?`<div class="import-meta" style="margin-top:2px">${escHtml(preview)}…</div>`:''}</div></div>`;
+      <div class="import-info">
+        <div class="import-title">${escHtml(title)}</div>
+        <div class="import-meta">${msgCount} messages · ${firstDate}</div>
+        ${preview?`<div class="import-meta" style="margin-top:2px">${escHtml(preview)}…</div>`:''}
+      </div>
+    </div>`;
   }).join('');
+  updateImportBtn();
 }
-function toggleImportItem(el){el.classList.toggle('selected');
-  const sel=document.querySelectorAll('.import-item.selected').length;
-  document.getElementById('importConfirmBtn').disabled=sel===0;
-  document.getElementById('importConfirmBtn').textContent=sel>0?`Import (${sel})`:'Import';
+function toggleImportItem(el){
+  el.classList.toggle('selected');
+  updateImportBtn();
+}
+function updateImportBtn(){
+  const selected=document.querySelectorAll('.import-item.selected').length;
+  const btn=document.getElementById('importConfirmBtn');
+  btn.disabled=selected===0;
+  btn.textContent=selected>0?`Import ${selected} Chat${selected>1?'s':''}`:'Import Selected';
 }
 function closeImport(){document.getElementById('importOverlay').classList.remove('open');pendingImportData=[];}
 function confirmImport(){
-  const items=document.querySelectorAll('.import-item.selected');let imported=0;
-  items.forEach(el=>{
-    const idx=parseInt(el.dataset.idx);const conv=pendingImportData[idx];if(!conv)return;
-    const msgs=conv.chat_messages||[];const id='chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  const selectedEls=document.querySelectorAll('.import-item.selected');
+  if(selectedEls.length===0)return;
+  let imported=0;
+  selectedEls.forEach(el=>{
+    const idx=parseInt(el.dataset.idx);
+    const conv=pendingImportData[idx];
+    if(!conv)return;
+    const msgs=conv.chat_messages||[];
+    if(msgs.length===0)return;
+    const id='chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
     const title=conv.name||conv.title||`Imported ${imported+1}`;
     const created=msgs[0]?.created_at?new Date(msgs[0].created_at).getTime():Date.now();
     const messages=[];
@@ -1351,7 +1105,7 @@ function confirmImport(){
       const role=m.sender==='human'?'user':'assistant';
       let text=m.text||'';
       // 提取 content 数组里的文字
-      if((!text||text.trim()===''')&&m.content&&Array.isArray(m.content)){
+      if((!text||text.trim()==='')&&m.content&&Array.isArray(m.content)){
         text=m.content.filter(c=>c.type==='text').map(c=>c.text).join('\n');
       }
       if(!text||text.trim()==='')return;
@@ -1452,7 +1206,7 @@ async function renderMemoryList(){
 async function deleteMemory(id){await vectorStore.remove(id);showToast('Deleted');renderMemoryList();}
 
 function init(){
-  renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+  renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 init();
