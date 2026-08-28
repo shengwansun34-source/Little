@@ -11,6 +11,10 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <title>Little</title>
+<!-- Markdown & 代码高亮 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <style>
 :root {
   --bg: #f0f4fd;
@@ -78,18 +82,20 @@ body {
 .chat-item {
   padding:12px; margin-bottom:4px; border-radius:var(--radius-sm);
   cursor:pointer; display:flex; align-items:center; justify-content:space-between;
-  transition:background .15s;
+  transition:background .15s; gap:6px;
 }
 .chat-item:active, .chat-item.active { background:var(--primary-light); }
 .chat-item-title {
   font-size:14px; color:var(--text); flex:1;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.chat-item-del {
-  width:24px; height:24px; border:none; background:none;
-  color:var(--text-light); font-size:14px; cursor:pointer;
-  border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:.5; flex-shrink:0;
+.chat-item-actions { display:flex; gap:2px; flex-shrink:0; }
+.chat-item-btn {
+  width:26px; height:26px; border:none; background:none;
+  color:var(--text-light); font-size:13px; cursor:pointer;
+  border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:.5;
 }
+.chat-item-btn:active { opacity:1; background:var(--surface2); }
 
 /* 聊天区域 */
 .chat-area {
@@ -100,24 +106,98 @@ body {
 .msg.user { justify-content:flex-end; }
 .msg.assistant { justify-content:flex-start; }
 .msg-bubble {
-  max-width:82%; padding:10px 14px; border-radius:var(--radius);
-  font-size:15px; line-height:1.55; word-break:break-word; white-space:pre-wrap; position:relative;
+  max-width:78%; padding:10px 14px; font-size:15px; line-height:1.55;
+  word-break:break-word; position:relative;
 }
 .msg.user .msg-bubble {
-  background:var(--primary); color:var(--text-white); border-bottom-right-radius:4px;
+  background:var(--primary); color:var(--text-white);
+  border-radius:18px 4px 18px 18px;
+  margin-right:0;
 }
 .msg.assistant .msg-bubble {
-  background:var(--surface); color:var(--text); border-bottom-left-radius:4px;
+  background:var(--surface); color:var(--text);
+  border-radius:4px 18px 18px 18px;
   box-shadow:0 1px 4px var(--shadow);
 }
 .msg-time { font-size:10px; color:var(--text-light); margin-top:4px; opacity:.7; }
 .msg.user .msg-time { text-align:right; }
 
+/* Markdown 渲染样式 */
+.msg.assistant .msg-bubble p { margin:0 0 8px 0; }
+.msg.assistant .msg-bubble p:last-child { margin-bottom:0; }
+.msg.assistant .msg-bubble ul, .msg.assistant .msg-bubble ol { margin:0 0 8px 18px; }
+.msg.assistant .msg-bubble li { margin-bottom:2px; }
+.msg.assistant .msg-bubble pre {
+  background:#f6f8fa; border-radius:8px; padding:12px; margin:8px 0;
+  overflow-x:auto; font-size:13px; line-height:1.5;
+  -webkit-overflow-scrolling:touch;
+}
+.msg.assistant .msg-bubble pre code { background:none; padding:0; font-size:13px; }
+.msg.assistant .msg-bubble code {
+  background:#f0f2f5; padding:2px 5px; border-radius:4px;
+  font-size:13px; font-family:'SF Mono',Menlo,Consolas,monospace;
+}
+.msg.assistant .msg-bubble blockquote {
+  border-left:3px solid var(--primary-light); margin:8px 0; padding:4px 12px;
+  color:var(--text-light);
+}
+.msg.assistant .msg-bubble h1,.msg.assistant .msg-bubble h2,
+.msg.assistant .msg-bubble h3,.msg.assistant .msg-bubble h4 {
+  margin:12px 0 6px; line-height:1.4;
+}
+.msg.assistant .msg-bubble h1 { font-size:18px; }
+.msg.assistant .msg-bubble h2 { font-size:16px; }
+.msg.assistant .msg-bubble h3 { font-size:15px; }
+.msg.assistant .msg-bubble table {
+  border-collapse:collapse; margin:8px 0; width:100%; font-size:13px;
+}
+.msg.assistant .msg-bubble th,.msg.assistant .msg-bubble td {
+  border:1px solid var(--primary-light); padding:6px 8px; text-align:left;
+}
+.msg.assistant .msg-bubble th { background:var(--surface2); font-weight:600; }
+.msg.assistant .msg-bubble a { color:var(--primary); text-decoration:underline; }
+.msg.assistant .msg-bubble hr {
+  border:none; border-top:1px solid var(--primary-light); margin:12px 0;
+}
+
+/* 消息中的图片 */
+.msg-image {
+  max-width:200px; max-height:200px; border-radius:12px; margin-bottom:6px;
+  display:block; cursor:pointer; object-fit:cover;
+}
+.msg.user .msg-image { border-radius:12px 4px 12px 12px; }
+
+/* 附件预览条 */
+.attach-preview {
+  display:none; padding:6px 12px 2px;
+  background:var(--surface); border-top:1px solid var(--primary-light);
+  flex-wrap:wrap; gap:8px; align-items:center;
+}
+.attach-preview.show { display:flex; }
+.attach-preview-item {
+  position:relative; display:inline-flex; align-items:center;
+  background:var(--surface2); border-radius:10px; overflow:hidden;
+}
+.attach-preview-item img {
+  width:52px; height:52px; object-fit:cover; border-radius:10px;
+}
+.attach-preview-item .file-info {
+  padding:6px 10px; font-size:12px; color:var(--text); max-width:140px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.attach-remove {
+  position:absolute; top:-4px; right:-4px;
+  width:20px; height:20px; border:none; background:var(--text);
+  color:var(--text-white); border-radius:50%; font-size:11px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+
 /* 思维链折叠行 */
 .thinking-toggle {
   display:flex; align-items:center; gap:6px;
   padding:6px 0; margin-bottom:2px; cursor:pointer;
-  font-size:13px; color:var(--text-light); max-width:82%;
+  font-size:13px; color:var(--text-light); max-width:78%;
   -webkit-user-select:none; user-select:none;
 }
 .thinking-toggle:active { opacity:.6; }
@@ -129,7 +209,7 @@ body {
 
 .typing-indicator {
   display:none; padding:10px 14px; background:var(--surface);
-  border-radius:var(--radius); border-bottom-left-radius:4px;
+  border-radius:4px 18px 18px 18px;
   box-shadow:0 1px 4px var(--shadow); width:fit-content; margin-bottom:12px;
 }
 .typing-indicator.show { display:block; }
@@ -147,6 +227,13 @@ body {
   background:var(--surface); border-top:1px solid var(--primary-light);
   display:flex; align-items:flex-end; gap:8px;
 }
+.attach-btn {
+  width:40px; height:40px; border:none; background:none;
+  color:var(--primary); font-size:22px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:transform .15s;
+}
+.attach-btn:active { transform:scale(.85); }
 .input-wrap {
   flex:1; background:var(--surface2); border-radius:20px;
   padding:8px 16px; display:flex; align-items:flex-end;
@@ -312,6 +399,43 @@ body {
   white-space:pre-wrap; word-break:break-word;
 }
 
+/* 图片预览浮层 */
+.img-viewer {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.85); z-index:500;
+  justify-content:center; align-items:center; cursor:pointer;
+}
+.img-viewer.open { display:flex; }
+.img-viewer img {
+  max-width:92%; max-height:88vh; object-fit:contain; border-radius:8px;
+}
+
+/* 重命名弹窗 */
+.rename-modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.35); z-index:500;
+  justify-content:center; align-items:center;
+}
+.rename-modal.open { display:flex; }
+.rename-box {
+  background:var(--surface); border-radius:var(--radius); padding:24px;
+  width:280px; box-shadow:0 8px 32px rgba(0,0,0,.15);
+}
+.rename-box h3 { font-size:16px; margin-bottom:14px; color:var(--text); }
+.rename-box input {
+  width:100%; padding:10px 12px; border:1.5px solid var(--primary-light);
+  border-radius:var(--radius-sm); font-size:14px; color:var(--text);
+  background:var(--bg); outline:none; margin-bottom:14px;
+}
+.rename-box input:focus { border-color:var(--primary); }
+.rename-btns { display:flex; gap:8px; justify-content:flex-end; }
+.rename-btns button {
+  padding:8px 18px; border:none; border-radius:var(--radius-sm);
+  font-size:14px; font-weight:500; cursor:pointer;
+}
+.rename-cancel { background:var(--surface2); color:var(--text); }
+.rename-confirm { background:var(--primary); color:var(--text-white); }
+
 /* 空状态 */
 .empty-state {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -357,13 +481,20 @@ body {
   <div class="empty-state"><div class="emoji">🌸</div><p>你好呀～<br>我是 Little，有什么想聊的？</p></div>
 </div>
 
+<!-- 附件预览条 -->
+<div class="attach-preview" id="attachPreview"></div>
+
 <!-- 输入区 -->
 <div class="input-area">
+  <button class="attach-btn" onclick="openFilePicker()">📎</button>
   <div class="input-wrap">
     <textarea id="msgInput" rows="1" placeholder="说点什么..." oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
   </div>
   <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
 </div>
+
+<!-- 隐藏的文件选择器 -->
+<input type="file" id="fileInput" accept="image/*,.txt,.md,.json,.csv,.log,.xml,.html,.css,.js,.py,.java,.c,.cpp,.ts,.yaml,.yml,.toml,.ini,.cfg,.conf" multiple style="display:none" onchange="handleFileSelect(event)">
 
 <!-- 设置页 -->
 <div class="overlay-page" id="settingsPage">
@@ -422,7 +553,7 @@ body {
     </div>
     <div class="settings-group">
       <h3>关于</h3>
-      <div class="setting-row"><label>Little v0.4.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA 🌸</p></div>
+      <div class="setting-row"><label>Little v0.5.0</label><p style="font-size:13px;color:var(--text-light)">一个有记忆的 AI 聊天 PWA</p></div>
     </div>
     <button class="save-btn" onclick="saveSettings()">保存设置</button>
   </div>
@@ -448,7 +579,7 @@ body {
 <div class="overlay-page" id="memoryPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('memoryPage')">←</button>
-    <h2>🧠 记忆库</h2>
+    <h2>记忆库</h2>
   </div>
   <div class="overlay-body">
     <div class="memory-add-box">
@@ -481,6 +612,23 @@ body {
   <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
 </div>
 
+<!-- 图片查看浮层 -->
+<div class="img-viewer" id="imgViewer" onclick="closeImgViewer()">
+  <img id="imgViewerSrc" src="">
+</div>
+
+<!-- 重命名弹窗 -->
+<div class="rename-modal" id="renameModal">
+  <div class="rename-box">
+    <h3>重命名对话</h3>
+    <input type="text" id="renameInput" placeholder="输入新名称..." maxlength="50">
+    <div class="rename-btns">
+      <button class="rename-cancel" onclick="closeRename()">取消</button>
+      <button class="rename-confirm" onclick="confirmRename()">确定</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -488,6 +636,23 @@ body {
 <style id="customCSSTag"></style>
 
 <script>
+// ==================== Markdown 配置 ====================
+if (typeof marked !== 'undefined') {
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+    highlight: function(code, lang) {
+      if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+        try { return hljs.highlight(code, { language: lang }).value; } catch {}
+      }
+      if (typeof hljs !== 'undefined') {
+        try { return hljs.highlightAuto(code).value; } catch {}
+      }
+      return code;
+    }
+  });
+}
+
 // ==================== 存储层 ====================
 const DB = {
   get(k,d=null){try{const v=localStorage.getItem('little_'+k);return v?JSON.parse(v):d}catch{return d}},
@@ -632,11 +797,13 @@ let state = {
   generating: false
 };
 
-// 确保旧版设置兼容（升级时补字段）
+// 确保旧版设置兼容
 if (state.settings.thinking === undefined) state.settings.thinking = 'off';
 if (state.settings.customCSS === undefined) state.settings.customCSS = '';
 
 let fetchedModels = [];
+let pendingAttachments = []; // 待发送的附件列表
+let renamingChatId = null;
 
 function saveState() {
   DB.set('chats', state.chats);
@@ -686,6 +853,18 @@ function getTimeContext() {
 
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// ==================== Markdown 渲染 ====================
+function renderMarkdown(text) {
+  if (typeof marked !== 'undefined') {
+    try {
+      return marked.parse(text);
+    } catch {
+      return escHtml(text).replace(/\n/g, '<br>');
+    }
+  }
+  return escHtml(text).replace(/\n/g, '<br>');
+}
+
 // ==================== 自定义 CSS ====================
 function applyCustomCSS() {
   const tag = document.getElementById('customCSSTag');
@@ -721,6 +900,33 @@ function deleteChat(id, e) {
   saveState(); renderChatList(); renderMessages();
 }
 
+function renameChat(id, e) {
+  e.stopPropagation();
+  renamingChatId = id;
+  const chat = state.chats[id];
+  document.getElementById('renameInput').value = chat ? chat.title : '';
+  document.getElementById('renameModal').classList.add('open');
+  setTimeout(() => document.getElementById('renameInput').focus(), 100);
+}
+
+function closeRename() {
+  document.getElementById('renameModal').classList.remove('open');
+  renamingChatId = null;
+}
+
+function confirmRename() {
+  const newTitle = document.getElementById('renameInput').value.trim();
+  if (!newTitle || !renamingChatId) { closeRename(); return; }
+  state.chats[renamingChatId].title = newTitle;
+  saveState();
+  renderChatList();
+  if (renamingChatId === state.currentChatId) {
+    document.getElementById('headerTitle').textContent = newTitle;
+  }
+  closeRename();
+  showToast('已重命名');
+}
+
 function currentChat() { return state.currentChatId ? state.chats[state.currentChatId] : null; }
 
 function renderChatList() {
@@ -734,7 +940,10 @@ function renderChatList() {
     const c = state.chats[id];
     return `<div class="chat-item ${id===state.currentChatId?'active':''}" onclick="switchChat('${id}')">
       <span class="chat-item-title">${escHtml(c.title)}</span>
-      <button class="chat-item-del" onclick="deleteChat('${id}',event)">✕</button>
+      <div class="chat-item-actions">
+        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="重命名">✎</button>
+        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="删除">✕</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -747,6 +956,16 @@ function openThinking(text) {
 
 function closeThinking() {
   document.getElementById('thinkingOverlay').classList.remove('open');
+}
+
+// ==================== 图片查看 ====================
+function viewImage(src) {
+  document.getElementById('imgViewerSrc').src = src;
+  document.getElementById('imgViewer').classList.add('open');
+}
+
+function closeImgViewer() {
+  document.getElementById('imgViewer').classList.remove('open');
 }
 
 // ==================== 消息渲染 ====================
@@ -774,9 +993,36 @@ function renderMessages() {
           <span class="thinking-arrow">›</span>
         </div>`;
       }
+
+      // 图片渲染
+      let imagesHtml = '';
+      if (m.images && m.images.length > 0) {
+        imagesHtml = m.images.map(img =>
+          `<img class="msg-image" src="${img}" onclick="viewImage(this.src)">`
+        ).join('');
+      }
+
+      // 文件标注
+      let filesHtml = '';
+      if (m.files && m.files.length > 0) {
+        filesHtml = m.files.map(f =>
+          `<div style="font-size:12px;color:${m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)'};margin-bottom:4px">📄 ${escHtml(f)}</div>`
+        ).join('');
+      }
+
+      // 内容渲染
+      let contentHtml;
+      if (m.role === 'assistant') {
+        contentHtml = renderMarkdown(m.content);
+      } else {
+        contentHtml = escHtml(m.content).replace(/\n/g, '<br>');
+      }
+
       return `<div class="msg ${m.role}"><div>
         ${thinkingHtml}
-        <div class="msg-bubble">${escHtml(m.content)}</div>
+        ${imagesHtml}
+        ${filesHtml}
+        <div class="msg-bubble">${contentHtml}</div>
         <div class="msg-time">${m.time ? fmtTime(m.time) : ''}</div>
       </div></div>`;
     }).join('')
@@ -792,6 +1038,75 @@ function scrollToBottom() {
 // ==================== 输入框 ====================
 function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
 function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+// ==================== 附件处理 ====================
+function openFilePicker() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  files.forEach(file => {
+    if (file.type.startsWith('image/')) {
+      // 图片：读取为 base64
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        pendingAttachments.push({
+          type: 'image',
+          name: file.name,
+          data: ev.target.result // data:image/...;base64,...
+        });
+        renderAttachPreview();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // 文本文件：读取内容
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        pendingAttachments.push({
+          type: 'file',
+          name: file.name,
+          data: ev.target.result // 文本内容
+        });
+        renderAttachPreview();
+      };
+      reader.readAsText(file);
+    }
+  });
+
+  // 清空 input 以便再次选择同一文件
+  e.target.value = '';
+}
+
+function renderAttachPreview() {
+  const el = document.getElementById('attachPreview');
+  if (pendingAttachments.length === 0) {
+    el.classList.remove('show');
+    el.innerHTML = '';
+    return;
+  }
+  el.classList.add('show');
+  el.innerHTML = pendingAttachments.map((att, i) => {
+    if (att.type === 'image') {
+      return `<div class="attach-preview-item">
+        <img src="${att.data}" alt="${escHtml(att.name)}">
+        <button class="attach-remove" onclick="removeAttach(${i})">✕</button>
+      </div>`;
+    } else {
+      return `<div class="attach-preview-item">
+        <div class="file-info">📄 ${escHtml(att.name)}</div>
+        <button class="attach-remove" onclick="removeAttach(${i})">✕</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+function removeAttach(index) {
+  pendingAttachments.splice(index, 1);
+  renderAttachPreview();
+}
 
 // ==================== 记忆检索 & 构建 prompt ====================
 async function retrieveMemories(query) {
@@ -810,7 +1125,6 @@ async function buildSystemPrompt(userQuery) {
   const s = state.settings;
   let sys = s.systemPrompt || '';
 
-  // 思维链中文引导（注入到 system prompt，让 thinking 用中文）
   if (s.thinking === 'on') {
     sys += '\n\n请在思考时使用中文。';
   }
@@ -854,7 +1168,9 @@ async function buildSystemPrompt(userQuery) {
 async function sendMessage() {
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
-  if (!text || state.generating) return;
+  const attachments = [...pendingAttachments];
+
+  if ((!text && attachments.length === 0) || state.generating) return;
 
   if (!state.settings.apiUrl || !state.settings.apiKey) {
     showToast('请先在设置中配置 API');
@@ -869,12 +1185,42 @@ async function sendMessage() {
   }
 
   const chat = currentChat();
-  chat.messages.push({ role: 'user', content: text, time: Date.now() });
 
-  if (chat.messages.filter(m => m.role === 'user').length === 1) {
-    chat.title = text.slice(0, 20) + (text.length > 20 ? '...' : '');
+  // 构建用户消息对象
+  const msgObj = { role: 'user', content: text || '', time: Date.now() };
+
+  // 收集图片和文件
+  const imageDataUrls = [];
+  const fileNames = [];
+  let fileContents = '';
+
+  attachments.forEach(att => {
+    if (att.type === 'image') {
+      imageDataUrls.push(att.data);
+    } else {
+      fileNames.push(att.name);
+      fileContents += `\n\n--- 文件: ${att.name} ---\n${att.data}`;
+    }
+  });
+
+  if (imageDataUrls.length > 0) {
+    msgObj.images = imageDataUrls;
+  }
+  if (fileNames.length > 0) {
+    msgObj.files = fileNames;
+    // 将文件内容附加到消息文本
+    msgObj.content = (text || '') + fileContents;
   }
 
+  chat.messages.push(msgObj);
+
+  if (chat.messages.filter(m => m.role === 'user').length === 1) {
+    chat.title = (text || attachments[0]?.name || '新对话').slice(0, 20) + ((text || '').length > 20 ? '...' : '');
+  }
+
+  // 清空输入和附件
+  pendingAttachments = [];
+  renderAttachPreview();
   saveState();
   input.value = '';
   input.style.height = 'auto';
@@ -888,18 +1234,17 @@ async function sendMessage() {
   scrollToBottom();
 
   try {
-    const systemPrompt = await buildSystemPrompt(text);
+    const systemPrompt = await buildSystemPrompt(text || '(用户发送了图片)');
     const result = await callAPI(chat, systemPrompt);
 
     const { cleanReply, newMemories } = extractMemories(result.content);
 
-    const msgObj = { role: 'assistant', content: cleanReply, time: Date.now() };
-    // 存储思维链内容
+    const replyObj = { role: 'assistant', content: cleanReply, time: Date.now() };
     if (result.thinking) {
-      msgObj.thinking = result.thinking;
+      replyObj.thinking = result.thinking;
     }
 
-    chat.messages.push(msgObj);
+    chat.messages.push(replyObj);
     state.lastChatTime = Date.now();
     saveState();
     renderMessages();
@@ -926,8 +1271,26 @@ async function callAPI(chat, systemPrompt) {
   const url = s.apiUrl.replace(/\/+$/, '') + '/chat/completions';
 
   const messages = [{ role: 'system', content: systemPrompt }];
+
+  // 构建发送给 API 的消息，支持图片（vision 格式）
   chat.messages.slice(-30).forEach(m => {
-    messages.push({ role: m.role, content: m.content });
+    if (m.role === 'user' && m.images && m.images.length > 0) {
+      // 有图片时用 vision 格式的 content 数组
+      const contentParts = [];
+      if (m.content) {
+        // 去掉附加的文件内容（文件内容已经在 content 中了，直接发）
+        contentParts.push({ type: 'text', text: m.content });
+      }
+      m.images.forEach(imgUrl => {
+        contentParts.push({
+          type: 'image_url',
+          image_url: { url: imgUrl }
+        });
+      });
+      messages.push({ role: 'user', content: contentParts });
+    } else {
+      messages.push({ role: m.role, content: m.content });
+    }
   });
 
   const body = { model: s.model, messages, stream: false };
@@ -950,19 +1313,13 @@ async function callAPI(chat, systemPrompt) {
   const msg = data.choices?.[0]?.message;
   const content = msg?.content || '(无回复)';
 
-  // 提取思维链：兼容多种中转站返回格式
   let thinking = null;
   if (s.thinking === 'on') {
-    // 格式1: message.reasoning_content（OpenAI 兼容格式，DeepSeek 风格）
     if (msg?.reasoning_content) {
       thinking = msg.reasoning_content;
-    }
-    // 格式2: message.reasoning（有些中转站用这个）
-    else if (msg?.reasoning) {
+    } else if (msg?.reasoning) {
       thinking = msg.reasoning;
-    }
-    // 格式3: message.thinking（有些中转站用这个）
-    else if (msg?.thinking) {
+    } else if (msg?.thinking) {
       thinking = msg.thinking;
     }
   }
@@ -1008,7 +1365,7 @@ async function storeMemories(memories) {
   if (stored > 0) {
     const catNames = { profile:'画像', warm:'暖记忆', fact:'事实', corridor:'便条' };
     const cats = [...new Set(memories.map(m => catNames[m.category] || m.category))];
-    showToast(`记住了 ${stored} 条${cats.join('/')} 🧠`);
+    showToast(`记住了 ${stored} 条${cats.join('/')}`);
   }
 }
 
@@ -1036,7 +1393,7 @@ async function addManualMemory() {
     await vectorStore.add(mem);
     document.getElementById('memAddText').value = '';
     document.getElementById('memAddText').style.height = 'auto';
-    showToast('记忆已添加 ✓');
+    showToast('记忆已添加');
     await renderMemoryList();
   } catch (e) {
     showToast('添加失败: ' + e.message);
@@ -1151,7 +1508,7 @@ function saveSettings() {
   };
   saveState();
   applyCustomCSS();
-  showToast('设置已保存 ✓');
+  showToast('设置已保存');
   closePage('settingsPage');
 }
 
