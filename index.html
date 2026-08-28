@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Little">
+<meta name="theme-color" content="#faf0f4">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<title>Little</title>
+<style>
+/* ========== CSS 变量 & 基础 ========== */
+:root {
+  --bg: #fdf6f0;
+  --surface: #ffffff;
+  --surface2: #faf0f4;
+  --primary: #b8a9c9;
+  --primary-light: #e8dff0;
+  --accent: #f4b8c1;
+  --accent2: #a8d8cb;
+  --accent3: #f7d794;
+  --text: #4a4458;
+  --text-light: #8a829a;
+  --text-white: #ffffff;
+  --shadow: rgba(186, 169, 201, 0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, 'SF Pro Text', 'PingFang SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== 顶栏 ========== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 16px 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--primary-light);
+  min-height: 52px;
+  z-index: 100;
+}
+
+.header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  text-align: center;
+}
+
+.header-btn {
+  width: 36px; height: 36px;
+  border: none; background: var(--surface2);
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.header-btn:active { transform: scale(0.9); }
+
+/* ========== 侧栏（对话列表） ========== */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 200;
+}
+.sidebar-overlay.open { display: block; }
+
+.sidebar {
+  position: fixed;
+  left: -280px; top: 0; bottom: 0;
+  width: 280px;
+  background: var(--surface);
+  z-index: 201;
+  transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+  padding-top: calc(var(--safe-top) + 12px);
+}
+.sidebar.open { left: 0; }
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 16px;
+}
+
+.sidebar-header h2 {
+  font-size: 20px;
+  color: var(--text);
+}
+
+.new-chat-btn {
+  width: 36px; height: 36px;
+  border: none;
+  background: var(--primary);
+  color: var(--text-white);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-item {
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s;
+}
+.chat-item:active, .chat-item.active {
+  background: var(--primary-light);
+}
+
+.chat-item-title {
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-item-del {
+  width: 24px; height: 24px;
+  border: none; background: none;
+  color: var(--text-light);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* ========== 聊天区域 ========== */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.msg {
+  display: flex;
+  margin-bottom: 12px;
+  max-width: 100%;
+}
+
+.msg.user { justify-content: flex-end; }
+.msg.assistant { justify-content: flex-start; }
+
+.msg-bubble {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 15px;
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+  position: relative;
+}
+
+.msg.user .msg-bubble {
+  background: var(--primary);
+  color: var(--text-white);
+  border-bottom-right-radius: 4px;
+}
+
+.msg.assistant .msg-bubble {
+  background: var(--surface);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
+.msg-time {
+  font-size: 10px;
+  color: var(--text-light);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.msg.user .msg-time { text-align: right; }
+
+.typing-indicator {
+  display: none;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px var(--shadow);
+  width: fit-content;
+  margin-bottom: 12px;
+}
+
+.typing-indicator.show { display: block; }
+
+.typing-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin: 0 2px;
+  animation: bounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ========== 输入区 ========== */
+.input-area {
+  padding: 8px 12px calc(var(--safe-bottom) + 8px);
+  background: var(--surface);
+  border-top: 1px solid var(--primary-light);
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.input-wrap {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.input-wrap textarea {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 15px;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.send-btn {
+  width: 40px; height: 40px;
+  border: none;
+  background: var(--primary);
+  color: var(--text-white);
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+.send-btn:active { transform: scale(0.9); }
+.send-btn:disabled { opacity: 0.5; }
+
+/* ========== 设置页 ========== */
+.settings-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  flex-direction: column;
+  padding-top: calc(var(--safe-top) + 8px);
+}
+.settings-overlay.open { display: flex; }
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px 16px;
+  gap: 12px;
+}
+
+.settings-header h2 {
+  font-size: 20px;
+  flex: 1;
+}
+
+.settings-back {
+  width: 36px; height: 36px;
+  border: none; background: var(--surface);
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-group {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.settings-group h3 {
+  font-size: 13px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.setting-row {
+  margin-bottom: 12px;
+}
+.setting-row:last-child { margin-bottom: 0; }
+
+.setting-row label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.setting-row input, .setting-row textarea, .setting-row select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.setting-row input:focus, .setting-row textarea:focus {
+  border-color: var(--primary);
+}
+
+.setting-row textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.save-settings-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background: var(--primary);
+  color: var(--text-white);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 80px);
+  left: 50%; transform: translateX(-50%);
+  background: var(--text);
+  color: var(--text-white);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-light);
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-state .emoji {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ========== 记忆库页面 ========== */
+.memory-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  flex-direction: column;
+  padding-top: calc(var(--safe-top) + 8px);
+}
+.memory-overlay.open { display: flex; }
+
+.memory-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.memory-item {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.memory-item-text { flex: 1; }
+
+.memory-item-time {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.memory-item-del {
+  width: 24px; height: 24px;
+  border: none; background: var(--accent);
+  color: var(--text-white);
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.memory-empty {
+  text-align: center;
+  color: var(--text-light);
+  padding: 40px;
+  font-size: 14px;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="header">
+  <button class="header-btn" onclick="toggleSidebar()" aria-label="菜单">☰</button>
+  <div class="header-title" id="headerTitle">Little</div>
+  <button class="header-btn" onclick="openMemory()" aria-label="记忆库">🧠</button>
+  <button class="header-btn" onclick="openSettings()" aria-label="设置" style="margin-left:4px">⚙️</button>
+</div>
+
+<!-- 侧栏 -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>对话</h2>
+    <button class="new-chat-btn" onclick="newChat()" aria-label="新对话">+</button>
+  </div>
+  <div class="chat-list" id="chatList"></div>
+</div>
+
+<!-- 聊天区域 -->
+<div class="chat-area" id="chatArea">
+  <div class="empty-state" id="emptyState">
+    <div class="emoji">🌸</div>
+    <p>你好呀～<br>我是 Little，有什么想聊的？</p>
+  </div>
+</div>
+
+<!-- 输入区 -->
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea id="msgInput" rows="1" placeholder="说点什么..." 
+      oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+  </div>
+  <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="发送">↑</button>
+</div>
+
+<!-- 设置页 -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-header">
+    <button class="settings-back" onclick="closeSettings()">←</button>
+    <h2>设置</h2>
+  </div>
+  <div class="settings-body">
+    <div class="settings-group">
+      <h3>API 配置</h3>
+      <div class="setting-row">
+        <label>接口地址</label>
+        <input type="url" id="setApiUrl" placeholder="https://your-proxy.com/v1">
+      </div>
+      <div class="setting-row">
+        <label>API Key</label>
+        <input type="password" id="setApiKey" placeholder="sk-...">
+      </div>
+      <div class="setting-row">
+        <label>模型</label>
+        <input type="text" id="setModel" placeholder="gpt-4o / claude-sonnet-4-20250514 ...">
+      </div>
+    </div>
+    <div class="settings-group">
+      <h3>AI 人设</h3>
+      <div class="setting-row">
+        <label>System Prompt</label>
+        <textarea id="setSystemPrompt" placeholder="你是一个可爱的 AI 助手..."></textarea>
+      </div>
+    </div>
+    <div class="settings-group">
+      <h3>记忆系统</h3>
+      <div class="setting-row">
+        <label>自动记忆</label>
+        <select id="setAutoMemory">
+          <option value="on">开启 - AI 自动提取重要信息</option>
+          <option value="off">关闭</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>向量接口地址（可选）</label>
+        <input type="url" id="setVectorUrl" placeholder="https://your-vector-api.com">
+      </div>
+      <div class="setting-row">
+        <label>向量 API Key（可选）</label>
+        <input type="password" id="setVectorKey" placeholder="可选">
+      </div>
+    </div>
+    <div class="settings-group">
+      <h3>关于</h3>
+      <div class="setting-row">
+        <label>Little v0.1.0</label>
+        <p style="font-size:13px;color:var(--text-light)">一个轻量的 AI 聊天 PWA 🌸</p>
+      </div>
+    </div>
+    <button class="save-settings-btn" onclick="saveSettings()">保存设置</button>
+  </div>
+</div>
+
+<!-- 记忆库页面 -->
+<div class="memory-overlay" id="memoryOverlay">
+  <div class="settings-header">
+    <button class="settings-back" onclick="closeMemory()">←</button>
+    <h2>🧠 记忆库</h2>
+  </div>
+  <div class="memory-list" id="memoryList">
+    <div class="memory-empty">还没有记忆哦～</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 数据存储 ==========
+const DB = {
+  get(k, d = null) { try { const v = localStorage.getItem('little_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { localStorage.setItem('little_' + k, JSON.stringify(v)); },
+  del(k) { localStorage.removeItem('little_' + k); }
+};
+
+// ========== 状态 ==========
+let state = {
+  chats: DB.get('chats', {}),        // {id: {id, title, messages: [{role, content, time}], created}}
+  currentChatId: DB.get('currentChat', null),
+  settings: DB.get('settings', {
+    apiUrl: '',
+    apiKey: '',
+    model: 'gpt-4o',
+    systemPrompt: '你是 Little，一个温柔可爱的 AI 助手。你会记住和用户聊天中的重要信息。',
+    autoMemory: 'on',
+    vectorUrl: '',
+    vectorKey: ''
+  }),
+  memories: DB.get('memories', []),   // [{text, time, id}]
+  generating: false
+};
+
+function saveState() {
+  DB.set('chats', state.chats);
+  DB.set('currentChat', state.currentChatId);
+  DB.set('settings', state.settings);
+  DB.set('memories', state.memories);
+}
+
+// ========== Toast ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ========== 时间工具 ==========
+function now() { return new Date(); }
+function fmtTime(d) {
+  const dt = new Date(d);
+  return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+}
+function getTimeContext() {
+  const n = now();
+  const weekDays = ['日','一','二','三','四','五','六'];
+  return `当前时间：${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${weekDays[n.getDay()]} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
+
+// ========== 侧栏 ==========
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// ========== 对话管理 ==========
+function newChat() {
+  const id = 'chat_' + Date.now();
+  state.chats[id] = { id, title: '新对话', messages: [], created: Date.now() };
+  state.currentChatId = id;
+  saveState();
+  renderChatList();
+  renderMessages();
+  toggleSidebar();
+}
+
+function switchChat(id) {
+  state.currentChatId = id;
+  saveState();
+  renderChatList();
+  renderMessages();
+  toggleSidebar();
+}
+
+function deleteChat(id, e) {
+  e.stopPropagation();
+  if (!confirm('删除这个对话？')) return;
+  delete state.chats[id];
+  if (state.currentChatId === id) {
+    const keys = Object.keys(state.chats);
+    state.currentChatId = keys.length > 0 ? keys[keys.length - 1] : null;
+  }
+  saveState();
+  renderChatList();
+  renderMessages();
+}
+
+function currentChat() {
+  return state.currentChatId ? state.chats[state.currentChatId] : null;
+}
+
+function renderChatList() {
+  const el = document.getElementById('chatList');
+  const ids = Object.keys(state.chats).sort((a,b) => state.chats[b].created - state.chats[a].created);
+  if (ids.length === 0) {
+    el.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px">还没有对话～</p>';
+    return;
+  }
+  el.innerHTML = ids.map(id => {
+    const c = state.chats[id];
+    return `<div class="chat-item ${id === state.currentChatId ? 'active' : ''}" onclick="switchChat('${id}')">
+      <span class="chat-item-title">${escHtml(c.title)}</span>
+      <button class="chat-item-del" onclick="deleteChat('${id}', event)">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ========== 消息渲染 ==========
+function renderMessages() {
+  const area = document.getElementById('chatArea');
+  const chat = currentChat();
+  const title = document.getElementById('headerTitle');
+
+  if (!chat || chat.messages.length === 0) {
+    area.innerHTML = `<div class="empty-state" id="emptyState">
+      <div class="emoji">🌸</div>
+      <p>你好呀～<br>我是 Little，有什么想聊的？</p>
+    </div>`;
+    title.textContent = 'Little';
+    return;
+  }
+
+  title.textContent = chat.title;
+  area.innerHTML = chat.messages
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .map(m => `<div class="msg ${m.role}">
+      <div>
+        <div class="msg-bubble">${escHtml(m.content)}</div>
+        <div class="msg-time">${m.time ? fmtTime(m.time) : ''}</div>
+      </div>
+    </div>`).join('') + '<div class="typing-indicator" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  const area = document.getElementById('chatArea');
+  requestAnimationFrame(() => { area.scrollTop = area.scrollHeight; });
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ========== 输入框 ==========
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ========== 发送消息 ==========
+async function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || state.generating) return;
+
+  // 检查设置
+  if (!state.settings.apiUrl || !state.settings.apiKey) {
+    showToast('请先在设置中配置 API');
+    openSettings();
+    return;
+  }
+
+  // 如果没有当前对话，自动创建
+  if (!state.currentChatId) {
+    const id = 'chat_' + Date.now();
+    state.chats[id] = { id, title: '新对话', messages: [], created: Date.now() };
+    state.currentChatId = id;
+  }
+
+  const chat = currentChat();
+
+  // 添加用户消息
+  chat.messages.push({ role: 'user', content: text, time: Date.now() });
+
+  // 自动命名
+  if (chat.messages.filter(m => m.role === 'user').length === 1) {
+    chat.title = text.slice(0, 20) + (text.length > 20 ? '...' : '');
+  }
+
+  saveState();
+  input.value = '';
+  input.style.height = 'auto';
+  renderMessages();
+  renderChatList();
+
+  // 显示 typing
+  state.generating = true;
+  document.getElementById('sendBtn').disabled = true;
+  const typing = document.getElementById('typing');
+  if (typing) typing.classList.add('show');
+  scrollToBottom();
+
+  try {
+    const reply = await callAPI(chat);
+
+    chat.messages.push({ role: 'assistant', content: reply, time: Date.now() });
+    saveState();
+    renderMessages();
+    renderChatList();
+
+    // 自动记忆
+    if (state.settings.autoMemory === 'on') {
+      extractMemory(text, reply);
+    }
+
+  } catch (err) {
+    showToast('请求失败: ' + err.message);
+    console.error(err);
+  } finally {
+    state.generating = false;
+    document.getElementById('sendBtn').disabled = false;
+    const t = document.getElementById('typing');
+    if (t) t.classList.remove('show');
+  }
+}
+
+// ========== API 调用 ==========
+async function callAPI(chat) {
+  const s = state.settings;
+  const url = s.apiUrl.replace(/\/+$/, '') + '/chat/completions';
+
+  // 构建 messages
+  const messages = [];
+
+  // system prompt + 时间 + 记忆
+  let systemContent = (s.systemPrompt || '') + '\n\n' + getTimeContext();
+
+  if (state.memories.length > 0) {
+    const memText = state.memories.map(m => '- ' + m.text).join('\n');
+    systemContent += '\n\n[你的长期记忆]\n' + memText;
+  }
+
+  // 如果开启了自动记忆，加入提取指令
+  if (s.autoMemory === 'on') {
+    systemContent += '\n\n[记忆提取指令]\n如果用户分享了值得长期记住的个人信息（如名字、喜好、重要事件、习惯等），请在回复最末尾另起一行加上 [MEMORY: 要记住的内容]，可以有多条。如果没有值得记忆的内容，就不要加这个标记。';
+  }
+
+  messages.push({ role: 'system', content: systemContent });
+
+  // 对话历史（最近 30 条）
+  const history = chat.messages.slice(-30);
+  history.forEach(m => {
+    messages.push({ role: m.role, content: m.content });
+  });
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${s.apiKey}`
+    },
+    body: JSON.stringify({
+      model: s.model,
+      messages: messages,
+      stream: false
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`${res.status} ${errText.slice(0, 100)}`);
+  }
+
+  const data = await res.json();
+  let content = data.choices?.[0]?.message?.content || '(无回复)';
+
+  return content;
+}
+
+// ========== 自动记忆提取 ==========
+function extractMemory(userMsg, aiReply) {
+  const memRegex = /\[MEMORY:\s*(.+?)\]/g;
+  let match;
+  let cleaned = aiReply;
+  const newMemories = [];
+
+  while ((match = memRegex.exec(aiReply)) !== null) {
+    newMemories.push({
+      id: 'mem_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      text: match[1].trim(),
+      time: Date.now()
+    });
+    cleaned = cleaned.replace(match[0], '').trim();
+  }
+
+  if (newMemories.length > 0) {
+    state.memories.push(...newMemories);
+    saveState();
+
+    // 更新最后一条 AI 回复（去掉 MEMORY 标记）
+    const chat = currentChat();
+    if (chat && chat.messages.length > 0) {
+      const lastMsg = chat.messages[chat.messages.length - 1];
+      if (lastMsg.role === 'assistant') {
+        lastMsg.content = cleaned;
+        saveState();
+        renderMessages();
+      }
+    }
+
+    showToast(`记住了 ${newMemories.length} 条新记忆 🧠`);
+  }
+}
+
+// ========== 设置页 ==========
+function openSettings() {
+  const s = state.settings;
+  document.getElementById('setApiUrl').value = s.apiUrl || '';
+  document.getElementById('setApiKey').value = s.apiKey || '';
+  document.getElementById('setModel').value = s.model || '';
+  document.getElementById('setSystemPrompt').value = s.systemPrompt || '';
+  document.getElementById('setAutoMemory').value = s.autoMemory || 'on';
+  document.getElementById('setVectorUrl').value = s.vectorUrl || '';
+  document.getElementById('setVectorKey').value = s.vectorKey || '';
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function saveSettings() {
+  state.settings = {
+    apiUrl: document.getElementById('setApiUrl').value.trim(),
+    apiKey: document.getElementById('setApiKey').value.trim(),
+    model: document.getElementById('setModel').value.trim(),
+    systemPrompt: document.getElementById('setSystemPrompt').value,
+    autoMemory: document.getElementById('setAutoMemory').value,
+    vectorUrl: document.getElementById('setVectorUrl').value.trim(),
+    vectorKey: document.getElementById('setVectorKey').value.trim()
+  };
+  saveState();
+  showToast('设置已保存 ✓');
+  closeSettings();
+}
+
+// ========== 记忆库页面 ==========
+function openMemory() {
+  renderMemoryList();
+  document.getElementById('memoryOverlay').classList.add('open');
+}
+
+function closeMemory() {
+  document.getElementById('memoryOverlay').classList.remove('open');
+}
+
+function renderMemoryList() {
+  const el = document.getElementById('memoryList');
+  if (state.memories.length === 0) {
+    el.innerHTML = '<div class="memory-empty">还没有记忆哦～<br>开启自动记忆后，AI 会自动记住重要信息</div>';
+    return;
+  }
+  el.innerHTML = state.memories.map((m, i) => `<div class="memory-item">
+    <div>
+      <div class="memory-item-text">${escHtml(m.text)}</div>
+      <div class="memory-item-time">${fmtTime(m.time)}</div>
+    </div>
+    <button class="memory-item-del" onclick="deleteMemory('${m.id}')">✕</button>
+  </div>`).join('');
+}
+
+function deleteMemory(id) {
+  state.memories = state.memories.filter(m => m.id !== id);
+  saveState();
+  renderMemoryList();
+  showToast('已删除记忆');
+}
+
+// ========== 初始化 ==========
+function init() {
+  renderChatList();
+  renderMessages();
+
+  // 注册 Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+init();
+</script>
+</body>
+</html>
