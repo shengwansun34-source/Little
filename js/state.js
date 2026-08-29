@@ -1,4 +1,4 @@
-// ==================== Little state.js — 全局状态 & 基础工具 ====================
+// ==================== Little state.js — 全局状态 & 基础工具 v2.0 ====================
 
 // ==================== 全局状态 ====================
 let state={
@@ -12,8 +12,17 @@ let state={
     autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off',aiActivity:'50'
   }),
   lastChatTime:DB.get('lastChatTime',null),
-  generating:false
+  generating:false,
+  profile:DB.get('profile',{
+    basic:{name:'',birthday:'',location:'',occupation:''},
+    preferences:{food:'',color:'',music:'',style:'',other:''},
+    people:[],
+    habits:'',
+    notes:''
+  })
 };
+
+// 设置字段兼容
 if(!state.settings.thinking)state.settings.thinking='off';
 if(!state.settings.customCSS)state.settings.customCSS='';
 if(!state.settings.charName)state.settings.charName='Little';
@@ -22,6 +31,13 @@ if(!state.settings.splitReply)state.settings.splitReply='off';
 if(!state.settings.userName&&state.settings.userName!=='')state.settings.userName='';
 if(!state.settings.anniversary&&state.settings.anniversary!=='')state.settings.anniversary='';
 if(!state.settings.aiActivity)state.settings.aiActivity='50';
+
+// Profile 兼容
+if(!state.profile.basic)state.profile.basic={name:'',birthday:'',location:'',occupation:''};
+if(!state.profile.preferences)state.profile.preferences={food:'',color:'',music:'',style:'',other:''};
+if(!state.profile.people)state.profile.people=[];
+if(state.profile.habits===undefined)state.profile.habits='';
+if(state.profile.notes===undefined)state.profile.notes='';
 
 let currentTab='home';
 let fetchedModels=[];
@@ -39,6 +55,7 @@ let cachedAiAvatar=null;
 
 // ==================== 基础工具函数 ====================
 function saveSettings(){DB.set('settings',state.settings);DB.set('lastChatTime',state.lastChatTime);}
+function saveProfile(){DB.set('profile',state.profile);}
 function saveCurrentChatId(){DB.set('currentChat',state.currentChatId);}
 async function saveCurrentChat(){
   if(state.currentChatData){
@@ -68,6 +85,77 @@ function getTimeContext(){
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function renderMarkdown(text){if(typeof marked!=='undefined'){try{return marked.parse(text);}catch{}}return escHtml(text).replace(/\n/g,'<br>');}
 function applyCustomCSS(){document.getElementById('customCSSTag').textContent=state.settings.customCSS||'';}
+
+// ==================== Profile 工具函数 ====================
+function getProfileContext(){
+  const p=state.profile;
+  let ctx='';
+  const parts=[];
+  if(p.basic.name) parts.push('名字：'+p.basic.name);
+  if(p.basic.birthday) parts.push('生日：'+p.basic.birthday);
+  if(p.basic.location) parts.push('位置：'+p.basic.location);
+  if(p.basic.occupation) parts.push('职业：'+p.basic.occupation);
+  if(p.preferences.food) parts.push('喜欢的食物：'+p.preferences.food);
+  if(p.preferences.color) parts.push('喜欢的颜色：'+p.preferences.color);
+  if(p.preferences.music) parts.push('喜欢的音乐：'+p.preferences.music);
+  if(p.preferences.style) parts.push('沟通风格偏好：'+p.preferences.style);
+  if(p.preferences.other) parts.push('其他喜好：'+p.preferences.other);
+  if(p.people.length>0){
+    parts.push('重要的人：'+p.people.map(pe=>pe.name+'('+pe.relation+')').join('、'));
+  }
+  if(p.habits) parts.push('习惯：'+p.habits);
+  if(p.notes) parts.push('备注：'+p.notes);
+  if(parts.length>0){
+    ctx='\n\n[用户档案 Profile]\n'+parts.join('\n')+'\n（以上是你了解的用户信息，自然地运用，不要特意提及"根据你的档案"）';
+  }
+  return ctx;
+}
+
+// 检查 Profile 是否有内容
+function hasProfileContent(){
+  const p=state.profile;
+  return p.basic.name||p.basic.birthday||p.basic.location||p.basic.occupation||
+    p.preferences.food||p.preferences.color||p.preferences.music||p.preferences.style||p.preferences.other||
+    p.people.length>0||p.habits||p.notes;
+}
+
+// ==================== 上下文激活（日历/纪念日触发记忆） ====================
+function getContextTriggers(){
+  const triggers=[];
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+  const todayMD=todayStr.slice(5); // MM-DD
+
+  // 纪念日触发
+  if(state.settings.anniversary){
+    const annMD=state.settings.anniversary.slice(5);
+    const annDate=new Date(state.settings.anniversary+'T00:00:00');
+    const daysUntil=Math.floor((new Date(today.getFullYear()+'-'+annMD+'T00:00:00')-today)/(86400000));
+    if(daysUntil>=0 && daysUntil<=3) triggers.push('纪念日快到了（'+daysUntil+'天后）');
+    if(daysUntil===0) triggers.push('今天是纪念日');
+  }
+
+  // 日历事件触发
+  const events=DB.get('calendarEvents',[]);
+  events.forEach(ev=>{
+    let match=false;
+    if(ev.repeat==='yes') match=ev.date.slice(5)===todayMD;
+    else match=ev.date===todayStr;
+    if(match) triggers.push('今天有事件：'+ev.title+'（'+ev.type+'）');
+  });
+
+  // 检查即将到来的事件（3天内）
+  events.forEach(ev=>{
+    let evDate;
+    if(ev.repeat==='yes') evDate=today.getFullYear()+'-'+ev.date.slice(5);
+    else evDate=ev.date;
+    const d=new Date(evDate+'T00:00:00');
+    const diff=Math.floor((d-today)/(86400000));
+    if(diff>0 && diff<=3) triggers.push(diff+'天后有事件：'+ev.title);
+  });
+
+  return triggers;
+}
 
 // ==================== 开屏动画 ====================
 function hideSplash(){
@@ -144,9 +232,18 @@ async function loadWeather(){
   }catch{el.textContent='Tap to load';if(sub)sub.textContent='';}
 }
 
-// ==================== Memory 页面计数 ====================
+// ==================== Memory 页面计数 v2.0 ====================
 async function updateMemoryGrid(){
-  try{const mems=await vectorStore.getAll();const el=document.getElementById('memBankCount');if(el)el.textContent=mems.length+' memories';}catch{}
+  try{
+    const mems=await vectorStore.getAll();
+    const coreCount=mems.filter(m=>m.core===true).length;
+    const el=document.getElementById('memBankCount');
+    if(el)el.textContent=mems.length+' memories'+(coreCount>0?' · '+coreCount+' core':'');
+  }catch{}
+  // Profile 计数
+  const profileEl=document.getElementById('profileCount');
+  if(profileEl) profileEl.textContent=hasProfileContent()?'Active':'Not set';
+
   const traces=DB.get('lightTraces',[]);const tel=document.getElementById('tracesCount');if(tel)tel.textContent=traces.length+' traces';
   const moods=DB.get('moodEntries',[]);const mel=document.getElementById('moodCount');if(mel)mel.textContent=moods.length+' entries';
   const whispers=DB.get('whisperEntries',[]);const wel=document.getElementById('whisperCount');if(wel)wel.textContent=whispers.length+' whispers';
