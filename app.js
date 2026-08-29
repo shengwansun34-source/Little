@@ -49,7 +49,7 @@ let state={
   chats:DB.get('chats',{}),
   currentChatId:DB.get('currentChat',null),
   settings:DB.get('settings',{
-    apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',
+    apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',charNickname:'',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
     autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off'
   }),
@@ -59,6 +59,7 @@ let state={
 if(!state.settings.thinking)state.settings.thinking='off';
 if(!state.settings.customCSS)state.settings.customCSS='';
 if(!state.settings.charName)state.settings.charName='Little';
+if(!state.settings.charNickname&&state.settings.charNickname!=='')state.settings.charNickname='';
 if(!state.settings.splitReply)state.settings.splitReply='off';
 
 let fetchedModels=[];
@@ -76,6 +77,7 @@ function saveState(){DB.set('chats',state.chats);DB.set('currentChat',state.curr
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 function now(){return new Date();}
 function fmtTime(d){const dt=new Date(d);return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}
+function getDisplayName(){return state.settings.charNickname||state.settings.charName||'Little';}
 function getTimeContext(){
   const n=now();const wd=['日','一','二','三','四','五','六'];
   let ctx=`当前时间：${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${wd[n.getDay()]} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
@@ -126,8 +128,8 @@ function renderChatList(){
 }
 
 // ==================== UI 更新 ====================
-function updateHeaderTitle(){document.getElementById('headerTitle').textContent=state.settings.charName||'Little';}
-function updateInputHint(){document.getElementById('msgInput').placeholder='Reply to '+(state.settings.charName||'Little');}
+function updateHeaderTitle(){document.getElementById('headerTitle').textContent=getDisplayName();}
+function updateInputHint(){document.getElementById('msgInput').placeholder='Reply to '+getDisplayName();}
 function updateModelTag(){
   const tag=document.getElementById('modelTag');const m=state.settings.model;
   tag.textContent=m?m.replace(/^\[.*?\]/,'').slice(0,18):'Not set';
@@ -376,6 +378,10 @@ async function sendSticker(id){
 async function retrieveMemories(q){try{if(state.settings.jinaKey){const qv=await getEmbedding(q);if(qv)return await vectorStore.search(qv,8);}return await vectorStore.searchByKeyword(q,8);}catch{return[];}}
 async function buildSystemPrompt(uq){
   const s=state.settings;let sys=s.systemPrompt||'';
+  // 注入备注感知
+  if(s.charNickname){
+    sys+='\n\n[身份信息]\n你的名字是'+s.charName+'，但用户给你起了一个亲密的备注叫「'+s.charNickname+'」。用户界面上显示的是这个备注。你知道这个备注的存在，可以自然地回应，但不需要每次都提及。';
+  }
   if(s.thinking==='on')sys+='\n\n请在思考时使用中文。';
   sys+='\n\n'+getTimeContext();
   const mems=await retrieveMemories(uq);
@@ -571,6 +577,7 @@ function openSettings(){
   document.getElementById('setApiKey').value=s.apiKey||'';
   document.getElementById('setModel').value=s.model||'';
   document.getElementById('setCharName').value=s.charName||'Little';
+  document.getElementById('setCharNickname').value=s.charNickname||'';
   document.getElementById('setSystemPrompt').value=s.systemPrompt||'';
   document.getElementById('setAutoMemory').value=s.autoMemory||'on';
   document.getElementById('setJinaKey').value=s.jinaKey||'';
@@ -585,6 +592,7 @@ function saveSettings(){
     apiKey:document.getElementById('setApiKey').value.trim(),
     model:document.getElementById('setModel').value.trim(),
     charName:document.getElementById('setCharName').value.trim()||'Little',
+    charNickname:document.getElementById('setCharNickname').value.trim(),
     systemPrompt:document.getElementById('setSystemPrompt').value,
     autoMemory:document.getElementById('setAutoMemory').value,
     jinaKey:document.getElementById('setJinaKey').value.trim(),
