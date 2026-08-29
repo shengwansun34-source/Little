@@ -1128,3 +1128,153 @@ body {
 .backup-import-summary .bis-row {
   font-size: 12px; color: var(--text-light); padding: 2px 0;
 }
+/* ==================== Light Traces 完整页面 ==================== */
+.trace-full-item {
+  background: var(--surface); border-radius: var(--radius-sm);
+  padding: 14px; margin-bottom: 10px;
+  box-shadow: 0 1px 6px var(--shadow);
+  position: relative;
+}
+.trace-full-text {
+  font-size: 13px; line-height: 1.65; color: var(--text);
+  padding-right: 28px;
+}
+.trace-full-date {
+  font-size: 10px; color: var(--text-light); margin-top: 8px;
+  letter-spacing: .5px;
+}
+.trace-full-actions {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 4px;
+}
+.trace-action-btn {
+  width: 26px; height: 26px; border: none; background: var(--surface2);
+  border-radius: 8px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; color: var(--text-light);
+  transition: background .15s;
+}
+.trace-action-btn:active { background: var(--bg2); }
+
+/* ==================== Mood 页面 ==================== */
+.mood-today {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 24px 20px; margin-bottom: 20px;
+  box-shadow: 0 2px 12px var(--shadow2);
+  text-align: center;
+}
+.mood-today-empty { color: var(--text-light); }
+.mood-today-empty p { font-size: 13px; margin-top: 10px; }
+.mood-icon-lg { width: 48px; height: 48px; }
+.mood-today-filled { text-align: center; }
+.mood-today-icon { margin-bottom: 10px; }
+.mood-today-icon svg { width: 44px; height: 44px; }
+.mood-today-label {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 6px; letter-spacing: .3px;
+}
+.mood-today-note {
+  font-size: 13px; color: var(--text); line-height: 1.6;
+  font-style: italic; padding: 0 8px;
+}
+.mood-today-time {
+  font-size: 10px; color: var(--text-light); margin-top: 10px;
+  letter-spacing: .5px;
+}
+.mood-history-title {
+  font-size: 12px; font-weight: 600; color: var(--text-light);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px; padding-left: 2px;
+}
+.mood-history-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--surface); border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: 0 1px 6px var(--shadow);
+  position: relative;
+}
+.mood-history-icon { flex-shrink: 0; padding-top: 2px; }
+.mood-history-icon svg { width: 28px; height: 28px; }
+.mood-history-body { flex: 1; min-width: 0; }
+.mood-history-label {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  margin-bottom: 3px;
+}
+.mood-history-note {
+  font-size: 12px; color: var(--text); line-height: 1.5;
+  opacity: .85;
+}
+.mood-history-time {
+  font-size: 10px; color: var(--text-light); margin-top: 4px;
+  letter-spacing: .3px;
+}
+.mood-del-btn {
+  position: absolute; top: 8px; right: 8px;
+  width: 24px; height: 24px; border: none; background: none;
+  cursor: pointer; color: var(--text-light); font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: background .15s;
+}
+.mood-del-btn:active { background: var(--surface2); }
+
+/* ==================== Whispers 页面 ==================== */
+.whisper-item {
+  background: var(--surface); border-radius: var(--radius-sm);
+  padding: 14px; margin-bottom: 10px;
+  box-shadow: 0 1px 6px var(--shadow);
+  position: relative;
+  border-left: 3px solid var(--accent);
+}
+.whisper-text {
+  font-size: 13px; line-height: 1.65; color: var(--text);
+  font-style: italic; padding-right: 24px;
+}
+.whisper-time {
+  font-size: 10px; color: var(--text-light); margin-top: 8px;
+  letter-spacing: .5px;
+}
+.whisper-del-btn {
+  position: absolute; top: 8px; right: 8px;
+  width: 24px; height: 24px; border: none; background: none;
+  cursor: pointer; color: var(--text-light); font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: background .15s;
+}
+.whisper-del-btn:active { background: var(--surface2); }
+
+/* ==================== Trace 编辑弹窗 ==================== */
+.trace-edit-modal {
+  display: none; position: fixed; inset: 0;
+  z-index: 500; background: rgba(0,0,0,.4);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.trace-edit-modal.open { display: flex; }
+.trace-edit-box {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 20px; width: 100%; max-width: 340px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+.trace-edit-box h3 {
+  font-size: 16px; margin-bottom: 12px; color: var(--text);
+}
+.trace-edit-box textarea {
+  width: 100%; border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 13px; line-height: 1.6; color: var(--text);
+  background: var(--surface2); resize: none; min-height: 80px;
+  font-family: inherit; outline: none;
+  transition: border-color .2s;
+}
+.trace-edit-box textarea:focus { border-color: var(--primary); }
+.trace-edit-btns {
+  display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end;
+}
+.trace-edit-cancel {
+  padding: 8px 16px; border: none; background: var(--surface2);
+  border-radius: 10px; font-size: 13px; color: var(--text-light);
+  cursor: pointer;
+}
+.trace-edit-save {
+  padding: 8px 16px; border: none; background: var(--primary);
+  border-radius: 10px; font-size: 13px; color: white;
+  cursor: pointer; font-weight: 500;
+}
