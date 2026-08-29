@@ -1,6 +1,6 @@
-// ==================== Little settings.js — 设置/模型/备份/初始化 ====================
+// ==================== Little settings.js — 设置/模型/备份/初始化 v2.0 ====================
 
-// ==================== Claude 导入 ====================
+// ==================== Claude 对话导入 ====================
 function handleClaudeImport(e){
   const file=e.target.files[0];if(!file)return;e.target.value='';showToast('Reading file...');
   const reader=new FileReader();
@@ -57,6 +57,141 @@ async function confirmImport(){
   }
   if(imported>0){renderChatList();showToast('Imported '+imported+' chat'+(imported>1?'s':''));}
   else{showToast('No messages to import');}closeImport();
+}
+
+// ==================== Claude 记忆导入 v2.0 ====================
+function handleClaudeMemoryImport(e){
+  const file=e.target.files[0];if(!file)return;e.target.value='';showToast('Reading memory file...');
+  const reader=new FileReader();
+  reader.onload=async(ev)=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      let importedMems=0;
+      let importedProfile=false;
+
+      // 1. 处理 conversations_memory（总结性文本 → 拆成记忆条目）
+      if(data.conversations_memory&&typeof data.conversations_memory==='string'){
+        const text=data.conversations_memory;
+        // 按段落拆分
+        const paragraphs=text.split(/\n\n+/).filter(p=>p.trim().length>10);
+        for(const para of paragraphs){
+          // 跳过 synthesis integrity 之类的 meta 段落
+          if(para.includes('synthesis integrity')||para.includes('synthesis guidelines'))continue;
+          // 按句子进一步拆分
+          const sentences=para.split(/[.。]\s*/).filter(s=>s.trim().length>5);
+          for(const sentence of sentences){
+            const cleanSentence=sentence.replace(/\*\*/g,'').replace(/^\s*[-*]\s*/,'').trim();
+            if(cleanSentence.length<5||cleanSentence.length>200)continue;
+            if(cleanSentence.includes('synthesis')||cleanSentence.includes('guidelines'))continue;
+            // 自动分类
+            let category='fact';
+            if(/喜欢|偏好|prefer|favorite|style|interest/i.test(cleanSentence))category='profile';
+            else if(/关心|care|love|warm|miss|感情/i.test(cleanSentence))category='warm';
+            const mem={
+              id:'mem_claude_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+              category:category,
+              text:cleanSentence,
+              time:Date.now(),
+              vector:null,
+              core:false,
+              weight:0.8,
+              lastRecalled:Date.now(),
+              tags:['claude-import'],
+              relatedTo:[]
+            };
+            // 去重检查
+            const similar=await vectorStore.findSimilar(cleanSentence,0.8);
+            if(similar.length===0){
+              if(state.settings.jinaKey)mem.vector=await getEmbedding(cleanSentence);
+              await vectorStore.add(mem);
+              importedMems++;
+            }
+          }
+        }
+      }
+
+      // 2. 处理 memory_files（profile.md → 填充 Profile）
+      if(data.memory_files&&Array.isArray(data.memory_files)){
+        for(const mf of data.memory_files){
+          if(mf.path==='/profile.md'&&mf.content){
+            const lines=mf.content.split('\n');
+            for(const line of lines){
+              const clean=line.replace(/^[-*]\s*/, '').replace(/$$stated$$\s*/i,'').replace(/$$observed$$\s*/i,'').replace(/$$inferred$$\s*/i,'').trim();
+              if(clean.length<3)continue;
+              if(clean.startsWith('---')||clean.startsWith('name:')||clean.startsWith('description:'))continue;
+              if(clean.startsWith('sources:')||clean.startsWith('aliases:'))continue;
+
+              // 尝试智能填充 Profile
+              if(/名字|叫做|name/i.test(clean)&&!state.profile.basic.name){
+                const nameMatch=clean.match(/(?:叫|叫做|名字是|called|name\s*(?:is)?)\s*[：:]*\s*(.+)/i);
+                if(nameMatch)state.profile.basic.name=nameMatch[1].trim().slice(0,20);
+                importedProfile=true;
+              }
+              if(/生日|birthday|born/i.test(clean)&&!state.profile.basic.birthday){
+                const dateMatch=clean.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/);
+                if(dateMatch)state.profile.basic.birthday=dateMatch[0];
+                importedProfile=true;
+              }
+              if(/在.*住|位置|location|based in|lives? in/i.test(clean)&&!state.profile.basic.location){
+                state.profile.basic.location=clean.slice(0,50);
+                importedProfile=true;
+              }
+              if(/职业|工作|occupation|work|job|前端|开发|developer/i.test(clean)&&!state.profile.basic.occupation){
+                state.profile.basic.occupation=clean.slice(0,50);
+                importedProfile=true;
+              }
+              if(/喜欢|偏好|prefer|favorite|love|enjoy/i.test(clean)){
+                if(/吃|食|食物|food|eat/i.test(clean)){
+                  state.profile.preferences.food=state.profile.preferences.food?(state.profile.preferences.food+', '+clean.slice(0,40)):clean.slice(0,40);
+                }else if(/音乐|music|song|听/i.test(clean)){
+                  state.profile.preferences.music=state.profile.preferences.music?(state.profile.preferences.music+', '+clean.slice(0,40)):clean.slice(0,40);
+                }else if(/颜色|color/i.test(clean)){
+                  state.profile.preferences.color=clean.slice(0,30);
+                }else{
+                  state.profile.preferences.other=state.profile.preferences.other?(state.profile.preferences.other+'; '+clean.slice(0,50)):clean.slice(0,50);
+                }
+                importedProfile=true;
+              }
+              if(/风格|style|沟通|communication|简短|brief|conversational/i.test(clean)){
+                state.profile.preferences.style=state.profile.preferences.style?(state.profile.preferences.style+'; '+clean.slice(0,60)):clean.slice(0,60);
+                importedProfile=true;
+              }
+
+              // 同时也作为记忆条目存储
+              if(clean.length>=8&&clean.length<=200){
+                let cat='fact';
+                if(/喜欢|偏好|prefer|favorite|style/i.test(clean))cat='profile';
+                const mem={
+                  id:'mem_claudep_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+                  category:cat,text:clean,time:Date.now(),
+                  vector:null,core:false,weight:0.8,lastRecalled:Date.now(),
+                  tags:['claude-import','profile'],relatedTo:[]
+                };
+                const similar=await vectorStore.findSimilar(clean,0.8);
+                if(similar.length===0){
+                  if(state.settings.jinaKey)mem.vector=await getEmbedding(clean);
+                  await vectorStore.add(mem);
+                  importedMems++;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if(importedProfile)saveProfile();
+
+      const summary=[];
+      if(importedMems>0)summary.push(importedMems+' memories');
+      if(importedProfile)summary.push('profile updated');
+      showToast(summary.length>0?'Imported: '+summary.join(', '):'No new data found');
+    }catch(err){
+      showToast('Import error: '+err.message);
+      console.error('[Little] Claude memory import error:',err);
+    }
+  };
+  reader.onerror=()=>showToast('Read failed');
+  reader.readAsText(file);
 }
 
 // ==================== 模型列表 ====================
@@ -124,27 +259,57 @@ function saveSettingsPage(){
 }
 function saveSettings_page(){saveSettingsPage();}
 
-// ==================== 记忆页面 ====================
+// ==================== 记忆页面（增强 v2.0） ====================
 async function openMemory(){await renderMemoryList();document.getElementById('memoryPage').classList.add('open');}
 function closePage(id){document.getElementById(id).classList.remove('open');}
+
 async function renderMemoryList(){
   const el=document.getElementById('memoryList');const statsEl=document.getElementById('memoryStats');
   try{const all=await vectorStore.getAll();
     if(all.length===0){statsEl.innerHTML='';el.innerHTML='<div class="memory-empty">No memories yet</div>';return;}
-    const counts={profile:0,warm:0,fact:0,corridor:0};all.forEach(m=>{counts[m.category]=(counts[m.category]||0)+1;});
+    const counts={profile:0,warm:0,fact:0,corridor:0};
+    let coreCount=0;
+    all.forEach(m=>{counts[m.category]=(counts[m.category]||0)+1;if(m.core)coreCount++;});
     statsEl.innerHTML='<div><div class="memory-stat-num">'+all.length+'</div><div class="memory-stat-label">Total</div></div>'
+      +'<div><div class="memory-stat-num" style="color:var(--accent3)">'+coreCount+'</div><div class="memory-stat-label">Core</div></div>'
       +'<div><div class="memory-stat-num">'+counts.profile+'</div><div class="memory-stat-label">Profile</div></div>'
       +'<div><div class="memory-stat-num">'+counts.fact+'</div><div class="memory-stat-label">Fact</div></div>'
-      +'<div><div class="memory-stat-num">'+counts.warm+'</div><div class="memory-stat-label">Warm</div></div>'
-      +'<div><div class="memory-stat-num">'+counts.corridor+'</div><div class="memory-stat-label">Note</div></div>';
-    all.sort((a,b)=>b.time-a.time);
-    el.innerHTML=all.map(m=>{const cn={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
-      return '<div class="memory-item"><div><div class="memory-item-text"><span class="memory-tag '+m.category+'">'+cn[m.category]+'</span>'+escHtml(m.text)+'</div>'
-      +'<div class="memory-item-meta">'+fmtTime(m.time)+(m.vector?' · vectorized':'')+'</div></div>'
-      +'<button class="memory-item-del" onclick="deleteMemory(\''+m.id+'\')">✕</button></div>';
+      +'<div><div class="memory-stat-num">'+counts.warm+'</div><div class="memory-stat-label">Warm</div></div>';
+
+    // 排序：core 置顶，然后按时间降序
+    all.sort((a,b)=>{
+      if(a.core&&!b.core)return -1;
+      if(!a.core&&b.core)return 1;
+      return b.time-a.time;
+    });
+
+    el.innerHTML=all.map(m=>{
+      const cn={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
+      const coreBtn=m.core
+        ?'<button class="mem-core-btn active" onclick="toggleCoreMemory(\''+m.id+'\')" title="Core Memory"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent3)" stroke="var(--accent3)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>'
+        :'<button class="mem-core-btn" onclick="toggleCoreMemory(\''+m.id+'\')" title="Set as Core"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text-light)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
+      const weightStr=m.weight!==undefined&&m.weight<1.0?' · w:'+m.weight.toFixed(2):'';
+      const tagBadges=(m.tags||[]).map(t=>'<span class="mem-tag-badge">'+escHtml(t)+'</span>').join('');
+      return '<div class="memory-item'+(m.core?' core-memory':'')+'">'
+        +'<div><div class="memory-item-text"><span class="memory-tag '+m.category+'">'+cn[m.category]+'</span>'+escHtml(m.text)+'</div>'
+        +'<div class="memory-item-meta">'+fmtTime(m.time)+(m.vector?' · vectorized':'')+weightStr+tagBadges+'</div></div>'
+        +'<div class="mem-item-actions">'+coreBtn
+        +'<button class="memory-item-del" onclick="deleteMemory(\''+m.id+'\')">✕</button></div>'
+        +'</div>';
     }).join('');
   }catch(e){el.innerHTML='<div class="memory-empty">Load error</div>';}
 }
+
+async function toggleCoreMemory(id){
+  const result=await vectorStore.toggleCore(id);
+  if(result==='limit'){
+    showToast('Core memory limit reached (30 max)');
+    return;
+  }
+  showToast(result?'Marked as core memory':'Removed from core');
+  await renderMemoryList();
+}
+
 async function deleteMemory(id){await vectorStore.remove(id);showToast('Deleted');renderMemoryList();}
 
 // ==================== 数据备份（导出/导入） ====================
@@ -203,7 +368,7 @@ async function startExport(){
       prog.innerHTML+=bpLine('wait','Exporting chats...');
       const chats=await chatStore.getAll();
       if(chats.length>0){
-        downloadJSON({type:'little_chats',version:'1.2.0',exported:Date.now(),data:chats},'little_chats_'+ts+'.json');
+        downloadJSON({type:'little_chats',version:'2.0.0',exported:Date.now(),data:chats},'little_chats_'+ts+'.json');
         count++;
         prog.innerHTML=prog.innerHTML.replace('Exporting chats...','Chats exported ('+chats.length+')');
       }else{
@@ -217,7 +382,7 @@ async function startExport(){
       prog.innerHTML+=bpLine('wait','Exporting memories...');
       const mems=await vectorStore.getAll();
       if(mems.length>0){
-        downloadJSON({type:'little_memories',version:'1.2.0',exported:Date.now(),data:mems},'little_memories_'+ts+'.json');
+        downloadJSON({type:'little_memories',version:'2.0.0',exported:Date.now(),data:mems},'little_memories_'+ts+'.json');
         count++;
         prog.innerHTML=prog.innerHTML.replace('Exporting memories...','Memories exported ('+mems.length+')');
       }else{
@@ -231,7 +396,7 @@ async function startExport(){
       prog.innerHTML+=bpLine('wait','Exporting stickers...');
       const stks=await stickerStore.getAll();
       if(stks.length>0){
-        downloadJSON({type:'little_stickers',version:'1.2.0',exported:Date.now(),data:stks},'little_stickers_'+ts+'.json');
+        downloadJSON({type:'little_stickers',version:'2.0.0',exported:Date.now(),data:stks},'little_stickers_'+ts+'.json');
         count++;
         prog.innerHTML=prog.innerHTML.replace('Exporting stickers...','Stickers exported ('+stks.length+')');
       }else{
@@ -245,17 +410,23 @@ async function startExport(){
       prog.innerHTML+=bpLine('wait','Exporting settings...');
       const bundle={
         settings:state.settings,
+        profile:state.profile,
         currentChatId:state.currentChatId,
         lastChatTime:state.lastChatTime,
         dailyQuote:DB.get('dailyQuote',null),
         lightTraces:DB.get('lightTraces',[]),
         currentTab:DB.get('currentTab','home'),
         userAvatar:cachedUserAvatar,
-        aiAvatar:cachedAiAvatar
+        aiAvatar:cachedAiAvatar,
+        moodEntries:DB.get('moodEntries',[]),
+        whisperEntries:DB.get('whisperEntries',[]),
+        todoList:DB.get('todoList',[]),
+        calendarEvents:DB.get('calendarEvents',[]),
+        periodRecords:DB.get('periodRecords',[])
       };
-      downloadJSON({type:'little_settings',version:'1.2.0',exported:Date.now(),data:bundle},'little_settings_'+ts+'.json');
+      downloadJSON({type:'little_settings',version:'2.0.0',exported:Date.now(),data:bundle},'little_settings_'+ts+'.json');
       count++;
-      prog.innerHTML=prog.innerHTML.replace('Exporting settings...','Settings & avatars exported');
+      prog.innerHTML=prog.innerHTML.replace('Exporting settings...','Settings & profile exported');
     }
 
     prog.innerHTML=prog.innerHTML.replace('Preparing data...',count>0?'All done! '+count+' file'+(count>1?'s':'')+' exported':'Nothing selected');
@@ -365,14 +536,51 @@ async function handleBackupImport(e){
           }
           saveSettings();
         }
+        // v2.0: Profile 导入
+        if(d.profile){
+          if(mode==='overwrite'){
+            state.profile=d.profile;
+          }else{
+            // merge: 只填充空字段
+            const dp=d.profile;
+            if(dp.basic){
+              if(!state.profile.basic.name&&dp.basic.name)state.profile.basic.name=dp.basic.name;
+              if(!state.profile.basic.birthday&&dp.basic.birthday)state.profile.basic.birthday=dp.basic.birthday;
+              if(!state.profile.basic.location&&dp.basic.location)state.profile.basic.location=dp.basic.location;
+              if(!state.profile.basic.occupation&&dp.basic.occupation)state.profile.basic.occupation=dp.basic.occupation;
+            }
+            if(dp.preferences){
+              if(!state.profile.preferences.food&&dp.preferences.food)state.profile.preferences.food=dp.preferences.food;
+              if(!state.profile.preferences.color&&dp.preferences.color)state.profile.preferences.color=dp.preferences.color;
+              if(!state.profile.preferences.music&&dp.preferences.music)state.profile.preferences.music=dp.preferences.music;
+              if(!state.profile.preferences.style&&dp.preferences.style)state.profile.preferences.style=dp.preferences.style;
+              if(!state.profile.preferences.other&&dp.preferences.other)state.profile.preferences.other=dp.preferences.other;
+            }
+            if(dp.people&&dp.people.length>0){
+              dp.people.forEach(p=>{
+                if(!state.profile.people.find(ep=>ep.name===p.name)){
+                  state.profile.people.push(p);
+                }
+              });
+            }
+            if(!state.profile.habits&&dp.habits)state.profile.habits=dp.habits;
+            if(!state.profile.notes&&dp.notes)state.profile.notes=dp.notes;
+          }
+          saveProfile();
+        }
         if(d.lastChatTime)state.lastChatTime=d.lastChatTime;
         if(d.dailyQuote)DB.set('dailyQuote',d.dailyQuote);
         if(d.lightTraces)DB.set('lightTraces',d.lightTraces);
         if(d.currentTab)DB.set('currentTab',d.currentTab);
+        if(d.moodEntries)DB.set('moodEntries',d.moodEntries);
+        if(d.whisperEntries)DB.set('whisperEntries',d.whisperEntries);
+        if(d.todoList)DB.set('todoList',d.todoList);
+        if(d.calendarEvents)DB.set('calendarEvents',d.calendarEvents);
+        if(d.periodRecords)DB.set('periodRecords',d.periodRecords);
         if(d.userAvatar){await avatarStore.set('user',d.userAvatar);cachedUserAvatar=d.userAvatar;}
         if(d.aiAvatar){await avatarStore.set('ai',d.aiAvatar);cachedAiAvatar=d.aiAvatar;}
         didSettings=true;
-        prog.innerHTML=prog.innerHTML.replace('Importing settings...','Settings & avatars restored');
+        prog.innerHTML=prog.innerHTML.replace('Importing settings...','Settings & profile restored');
       }
 
       else{
@@ -442,6 +650,18 @@ async function migrateData(){
   }
 }
 
+// ==================== 记忆衰减定时检查 ====================
+async function checkMemoryDecay(){
+  const lastDecay=DB.get('lastMemoryDecay',0);
+  const now=Date.now();
+  const WEEK=7*24*60*60*1000;
+  if(now-lastDecay>=WEEK){
+    const updated=await vectorStore.decayWeights();
+    DB.set('lastMemoryDecay',now);
+    if(updated>0) console.log('[Little] Memory decay: '+updated+' memories updated');
+  }
+}
+
 // ==================== 初始化 ====================
 async function init(){
   try{
@@ -463,6 +683,7 @@ async function init(){
     renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();applyAvatarsToDOM();
     checkPeriodReminder();
+    checkMemoryDecay(); // v2.0: 记忆衰减检查
 
     const savedTab=DB.get('currentTab','home');
     navigateTo(savedTab);
