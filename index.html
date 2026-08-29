@@ -145,7 +145,7 @@
   </div>
 </div>
 
-<!-- ============ Memory 页面 ============ -->
+<!-- ============ Memory 页面 v2.0 ============ -->
 <div class="page" id="memoryTabPage" style="display:none">
   <div class="page-scroll">
     <div class="pg-head"><h2>Our Memories</h2><span class="pg-head-sub">把日子慢慢装满</span></div>
@@ -154,6 +154,11 @@
         <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
         <div class="mc-title">Memory Bank</div>
         <div class="mc-count" id="memBankCount">0 memories</div>
+      </div>
+      <div class="mem-card mem-card-glass" onclick="openProfilePage()">
+        <div class="mc-icon" style="background:rgba(107,159,212,0.12)"><svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="mc-title">Profile</div>
+        <div class="mc-count" id="profileCount">Not set</div>
       </div>
       <div class="mem-card" onclick="openTracesPage()">
         <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
@@ -263,6 +268,7 @@
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="stickerImportInput" accept="image/*" multiple style="display:none" onchange="handleStickerImport(event)">
 <input type="file" id="claudeImportInput" accept=".json" style="display:none" onchange="handleClaudeImport(event)">
+<input type="file" id="claudeMemoryImportInput" accept=".json" style="display:none" onchange="handleClaudeMemoryImport(event)">
 <input type="file" id="userAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'user')">
 <input type="file" id="aiAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'ai')">
 <input type="file" id="backupImportInput" accept=".json" multiple style="display:none" onchange="handleBackupImport(event)">
@@ -274,7 +280,7 @@
   <div class="sticker-panel-footer"><button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">Manage</button><span style="flex:1;font-size:11px;color:var(--text-light);text-align:right" id="stickerCount"></span></div>
 </div>
 
-<!-- ============ 设置页 ============ -->
+<!-- ============ 设置页 v2.0 ============ -->
 <div class="overlay-page" id="settingsPage">
   <div class="overlay-header"><button class="overlay-back" onclick="closePage('settingsPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Settings</h2></div>
   <div class="overlay-body">
@@ -312,7 +318,10 @@
       </div>
     </div>
     <div class="settings-group"><h3>Custom CSS</h3><div class="setting-row"><textarea id="setCustomCSS" placeholder="/* Your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5"></textarea></div></div>
-    <div class="settings-group"><h3>Import</h3><div class="setting-row"><label>Import Claude conversations</label><p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data</p><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button></div></div>
+    <div class="settings-group"><h3>Import</h3>
+      <div class="setting-row"><label>Import Claude conversations</label><p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data</p><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button></div>
+      <div class="setting-row" style="margin-top:12px"><label>Import Claude memories</label><p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Import from Claude's memory.zip (the JSON file inside)</p><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeMemoryImportInput').click()">Import Memory File</button></div>
+    </div>
     <button class="save-btn" onclick="saveSettingsPage()">Save</button>
   </div>
 </div>
@@ -323,13 +332,58 @@
   <div class="overlay-body"><div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="Search models..." oninput="filterModels()"></div><div id="modelListContainer"><div class="model-list-empty">Tap "Fetch" to load</div></div></div>
 </div>
 
-<!-- ============ 记忆库 ============ -->
+<!-- ============ 记忆库 v2.0 ============ -->
 <div class="overlay-page" id="memoryPage">
-  <div class="overlay-header"><button class="overlay-back" onclick="closePage('memoryPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Memory</h2></div>
+  <div class="overlay-header"><button class="overlay-back" onclick="closePage('memoryPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Memory Bank</h2></div>
   <div class="overlay-body">
     <div class="memory-add-box"><h3>Add Manually</h3><div class="memory-add-row"><select id="memAddCategory"><option value="profile">Profile</option><option value="fact" selected>Fact</option><option value="warm">Warm</option><option value="corridor">Note</option></select><textarea id="memAddText" rows="1" placeholder="Memory content..." oninput="autoResize(this)"></textarea></div><div style="display:flex;justify-content:flex-end"><button class="memory-add-btn" onclick="addManualMemory()">Add</button></div></div>
     <div class="memory-stats" id="memoryStats"></div>
     <div id="memoryList"><div class="memory-empty">No memories yet</div></div>
+  </div>
+</div>
+
+<!-- ============ Profile 页面 v2.0 ============ -->
+<div class="overlay-page" id="profilePage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('profilePage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Profile</h2>
+  </div>
+  <div class="overlay-body">
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">AI learns about you through conversations and fills this automatically. You can also edit manually.</p>
+    <div class="prof-section prof-glass">
+      <h3>Basic Info</h3>
+      <div class="prof-field"><label>Name</label><input type="text" id="profName" placeholder="Your name"></div>
+      <div class="prof-field"><label>Birthday</label><input type="text" id="profBirthday" placeholder="e.g. 2000-01-15"></div>
+      <div class="prof-field"><label>Location</label><input type="text" id="profLocation" placeholder="City or country"></div>
+      <div class="prof-field"><label>Occupation</label><input type="text" id="profOccupation" placeholder="Student, developer, etc."></div>
+    </div>
+    <div class="prof-section prof-glass">
+      <h3>Preferences</h3>
+      <div class="prof-field"><label>Food</label><input type="text" id="profFood" placeholder="Favorite food"></div>
+      <div class="prof-field"><label>Color</label><input type="text" id="profColor" placeholder="Favorite color"></div>
+      <div class="prof-field"><label>Music</label><input type="text" id="profMusic" placeholder="Genres or artists"></div>
+      <div class="prof-field"><label>Communication style</label><input type="text" id="profStyle" placeholder="Brief, warm, casual..."></div>
+      <div class="prof-field"><label>Other</label><input type="text" id="profOther" placeholder="Anything else"></div>
+    </div>
+    <div class="prof-section prof-glass">
+      <h3>Important People</h3>
+      <div id="profPeopleList"><div class="prof-people-empty">No people added yet</div></div>
+      <div class="prof-add-person-row">
+        <input type="text" id="profPersonName" placeholder="Name">
+        <input type="text" id="profPersonRelation" placeholder="Relation">
+        <button class="prof-add-person-btn" onclick="addProfilePerson()">
+          <svg class="icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="prof-section prof-glass">
+      <h3>Habits & Notes</h3>
+      <div class="prof-field"><label>Daily habits</label><textarea id="profHabits" rows="2" placeholder="Routines, sleep schedule..."></textarea></div>
+      <div class="prof-field"><label>AI's notes</label><textarea id="profNotes" rows="2" placeholder="Things AI observed about you"></textarea></div>
+    </div>
+    <button class="save-btn" onclick="saveProfilePage()">Save Profile</button>
   </div>
 </div>
 
@@ -516,7 +570,7 @@
         <label class="backup-check-item"><input type="checkbox" id="expChats" checked><span class="backup-check-mark"></span><div class="backup-check-info"><div class="backup-check-title">Chats</div><div class="backup-check-desc" id="expChatsDesc">All conversations</div></div></label>
         <label class="backup-check-item"><input type="checkbox" id="expMemories" checked><span class="backup-check-mark"></span><div class="backup-check-info"><div class="backup-check-title">Memories</div><div class="backup-check-desc" id="expMemoriesDesc">Memory bank data</div></div></label>
         <label class="backup-check-item"><input type="checkbox" id="expStickers" checked><span class="backup-check-mark"></span><div class="backup-check-info"><div class="backup-check-title">Stickers</div><div class="backup-check-desc" id="expStickersDesc">Sticker images</div></div></label>
-        <label class="backup-check-item"><input type="checkbox" id="expSettings" checked><span class="backup-check-mark"></span><div class="backup-check-info"><div class="backup-check-title">Settings & Avatars</div><div class="backup-check-desc">API config, avatars, light traces, etc.</div></div></label>
+        <label class="backup-check-item"><input type="checkbox" id="expSettings" checked><span class="backup-check-mark"></span><div class="backup-check-info"><div class="backup-check-title">Settings & Avatars</div><div class="backup-check-desc">API config, avatars, profile, light traces, etc.</div></div></label>
       </div>
       <button class="save-btn" id="exportBtn" onclick="startExport()" style="margin-top:12px">Export Selected</button>
       <div class="backup-progress" id="exportProgress"></div>
