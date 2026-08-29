@@ -17,6 +17,10 @@ function updateHomePage(){
     document.getElementById('homeDaysNum').textContent='0';
     document.getElementById('homeSinceText').textContent='Set anniversary in Mine';
   }
+  const togetherNames=document.getElementById('togetherNames');const togetherDays=document.getElementById('togetherDays');
+  if(togetherNames)togetherNames.textContent=userName+' & '+aiName;
+  if(togetherDays)togetherDays.textContent=ann?Math.max(0,diff):0;
+  const togetherQuote=document.getElementById('togetherQuote');const quote=DB.get('dailyQuote',null);if(togetherQuote&&quote&&quote.text)togetherQuote.textContent=quote.text;
   loadDailyQuote();
   loadLightTraces();
 }
