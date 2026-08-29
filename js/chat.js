@@ -76,16 +76,19 @@ function updateSendBtn(){
   const input=document.getElementById('msgInput');const btn=document.getElementById('sendBtn');
   if(!input||!btn)return;
   const hasContent=input.value.trim()||pendingAttachments.length>0;
-  if(state.generating){btn.classList.add('show','stop-mode');btn.classList.remove('send-mode');}
-  else if(hasContent){btn.classList.add('show','send-mode');btn.classList.remove('stop-mode');}
+  // Keep Send available while a reply is in progress so messages can be queued.
+  if(hasContent){btn.classList.add('show','send-mode');btn.classList.remove('stop-mode');}
+  else if(state.generating){btn.classList.add('show','stop-mode');btn.classList.remove('send-mode');}
   else{btn.classList.remove('show','send-mode','stop-mode');}
 }
 function handleSendStop(){
+  const input=document.getElementById('msgInput');
+  if(input&&(input.value.trim()||pendingAttachments.length>0)){sendMessage();return;}
   if(state.generating){
+    cancelQueuedReplies=true;replyQueue=[];
     if(currentAbortController){currentAbortController.abort();currentAbortController=null;}
-    state.generating=false;const t=document.getElementById('typing');if(t)t.classList.remove('show');
-    updateSendBtn();showToast('Stopped');
-  }else{sendMessage();}
+    showToast('Stopped');
+  }
 }
 
 // ==================== 加号菜单 ====================
@@ -167,6 +170,30 @@ async function regenerateMsg(msgIdx){
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
+// ==================== 消息编辑与删除 ====================
+function getVisibleMessage(msgIdx){
+  const chat=currentChat();if(!chat)return null;
+  const message=chat.messages.filter(m=>m.role==='user'||m.role==='assistant')[msgIdx];
+  return message?{chat,message}:null;
+}
+async function deleteMsg(msgIdx){
+  if(state.generating){showToast('Please stop the reply first');return;}
+  const item=getVisibleMessage(msgIdx);if(!item||!confirm('Delete this message?'))return;
+  const realIdx=item.chat.messages.indexOf(item.message);
+  if(realIdx<0)return;
+  item.chat.messages.splice(realIdx,1);await saveCurrentChat();renderMessages();renderChatList();showToast('Deleted');
+}
+async function editMsg(msgIdx){
+  if(state.generating){showToast('Please stop the reply first');return;}
+  const item=getVisibleMessage(msgIdx);if(!item)return;
+  const updated=prompt('Edit message',item.message.content||'');
+  if(updated===null)return;
+  const content=updated.trim();
+  if(!content){showToast('Message cannot be empty');return;}
+  item.message.content=content;item.message.editedAt=Date.now();
+  await saveCurrentChat();renderMessages();renderChatList();showToast('Updated');
+}
+
 // ==================== 消息渲染（含头像） ====================
 function renderMessages(){
   const area=document.getElementById('chatArea');const chat=currentChat();updateHeaderTitle();
@@ -193,13 +220,14 @@ function renderMessages(){
     }
     let imagesHtml='';if(m.images&&m.images.length>0)imagesHtml=m.images.map(img=>'<img class="msg-image" src="'+img+'" onclick="viewImage(this.src)">').join('');
     let filesHtml='';if(m.files&&m.files.length>0)filesHtml=m.files.map(f=>'<div style="font-size:12px;color:'+(m.role==='user'?'rgba(255,255,255,.8)':'var(--text-light)')+';margin-bottom:4px;display:flex;align-items:center;gap:4px"><svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'+escHtml(f)+'</div>').join('');
-    let actionsHtml='';
+    const editButton='<button class="msg-action-btn" onclick="editMsg('+mi+')" title="Edit message"><svg style="width:15px;height:15px" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>';
+    const deleteButton='<button class="msg-action-btn" onclick="deleteMsg('+mi+')" title="Delete message"><svg style="width:15px;height:15px" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+    let actionsHtml='<div class="msg-actions">';
     if(m.role==='assistant'){
-      actionsHtml='<div class="msg-actions">'
-        +'<button class="msg-action-btn" onclick="copyMsgText('+mi+')" title="Copy"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'
-        +'<button class="msg-action-btn" onclick="regenerateMsg('+mi+')" title="Regenerate"><svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>'
-        +'</div>';
+      actionsHtml+='<button class="msg-action-btn" onclick="copyMsgText('+mi+')" title="Copy"><svg style="width:15px;height:15px" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'
+        +'<button class="msg-action-btn" onclick="regenerateMsg('+mi+')" title="Regenerate"><svg style="width:15px;height:15px" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>';
     }
+    actionsHtml+=editButton+deleteButton+'</div>';
     if(m.role==='assistant'&&state.settings.splitReply==='on'){
       const parts=m.content.split(/\n\n+/).filter(p=>p.trim());
       if(parts.length>1){
@@ -213,7 +241,7 @@ function renderMessages(){
     else{contentHtml=escHtml(m.content).replace(/\n/g,'<br>');}
 
     if(m.role==='user'){
-      html+='<div class="msg user"><div class="msg-inner">'+imagesHtml+filesHtml+'<div class="msg-bubble">'+contentHtml+'</div><div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div>'+uAv+'</div>';
+      html+='<div class="msg user"><div class="msg-inner">'+imagesHtml+filesHtml+'<div class="msg-bubble">'+contentHtml+'</div>'+actionsHtml+'<div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div>'+uAv+'</div>';
     }else{
       html+='<div class="msg assistant">'+aAv+'<div class="msg-inner">'+thinkingHtml+imagesHtml+filesHtml+'<div class="msg-bubble">'+contentHtml+'</div>'+actionsHtml+'<div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div></div>';
     }
@@ -223,7 +251,7 @@ function renderMessages(){
 }
 function scrollToBottom(){const area=document.getElementById('chatArea');requestAnimationFrame(()=>{area.scrollTop=area.scrollHeight;});}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function handleKey(e){if(e.key==='Enter'){/* Enter inserts a newline; use the Send button to reply. */return;}}
 
 // ==================== 附件处理 ====================
 function handlePhotoSelect(e){
@@ -381,7 +409,7 @@ async function buildSystemPrompt(uq){
 // ==================== 发送消息 ====================
 async function sendMessage(){
   const input=document.getElementById('msgInput');const text=input.value.trim();const attachments=[...pendingAttachments];
-  if((!text&&attachments.length===0)||state.generating)return;
+  if(!text&&attachments.length===0)return;
   if(!state.settings.apiUrl||!state.settings.apiKey){showToast('Configure API first');openSettings();return;}
   if(!state.currentChatId){
     const id='chat_'+Date.now();
@@ -399,18 +427,32 @@ async function sendMessage(){
   if(chat.messages.filter(m=>m.role==='user').length===1)chat.title=(text||attachments[0]?.name||'New Chat').slice(0,20);
   pendingAttachments=[];renderAttachPreview();await saveCurrentChat();saveCurrentChatId();input.value='';input.style.height='auto';updateSendBtn();
   renderMessages();renderChatList();
-  state.generating=true;updateSendBtn();
-  const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
-  try{const sp=await buildSystemPrompt(text||'(图片)');const result=await callAPI(chat,sp);
-    const{cleanReply,newMemories,profileUpdates}=extractMemories(result.content);
-    const ro={role:'assistant',content:cleanReply,time:Date.now()};
-    if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
-    saveSettings();await saveCurrentChat();renderMessages();renderChatList();
-    if(newMemories.length>0)storeMemories(newMemories);
-    if(profileUpdates.length>0)applyProfileUpdates(profileUpdates);
-    generateLightTrace(chat.messages);triggerAiActivity(chat.messages);autoExtractTodos(text||'',cleanReply);
-  }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
-  finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
+  replyQueue.push({chat,queryText:text||'(图片)'});
+  processReplyQueue();
+}
+
+async function processReplyQueue(){
+  if(processingReplyQueue)return;
+  processingReplyQueue=true;cancelQueuedReplies=false;
+  try{
+    while(replyQueue.length>0&&!cancelQueuedReplies){
+      const job=replyQueue.shift();state.generating=true;updateSendBtn();
+      const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
+      try{const sp=await buildSystemPrompt(job.queryText);const result=await callAPI(job.chat,sp);
+        const{cleanReply,newMemories,profileUpdates}=extractMemories(result.content);
+        const ro={role:'assistant',content:cleanReply,time:Date.now()};
+        if(result.thinking)ro.thinking=result.thinking;job.chat.messages.push(ro);state.lastChatTime=Date.now();
+        saveSettings();await saveChatData(job.chat);renderMessages();renderChatList();
+        if(newMemories.length>0)storeMemories(newMemories);
+        if(profileUpdates.length>0)applyProfileUpdates(profileUpdates);
+        generateLightTrace(job.chat.messages);triggerAiActivity(job.chat.messages);autoExtractTodos(job.queryText,cleanReply);
+      }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
+      finally{currentAbortController=null;}
+    }
+  }finally{
+    state.generating=false;processingReplyQueue=false;cancelQueuedReplies=false;
+    updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');
+  }
 }
 
 // ==================== API 调用 ====================

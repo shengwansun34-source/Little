@@ -233,6 +233,8 @@ function openSettings(){
   document.getElementById('setJinaKey').value=s.jinaKey||'';
   document.getElementById('setThinking').value=s.thinking||'off';
   document.getElementById('setSplitReply').value=s.splitReply||'off';
+  document.getElementById('setFontFamily').value=s.fontFamily||'system';
+  document.getElementById('setFontSize').value=s.fontSize||'normal';
   document.getElementById('setCustomCSS').value=s.customCSS||'';
   document.getElementById('setAiActivity').value=s.aiActivity||'50';
   document.getElementById('settingsPage').classList.add('open');
@@ -251,10 +253,12 @@ function saveSettingsPage(){
     jinaKey:document.getElementById('setJinaKey').value.trim(),
     thinking:document.getElementById('setThinking').value,
     splitReply:document.getElementById('setSplitReply').value,
+    fontFamily:document.getElementById('setFontFamily').value,
+    fontSize:document.getElementById('setFontSize').value,
     customCSS:document.getElementById('setCustomCSS').value,
     aiActivity:document.getElementById('setAiActivity').value
   };
-  saveSettings();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateGlobalHeader();
+  saveSettings();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateGlobalHeader();
   showToast('Saved');closePage('settingsPage');
 }
 function saveSettings_page(){saveSettingsPage();}
@@ -606,7 +610,7 @@ async function handleBackupImport(e){
     saveCurrentChatId();
   }
 
-  renderChatList();renderMessages();applyCustomCSS();updateModelTag();
+  renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();
   updateHeaderTitle();updateInputHint();updateGlobalHeader();
   applyAvatarsToDOM();updateExportCounts();
 
@@ -680,7 +684,7 @@ async function init(){
 
     await loadAvatars();
 
-    renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+    renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();applyAvatarsToDOM();
     checkPeriodReminder();
     checkMemoryDecay(); // v2.0: 记忆衰减检查
@@ -693,7 +697,7 @@ async function init(){
     if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
   }catch(e){
     console.error('[Little] Init error:',e);
-    renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+    renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();
     setTimeout(hideSplash,1800);
   }
