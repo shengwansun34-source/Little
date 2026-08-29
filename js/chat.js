@@ -1,4 +1,4 @@
-// ==================== Little chat.js — 聊天核心 ====================
+// ==================== Little chat.js — 聊天核心 v2.0 ====================
 
 // ==================== 侧栏 & 对话管理（异步 IndexedDB） ====================
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
@@ -296,21 +296,85 @@ async function sendSticker(id){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveSettings();await saveCurrentChat();renderMessages();renderChatList();
     if(newMemories.length>0)storeMemories(newMemories);generateLightTrace(chat.messages);triggerAiActivity(chat.messages);
+    autoExtractProfile(''||'',cleanReply);
   }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
 
-// ==================== 记忆系统 ====================
-async function retrieveMemories(q){try{if(state.settings.jinaKey){const qv=await getEmbedding(q);if(qv)return await vectorStore.search(qv,8);}return await vectorStore.searchByKeyword(q,8);}catch{return[];}}
+// ==================== 记忆系统 v2.0 ====================
+async function retrieveMemories(q){
+  try{
+    if(state.settings.jinaKey){
+      const qv=await getEmbedding(q);
+      if(qv){
+        const results=await vectorStore.search(qv,8);
+        // 标记被召回的记忆
+        for(const r of results){
+          if(r.score>0.3) await vectorStore.markRecalled(r.id);
+        }
+        return results;
+      }
+    }
+    // 备用：关键词搜索
+    return await vectorStore.searchByKeyword(q,8);
+  }catch{return [];}
+}
+
 async function buildSystemPrompt(uq){
   const s=state.settings;let sys=s.systemPrompt||'';
+
   if(s.charNickname){sys+='\n\n[身份信息]\n你的名字是'+s.charName+'，但用户给你起了一个亲密的备注叫「'+s.charNickname+'」。用户界面上显示的是这个备注。你知道这个备注的存在，可以自然地回应，但不需要每次都提及。';}
   if(s.thinking==='on')sys+='\n\n请在思考时使用中文。';
   sys+='\n\n'+getTimeContext();
+
+  // v2.0: 注入 Profile
+  const profileCtx=getProfileContext();
+  if(profileCtx) sys+=profileCtx;
+
+  // v2.0: 核心记忆（永远注入）
+  try{
+    const coreMems=await vectorStore.getCoreMemories();
+    if(coreMems.length>0){
+      sys+='\n\n[核心记忆 — 你一直记得的事]';
+      coreMems.forEach(m=>{
+        const cats={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
+        sys+='\n'+( cats[m.category]||'事实')+'：'+m.text;
+      });
+    }
+  }catch{}
+
+  // 普通记忆（向量/关键词搜索）
   const mems=await retrieveMemories(uq);
-  if(mems.length>0){sys+='\n\n[你关于用户的记忆]';mems.forEach(m=>{const cats={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};sys+='\n'+(cats[m.category]||'事实')+'：'+m.text;});sys+='\n（以上是你记住的事情，像自然知道一样说话）';}
+  const nonCoreMems=mems.filter(m=>!m.core); // 排除已注入的核心记忆
+  if(nonCoreMems.length>0){
+    sys+='\n\n[相关记忆]';
+    nonCoreMems.forEach(m=>{
+      const cats={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};
+      sys+='\n'+(cats[m.category]||'事实')+'：'+m.text;
+    });
+    sys+='\n（像自然知道一样说话，不要说"根据我的记忆"）';
+  }
+
+  // v2.0: 上下文激活（日历/纪念日触发）
+  const triggers=getContextTriggers();
+  if(triggers.length>0){
+    sys+='\n\n[今日提醒]';
+    triggers.forEach(t=>sys+='\n'+t);
+    sys+='\n（如果与对话相关，可以自然地提起；不相关则不必刻意提及）';
+  }
+
+  // 月经信息
   const pc=getPeriodContext();if(pc)sys+=pc;
+
+  // v2.0: AI 主动引用记忆的指令
+  sys+='\n\n[记忆使用指南]\n如果你的记忆中有与当前对话高度相关的内容，请自然地体现出来。例如"之前你说过..."、"我记得你..."，但不要生硬或频繁。让对方感受到你真的记住了。';
+
+  // 记忆提取指令
   if(s.autoMemory==='on')sys+='\n\n[记忆提取指令]\n如果用户分享了值得记住的信息，或明确要求记住，请在回复最末尾另起一行标记：\n[MEM|类别|内容]\n类别：profile/warm/fact/corridor\n没有值得记忆的不要加。只记重要的。';
+
+  // v2.0: Profile 自动提取指令
+  sys+='\n\n[个人信息提取]\n如果用户在对话中透露了个人信息（如名字、生日、喜好、职业、家人朋友等），请在回复末尾标记：\n[PROF|字段|值]\n字段可以是：name/birthday/location/occupation/food/color/music/style/habit/person(名字,关系)/note\n例如：[PROF|food|火锅] [PROF|person|妈妈,母亲]\n只在检测到新信息时标记，不要重复已知的。';
+
   return sys;
 }
 
@@ -338,9 +402,12 @@ async function sendMessage(){
   state.generating=true;updateSendBtn();
   const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
   try{const sp=await buildSystemPrompt(text||'(图片)');const result=await callAPI(chat,sp);
-    const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
+    const{cleanReply,newMemories,profileUpdates}=extractMemories(result.content);
+    const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
-    saveSettings();await saveCurrentChat();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
+    saveSettings();await saveCurrentChat();renderMessages();renderChatList();
+    if(newMemories.length>0)storeMemories(newMemories);
+    if(profileUpdates.length>0)applyProfileUpdates(profileUpdates);
     generateLightTrace(chat.messages);triggerAiActivity(chat.messages);autoExtractTodos(text||'',cleanReply);
   }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
@@ -368,20 +435,76 @@ async function callAPI(chat,systemPrompt){
   return{content,thinking};
 }
 
-// ==================== 记忆提取 & 存储 ====================
+// ==================== 记忆提取 & 存储 v2.0 ====================
 function extractMemories(reply){
-  const re=/\[MEM\|(\w+)\|(.+?)\]/g;let m;let clean=reply;const mems=[];
-  while((m=re.exec(reply))!==null){mems.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:m[1].trim(),text:m[2].trim(),time:Date.now(),vector:null});clean=clean.replace(m[0],'');}
-  return{cleanReply:clean.replace(/\n+$/,'').trim(),newMemories:mems};
+  // 提取 [MEM|category|text]
+  const memRe=/\[MEM\|(\w+)\|(.+?)\]/g;let m;let clean=reply;const mems=[];
+  while((m=memRe.exec(reply))!==null){
+    mems.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:m[1].trim(),text:m[2].trim(),time:Date.now(),vector:null,core:false,weight:1.0,lastRecalled:Date.now(),tags:[],relatedTo:[]});
+    clean=clean.replace(m[0],'');
+  }
+
+  // v2.0: 提取 [PROF|field|value]
+  const profRe=/\[PROF\|(\w+)\|(.+?)\]/g;let p;const profileUpdates=[];
+  while((p=profRe.exec(clean))!==null){
+    profileUpdates.push({field:p[1].trim(),value:p[2].trim()});
+    clean=clean.replace(p[0],'');
+  }
+
+  return{cleanReply:clean.replace(/\n+$/,'').trim(),newMemories:mems,profileUpdates};
 }
+
+// v2.0: 应用 Profile 更新
+function applyProfileUpdates(updates){
+  if(!updates||updates.length===0)return;
+  let changed=false;
+  for(const u of updates){
+    switch(u.field){
+      case 'name': if(!state.profile.basic.name||state.profile.basic.name!==u.value){state.profile.basic.name=u.value;changed=true;} break;
+      case 'birthday': if(!state.profile.basic.birthday){state.profile.basic.birthday=u.value;changed=true;} break;
+      case 'location': state.profile.basic.location=u.value;changed=true; break;
+      case 'occupation': state.profile.basic.occupation=u.value;changed=true; break;
+      case 'food': {const cur=state.profile.preferences.food;state.profile.preferences.food=cur?(cur+', '+u.value):u.value;changed=true;} break;
+      case 'color': state.profile.preferences.color=u.value;changed=true; break;
+      case 'music': {const cur=state.profile.preferences.music;state.profile.preferences.music=cur?(cur+', '+u.value):u.value;changed=true;} break;
+      case 'style': state.profile.preferences.style=u.value;changed=true; break;
+      case 'habit': {state.profile.habits=state.profile.habits?(state.profile.habits+'; '+u.value):u.value;changed=true;} break;
+      case 'person': {
+        const parts=u.value.split(',');
+        const name=parts[0]?.trim();const relation=parts[1]?.trim()||'';
+        if(name&&!state.profile.people.find(p=>p.name===name)){
+          state.profile.people.push({name,relation});changed=true;
+        }
+      } break;
+      case 'note': {state.profile.notes=state.profile.notes?(state.profile.notes+'; '+u.value):u.value;changed=true;} break;
+    }
+  }
+  if(changed){
+    saveProfile();
+    console.log('[Little] Profile updated:',updates.map(u=>u.field+'='+u.value).join(', '));
+  }
+}
+
 async function storeMemories(mems){
-  let n=0;for(const m of mems){try{if(state.settings.jinaKey)m.vector=await getEmbedding(m.text);await vectorStore.add(m);n++;}catch(e){console.error(e);}}
+  let n=0;for(const m of mems){
+    try{
+      // 检查是否有相似记忆（避免重复）
+      const similar=await vectorStore.findSimilar(m.text,0.85);
+      if(similar.length>0){
+        console.log('[Little] Skipping duplicate memory:',m.text.slice(0,30));
+        continue;
+      }
+      if(state.settings.jinaKey)m.vector=await getEmbedding(m.text);
+      await vectorStore.add(m);n++;
+    }catch(e){console.error(e);}
+  }
   if(n>0)showToast('Memorized '+n);
 }
+
 async function addManualMemory(){
   const cat=document.getElementById('memAddCategory').value;const text=document.getElementById('memAddText').value.trim();
   if(!text){showToast('Enter content');return;}
-  const m={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:cat,text,time:Date.now(),vector:null};
+  const m={id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:cat,text,time:Date.now(),vector:null,core:false,weight:1.0,lastRecalled:Date.now(),tags:[],relatedTo:[]};
   try{if(state.settings.jinaKey)m.vector=await getEmbedding(text);await vectorStore.add(m);
     document.getElementById('memAddText').value='';document.getElementById('memAddText').style.height='auto';
     showToast('Added');await renderMemoryList();
