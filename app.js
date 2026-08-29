@@ -50,18 +50,23 @@ let state={
   currentChatId:DB.get('currentChat',null),
   settings:DB.get('settings',{
     apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',charNickname:'',
+    userName:'',anniversary:'',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
     autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off'
   }),
   lastChatTime:DB.get('lastChatTime',null),
   generating:false
 };
+// 兼容旧版本字段
 if(!state.settings.thinking)state.settings.thinking='off';
 if(!state.settings.customCSS)state.settings.customCSS='';
 if(!state.settings.charName)state.settings.charName='Little';
 if(!state.settings.charNickname&&state.settings.charNickname!=='')state.settings.charNickname='';
 if(!state.settings.splitReply)state.settings.splitReply='off';
+if(!state.settings.userName&&state.settings.userName!=='')state.settings.userName='';
+if(!state.settings.anniversary&&state.settings.anniversary!=='')state.settings.anniversary='';
 
+let currentTab='home';
 let fetchedModels=[];
 let pendingAttachments=[];
 let renamingChatId=null;
@@ -94,6 +99,153 @@ function escHtml(s){const d=document.createElement('div');d.textContent=s;return
 function renderMarkdown(text){if(typeof marked!=='undefined'){try{return marked.parse(text);}catch{}}return escHtml(text).replace(/\n/g,'<br>');}
 function applyCustomCSS(){document.getElementById('customCSSTag').textContent=state.settings.customCSS||'';}
 
+// ==================== 页面导航系统 ====================
+function navigateTo(tab){
+  currentTab=tab;
+  const pages={home:'homePage',fav:'favPage',chat:'chatPage',us:'usPage',more:'morePage'};
+  Object.values(pages).forEach(id=>{document.getElementById(id).style.display='none';});
+  document.getElementById(pages[tab]).style.display='flex';
+  // 底部 Tab 栏：Chat 页面隐藏
+  const tabs=document.getElementById('bottomTabs');
+  if(tab==='chat'){tabs.classList.add('hidden');}else{tabs.classList.remove('hidden');}
+  // 更新 Tab 激活状态
+  document.querySelectorAll('.tab-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.tab===tab);
+  });
+  // 进入 Home 时刷新数据
+  if(tab==='home'){updateHomePage();}
+  DB.set('currentTab',tab);
+}
+
+// ==================== HOME 页面逻辑 ====================
+function updateHomePage(){
+  const userName=state.settings.userName||'You';
+  const aiName=getDisplayName();
+  document.getElementById('homeNames').textContent=userName+' & '+aiName;
+  // 天数计算
+  const ann=state.settings.anniversary;
+  if(ann){
+    const start=new Date(ann);start.setHours(0,0,0,0);
+    const today=new Date();today.setHours(0,0,0,0);
+    const diff=Math.floor((today-start)/(1000*60*60*24));
+    document.getElementById('homeDaysNum').textContent=Math.max(0,diff);
+  }else{
+    document.getElementById('homeDaysNum').textContent='0';
+  }
+  loadDailyQuote();
+  loadLightTraces();
+}
+
+function loadDailyQuote(){
+  const saved=DB.get('dailyQuote',null);
+  const today=new Date().toDateString();
+  if(saved&&saved.date===today&&saved.text){
+    document.getElementById('homeQuoteText').textContent=saved.text;
+    document.getElementById('homeQuoteText').classList.remove('home-quote-loading');
+    document.getElementById('homeQuoteDate').textContent=formatQuoteDate(saved.timestamp);
+  }else{
+    generateDailyQuote();
+  }
+}
+
+function formatQuoteDate(ts){
+  if(!ts)return '';
+  const d=new Date(ts);
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+}
+
+async function generateDailyQuote(){
+  const s=state.settings;
+  if(!s.apiUrl||!s.apiKey){
+    document.getElementById('homeQuoteText').textContent='Set up API in Settings to get daily words.';
+    document.getElementById('homeQuoteText').classList.remove('home-quote-loading');
+    return;
+  }
+  document.getElementById('homeQuoteText').textContent='Thinking...';
+  document.getElementById('homeQuoteText').classList.add('home-quote-loading');
+  document.getElementById('homeQuoteDate').textContent='';
+  try{
+    const userName=s.userName||'用户';
+    const aiName=getDisplayName();
+    const prompt='你是'+aiName+'。请用一句温柔的话对'+userName+'说点什么，可以是关心、鼓励、或者想对ta说的话。要自然真诚，不要太长（30字以内），不要用引号包裹，不要加标点以外的符号，不要用emoji。直接输出这句话，不要任何前缀或解释。';
+    let memCtx='';
+    try{
+      const mems=await vectorStore.getAll();
+      if(mems.length>0){
+        const recent=mems.sort((a,b)=>b.time-a.time).slice(0,5);
+        memCtx='\n\n[你了解的关于用户的事]';
+        recent.forEach(m=>{memCtx+='\n'+m.text;});
+      }
+    }catch{}
+    const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+      body:JSON.stringify({model:s.model,messages:[{role:'system',content:prompt+memCtx},{role:'user',content:'请说一句话给我'}],stream:false})});
+    if(!res.ok)throw new Error(''+res.status);
+    const data=await res.json();
+    const text=(data.choices?.[0]?.message?.content||'').trim();
+    if(text){
+      const quoteData={text:text,date:new Date().toDateString(),timestamp:Date.now()};
+      DB.set('dailyQuote',quoteData);
+      document.getElementById('homeQuoteText').textContent=text;
+      document.getElementById('homeQuoteText').classList.remove('home-quote-loading');
+      document.getElementById('homeQuoteDate').textContent=formatQuoteDate(Date.now());
+    }
+  }catch(err){
+    document.getElementById('homeQuoteText').textContent='Could not generate today\'s words.';
+    document.getElementById('homeQuoteText').classList.remove('home-quote-loading');
+  }
+}
+
+function refreshDailyQuote(){
+  DB.del('dailyQuote');
+  generateDailyQuote();
+}
+
+function loadLightTraces(){
+  const traces=DB.get('lightTraces',[]);
+  const el=document.getElementById('homeTraces');
+  if(traces.length===0){
+    el.innerHTML='<div class="home-trace-empty">No traces yet. Chat more to create memories.</div>';
+    return;
+  }
+  const recent=traces.slice(-5).reverse();
+  el.innerHTML=recent.map(t=>{
+    return '<div class="home-trace-item">'
+      +'<div class="home-trace-text">'+escHtml(t.text)+'</div>'
+      +'<div class="home-trace-date">'+formatQuoteDate(t.time)+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+async function generateLightTrace(chatMessages){
+  const s=state.settings;
+  if(!s.apiUrl||!s.apiKey)return;
+  if(!chatMessages||chatMessages.length<4)return;
+  // 每天最多 3 条
+  const traces=DB.get('lightTraces',[]);
+  const today=new Date().toDateString();
+  const todayTraces=traces.filter(t=>new Date(t.time).toDateString()===today);
+  if(todayTraces.length>=3)return;
+  try{
+    const aiName=getDisplayName();
+    const userName=s.userName||'用户';
+    const recentMsgs=chatMessages.slice(-6).map(m=>m.role+': '+m.content).join('\n');
+    const prompt='你是'+aiName+'。根据刚才的对话，用一句简短温暖的话记录此刻的感受或对'+userName+'的想法。像日记碎片一样，15-30字，不要用emoji，不要引号，直接输出。';
+    const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+      body:JSON.stringify({model:s.model,messages:[{role:'system',content:prompt},{role:'user',content:'对话记录：\n'+recentMsgs+'\n\n请记录一句感受。'}],stream:false})});
+    if(!res.ok)return;
+    const data=await res.json();
+    const text=(data.choices?.[0]?.message?.content||'').trim();
+    if(text&&text.length>2&&text.length<100){
+      traces.push({text:text,time:Date.now()});
+      if(traces.length>50)traces.splice(0,traces.length-50);
+      DB.set('lightTraces',traces);
+    }
+  }catch{}
+}
+
 // ==================== 侧栏 & 对话管理 ====================
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('open');}
 function newChat(){const id='chat_'+Date.now();state.chats[id]={id,title:'New Chat',messages:[],created:Date.now()};state.currentChatId=id;saveState();renderChatList();renderMessages();updateInputHint();toggleSidebar();}
@@ -114,16 +266,16 @@ function renderChatList(){
   const ids=Object.keys(state.chats).sort((a,b)=>state.chats[b].created-state.chats[a].created);
   if(ids.length===0){el.innerHTML='<p style="text-align:center;color:var(--text-light);padding:20px;font-size:14px">No chats yet</p>';return;}
   el.innerHTML=ids.map(id=>{const c=state.chats[id];
-    return `<div class="chat-item ${id===state.currentChatId?'active':''}" onclick="switchChat('${id}')">
-      <span class="chat-item-title">${escHtml(c.title)}</span>
-      <div class="chat-item-actions">
-        <button class="chat-item-btn" onclick="renameChat('${id}',event)" title="Rename">
-          <svg class="icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="chat-item-btn" onclick="deleteChat('${id}',event)" title="Delete">
-          <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        </button>
-      </div></div>`;
+    return '<div class="chat-item '+(id===state.currentChatId?'active':'')+'" onclick="switchChat(\''+id+'\')">'
+      +'<span class="chat-item-title">'+escHtml(c.title)+'</span>'
+      +'<div class="chat-item-actions">'
+      +'<button class="chat-item-btn" onclick="renameChat(\''+id+'\',event)" title="Rename">'
+      +'<svg class="icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+      +'</button>'
+      +'<button class="chat-item-btn" onclick="deleteChat(\''+id+'\',event)" title="Delete">'
+      +'<svg class="icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>'
+      +'</button>'
+      +'</div></div>';
   }).join('');
 }
 
@@ -370,6 +522,7 @@ async function sendSticker(id){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveState();renderMessages();renderChatList();
     if(newMemories.length>0)storeMemories(newMemories);
+    generateLightTrace(chat.messages);
   }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
@@ -378,7 +531,6 @@ async function sendSticker(id){
 async function retrieveMemories(q){try{if(state.settings.jinaKey){const qv=await getEmbedding(q);if(qv)return await vectorStore.search(qv,8);}return await vectorStore.searchByKeyword(q,8);}catch{return[];}}
 async function buildSystemPrompt(uq){
   const s=state.settings;let sys=s.systemPrompt||'';
-  // 注入备注感知
   if(s.charNickname){
     sys+='\n\n[身份信息]\n你的名字是'+s.charName+'，但用户给你起了一个亲密的备注叫「'+s.charNickname+'」。用户界面上显示的是这个备注。你知道这个备注的存在，可以自然地回应，但不需要每次都提及。';
   }
@@ -411,6 +563,7 @@ async function sendMessage(){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
     saveState();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
+    generateLightTrace(chat.messages);
   }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
@@ -578,6 +731,8 @@ function openSettings(){
   document.getElementById('setModel').value=s.model||'';
   document.getElementById('setCharName').value=s.charName||'Little';
   document.getElementById('setCharNickname').value=s.charNickname||'';
+  document.getElementById('setUserName').value=s.userName||'';
+  document.getElementById('setAnniversary').value=s.anniversary||'';
   document.getElementById('setSystemPrompt').value=s.systemPrompt||'';
   document.getElementById('setAutoMemory').value=s.autoMemory||'on';
   document.getElementById('setJinaKey').value=s.jinaKey||'';
@@ -593,6 +748,8 @@ function saveSettings(){
     model:document.getElementById('setModel').value.trim(),
     charName:document.getElementById('setCharName').value.trim()||'Little',
     charNickname:document.getElementById('setCharNickname').value.trim(),
+    userName:document.getElementById('setUserName').value.trim(),
+    anniversary:document.getElementById('setAnniversary').value,
     systemPrompt:document.getElementById('setSystemPrompt').value,
     autoMemory:document.getElementById('setAutoMemory').value,
     jinaKey:document.getElementById('setJinaKey').value.trim(),
@@ -630,6 +787,9 @@ async function deleteMemory(id){await vectorStore.remove(id);showToast('Deleted'
 // ==================== 初始化 ====================
 function init(){
   renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+  // 默认显示 Home 页面
+  const savedTab=DB.get('currentTab','home');
+  navigateTo(savedTab);
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 init();
