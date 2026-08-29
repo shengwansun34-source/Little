@@ -207,7 +207,7 @@
         <div class="mi-info"><div class="mi-title">Memory Bank</div><div class="mi-desc">View and manage memories</div></div>
         <svg class="mi-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-      <div class="mine-item" onclick="showToast('Coming soon')">
+      <div class="mine-item" onclick="openBackupPage()">
         <div class="mi-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
         <div class="mi-info"><div class="mi-title">Data Backup</div><div class="mi-desc">Export / Import all data</div></div>
         <svg class="mi-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -260,8 +260,9 @@
 <input type="file" id="claudeImportInput" accept=".json" style="display:none" onchange="handleClaudeImport(event)">
 <input type="file" id="userAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'user')">
 <input type="file" id="aiAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'ai')">
+<input type="file" id="backupImportInput" accept=".json" multiple style="display:none" onchange="handleBackupImport(event)">
 
-<!-- ============ 表情包面板 ============ -->
+  <!-- ============ 表情包面板 ============ -->
 <div class="sticker-panel" id="stickerPanel">
   <div class="sticker-panel-header"><h3>Stickers</h3><button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">Import</button><button class="sticker-panel-close" onclick="toggleStickerPanel()"><svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="sticker-grid" id="stickerGrid"><div class="sticker-empty">No stickers yet<br>Tap "Import" to add</div></div>
@@ -314,6 +315,80 @@
   </div>
 </div>
 
+<!-- ============ 数据备份页面 ============ -->
+<div class="overlay-page" id="backupPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('backupPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Data Backup</h2>
+  </div>
+  <div class="overlay-body">
+    <div class="settings-group">
+      <h3>Export</h3>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">
+        Data will be exported as separate files to avoid large file issues
+      </p>
+      <div class="backup-export-list" id="exportOptions">
+        <label class="backup-check-item">
+          <input type="checkbox" id="expChats" checked>
+          <span class="backup-check-mark"></span>
+          <div class="backup-check-info">
+            <div class="backup-check-title">Chats</div>
+            <div class="backup-check-desc" id="expChatsDesc">All conversations</div>
+          </div>
+        </label>
+        <label class="backup-check-item">
+          <input type="checkbox" id="expMemories" checked>
+          <span class="backup-check-mark"></span>
+          <div class="backup-check-info">
+            <div class="backup-check-title">Memories</div>
+            <div class="backup-check-desc" id="expMemoriesDesc">Memory bank data</div>
+          </div>
+        </label>
+        <label class="backup-check-item">
+          <input type="checkbox" id="expStickers" checked>
+          <span class="backup-check-mark"></span>
+          <div class="backup-check-info">
+            <div class="backup-check-title">Stickers</div>
+            <div class="backup-check-desc" id="expStickersDesc">Sticker images</div>
+          </div>
+        </label>
+        <label class="backup-check-item">
+          <input type="checkbox" id="expSettings" checked>
+          <span class="backup-check-mark"></span>
+          <div class="backup-check-info">
+            <div class="backup-check-title">Settings & Avatars</div>
+            <div class="backup-check-desc">API config, avatars, light traces, etc.</div>
+          </div>
+        </label>
+      </div>
+      <button class="save-btn" id="exportBtn" onclick="startExport()" style="margin-top:12px">
+        Export Selected
+      </button>
+      <div class="backup-progress" id="exportProgress"></div>
+    </div>
+
+    <div class="settings-group">
+      <h3>Import</h3>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">
+        Select one or more Little backup files to restore
+      </p>
+      <div class="setting-row">
+        <label>Import Mode</label>
+        <select id="importMode">
+          <option value="merge">Merge — Keep existing, add new</option>
+          <option value="overwrite">Overwrite — Replace all data</option>
+        </select>
+      </div>
+      <button class="fetch-model-btn" style="width:100%;margin-top:8px" onclick="document.getElementById('backupImportInput').click()">
+        Select Backup Files
+      </button>
+      <div class="backup-progress" id="importProgress"></div>
+    </div>
+  </div>
+</div>
+  
 <!-- ============ 导入选择浮层 ============ -->
 <div class="import-overlay" id="importOverlay">
   <div class="overlay-header"><button class="overlay-back" onclick="closeImport()"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Import Chats</h2></div>
