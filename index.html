@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Little">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#e8f0fa">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
@@ -18,164 +18,199 @@
 </head>
 <body>
 
-<!-- ============ HOME 页面 ============ -->
-<div class="page" id="homePage">
-  <div class="home-header">
-    <div style="width:36px"></div>
-    <div class="home-header-title">Home</div>
-    <button class="header-btn" id="homeRefreshBtn" onclick="refreshDailyQuote()">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+<!-- ============ 开屏动画 ============ -->
+<div class="splash" id="splashScreen">
+  <div class="splash-inner">
+    <svg class="splash-svg" viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path class="splash-house-path" stroke="#7aa2d4" stroke-width="1.6" d="M10 35L40 12L70 35V66A2 2 0 0 1 68 68H12A2 2 0 0 1 10 68V35Z"/>
+      <path class="splash-door-path" stroke="#7aa2d4" stroke-width="1.6" d="M30 68V48H50V68"/>
+      <path class="splash-heart-path" stroke="#f4b8c1" stroke-width="1.6" d="M40 28C40 24 36 21 33 21C29 21 26 25 26 28C26 35 40 42 40 42C40 42 54 35 54 28C54 25 51 21 47 21C44 21 40 24 40 28Z"/>
+    </svg>
+    <div class="splash-text">欢迎回家</div>
+    <div class="splash-sub">Little</div>
+  </div>
+</div>
+
+<!-- ============ 全局顶栏（非Chat页显示） ============ -->
+<div class="global-header" id="globalHeader">
+  <button class="gh-btn" onclick="toggleCategoryMenu()">
+    <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+  </button>
+  <div class="gh-title" id="ghTitle">Little</div>
+  <button class="gh-btn gh-heart" onclick="navigateTo('together')">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+  </button>
+</div>
+
+<!-- ============ 左侧全站导航（Category） ============ -->
+<div class="cat-overlay" id="catOverlay" onclick="toggleCategoryMenu()"></div>
+<div class="cat-menu" id="catMenu">
+  <div class="cat-header">
+    <h2>Category</h2>
+    <button class="gh-btn" onclick="toggleCategoryMenu()">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
-  <div class="home-body">
-    <!-- 标题区 -->
-    <div class="home-title-section">
-      <div class="home-names" id="homeNames">You &amp; Little</div>
-      <div class="home-since">TOGETHER SINCE</div>
+  <div class="cat-list">
+    <div class="cat-item" onclick="toggleCategoryMenu();navigateTo('home')"><div class="cat-item-title">Home</div><div class="cat-item-desc">回到情侣纪念主页</div></div>
+    <div class="cat-item" onclick="toggleCategoryMenu();navigateTo('chat')"><div class="cat-item-title">Chat</div><div class="cat-item-desc">开始聊天</div></div>
+    <div class="cat-item" onclick="toggleCategoryMenu();navigateTo('memory')"><div class="cat-item-title">Memory</div><div class="cat-item-desc">记忆、收藏、Light Traces</div></div>
+    <div class="cat-item" onclick="toggleCategoryMenu();navigateTo('together')"><div class="cat-item-title">Together</div><div class="cat-item-desc">我们的空间</div></div>
+    <div class="cat-item" onclick="toggleCategoryMenu();navigateTo('mine')"><div class="cat-item-title">Mine</div><div class="cat-item-desc">设置与偏好</div></div>
+  </div>
+</div>
+
+<!-- ============ HOME 页面 ============ -->
+<div class="page" id="homePage">
+  <div class="page-scroll">
+    <div class="home-card">
+      <div class="home-card-label">Little love record</div>
+      <div class="home-names" id="homeNames">You & Little</div>
       <div class="home-days-wrap">
         <span class="home-days-num" id="homeDaysNum">0</span>
-        <span class="home-days-label">days</span>
+        <span class="home-days-unit">days together for</span>
+      </div>
+      <div class="home-avatars">
+        <div class="home-avatar" onclick="pickUserAvatar()">
+          <img id="userAvatarImg" src="" style="display:none">
+          <svg class="avatar-ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="home-avatar-heart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="home-avatar" onclick="pickAiAvatar()">
+          <img id="aiAvatarImg" src="" style="display:none">
+          <svg class="avatar-ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+      </div>
+      <div class="home-since" id="homeSinceText">Set anniversary in Mine</div>
+    </div>
+    <div class="home-dual">
+      <div class="home-sm-card" onclick="loadWeather()">
+        <div class="hsc-label">Today's Weather</div>
+        <div class="hsc-body" id="weatherContent">Tap to load</div>
+        <div class="hsc-sub" id="weatherSub"></div>
+      </div>
+      <div class="home-sm-card" onclick="refreshDailyQuote()">
+        <div class="hsc-label">Daily Words</div>
+        <div class="hsc-body" id="homeQuoteText">Tap to get today's words</div>
+        <div class="hsc-sub" id="homeQuoteDate"></div>
       </div>
     </div>
-    <!-- 每日一句 -->
-    <div class="home-quote-card" id="homeQuoteCard">
-      <div class="home-quote-text" id="homeQuoteText">Tap refresh to get today's words...</div>
-      <div class="home-quote-date" id="homeQuoteDate"></div>
+    <div class="home-sec-head">
+      <span class="home-sec-title">light traces</span>
+      <button class="home-sec-btn" onclick="refreshDailyQuote()">
+        <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
     </div>
-    <!-- Light Traces -->
-    <div class="home-section-title">
-      <span>light traces</span>
-    </div>
-    <div class="home-traces" id="homeTraces">
-      <div class="home-trace-empty">No traces yet. Chat more to create memories.</div>
-    </div>
+    <div id="homeTraces"><div class="home-trace-empty">No traces yet. Chat more to create memories.</div></div>
   </div>
 </div>
 
 <!-- ============ CHAT 页面 ============ -->
 <div class="page" id="chatPage" style="display:none">
-  <div class="header">
-    <div class="header-left">
-      <button class="header-btn" onclick="navigateTo('home')">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 14 15 14 15 21"/></svg>
-      </button>
-    </div>
-    <div class="header-title" id="headerTitle">Little</div>
-    <div class="header-right">
-      <button class="header-btn" onclick="toggleSidebar()">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
+  <div class="chat-top">
+    <button class="ct-btn" onclick="navigateTo('home')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="ct-title" id="headerTitle">Little</div>
+    <button class="ct-btn" onclick="toggleSidebar()">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
-
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2>Chats</h2>
-      <button class="new-chat-btn" onclick="newChat()">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
+    <div class="sidebar-header"><h2>Chats</h2>
+      <button class="new-chat-btn" onclick="newChat()"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
     <div class="chat-list" id="chatList"></div>
   </div>
-
   <div class="chat-area" id="chatArea">
-    <div class="empty-state">
-      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-      <p>What's on your mind?</p>
-    </div>
+    <div class="empty-state"><svg class="es-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>What's on your mind?</p></div>
   </div>
-
   <div class="attach-preview" id="attachPreview"></div>
-
   <div class="input-section">
     <div class="input-main">
-      <div class="input-wrap">
-        <textarea id="msgInput" rows="1" placeholder="Reply to Little" oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
-      </div>
+      <div class="input-wrap"><textarea id="msgInput" rows="1" placeholder="Reply to Little" oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea></div>
       <button class="send-circle-btn" id="sendBtn" onclick="handleSendStop()">
         <svg class="send-icon-svg icon" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
         <div class="stop-square"></div>
       </button>
     </div>
     <div class="input-bottom">
-      <button class="ib-plus" onclick="togglePlusMenu()">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
+      <button class="ib-plus" onclick="togglePlusMenu()"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       <div class="model-tag" id="modelTag" onclick="openSettings()">Not set</div>
-      <div class="ib-right-actions">
-        <button class="ib-circle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()">
-          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
-        </button>
+      <div class="ib-right"><button class="ib-circle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Memory 页面 ============ -->
+<div class="page" id="memoryTabPage" style="display:none">
+  <div class="page-scroll">
+    <div class="pg-head"><h2>Our Memories</h2><span class="pg-head-sub">把日子慢慢装满</span></div>
+    <div class="mem-grid" id="memoryGrid">
+      <div class="mem-card" onclick="openMemory()">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+        <div class="mc-title">Memory Bank</div>
+        <div class="mc-count" id="memBankCount">0 memories</div>
+      </div>
+      <div class="mem-card" onclick="showToast('Coming soon')">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div class="mc-title">Light Traces</div>
+        <div class="mc-count" id="tracesCount">0 traces</div>
+      </div>
+      <div class="mem-card" onclick="showToast('Coming soon')">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="mc-title">Photos</div>
+        <div class="mc-count">Coming soon</div>
+      </div>
+      <div class="mem-card" onclick="showToast('Coming soon')">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="mc-title">Daily List</div>
+        <div class="mc-count">Coming soon</div>
+      </div>
+      <div class="mem-card" onclick="showToast('Coming soon')">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg></div>
+        <div class="mc-title">Mood</div>
+        <div class="mc-count">Coming soon</div>
+      </div>
+      <div class="mem-card" onclick="showToast('Coming soon')">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="mc-title">Whispers</div>
+        <div class="mc-count">Coming soon</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ============ 收藏页面（占位） ============ -->
-<div class="page" id="favPage" style="display:none">
-  <div class="home-header">
-    <div style="width:36px"></div>
-    <div class="home-header-title">Favorites</div>
-    <div style="width:36px"></div>
-  </div>
-  <div class="home-body">
-    <div class="empty-state">
-      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-      </svg>
-      <p>Coming soon...</p>
-    </div>
+<!-- ============ Together 页面 ============ -->
+<div class="page" id="togetherPage" style="display:none">
+  <div class="page-scroll">
+    <div class="empty-state"><svg class="es-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><p>Together — Coming soon...</p></div>
   </div>
 </div>
 
-<!-- ============ 情侣空间（占位） ============ -->
-<div class="page" id="usPage" style="display:none">
-  <div class="home-header">
-    <div style="width:36px"></div>
-    <div class="home-header-title">Us</div>
-    <div style="width:36px"></div>
-  </div>
-  <div class="home-body">
-    <div class="empty-state">
-      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      <p>Coming soon...</p>
-    </div>
-  </div>
-</div>
-
-<!-- ============ MORE 页面 ============ -->
-<div class="page" id="morePage" style="display:none">
-  <div class="home-header">
-    <div style="width:36px"></div>
-    <div class="home-header-title">More</div>
-    <div style="width:36px"></div>
-  </div>
-  <div class="home-body">
-    <div class="more-menu">
-      <div class="more-item" onclick="openMemory()">
-        <div class="more-item-icon">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="24" x2="14" y2="24"/></svg>
-        </div>
-        <div class="more-item-info">
-          <div class="more-item-title">Memory</div>
-          <div class="more-item-desc">View and manage memories</div>
-        </div>
-        <svg class="more-item-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+<!-- ============ Mine 页面 ============ -->
+<div class="page" id="minePage" style="display:none">
+  <div class="page-scroll">
+    <div class="pg-head"><h2>Mine</h2><span class="pg-head-sub" onclick="openSettings()" style="cursor:pointer">头像与重要日子设置</span></div>
+    <div class="mine-label">SETTINGS</div>
+    <div class="mine-list">
+      <div class="mine-item" onclick="openSettings()">
+        <div class="mi-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <div class="mi-info"><div class="mi-title">API & Settings</div><div class="mi-desc">Endpoint, model, character</div></div>
+        <svg class="mi-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-      <div class="more-item" onclick="openSettings()">
-        <div class="more-item-icon">
-          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <div class="more-item-info">
-          <div class="more-item-title">Settings</div>
-          <div class="more-item-desc">API, character, preferences</div>
-        </div>
-        <svg class="more-item-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      <div class="mine-item" onclick="openMemory()">
+        <div class="mi-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div>
+        <div class="mi-info"><div class="mi-title">Memory Bank</div><div class="mi-desc">View and manage memories</div></div>
+        <svg class="mi-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="mine-item" onclick="showToast('Coming soon')">
+        <div class="mi-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="mi-info"><div class="mi-title">Data Backup</div><div class="mi-desc">Export / Import all data</div></div>
+        <svg class="mi-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
   </div>
@@ -187,21 +222,23 @@
     <svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 14 15 14 15 21"/></svg>
     <span>Home</span>
   </button>
-  <button class="tab-item" data-tab="fav" onclick="navigateTo('fav')">
-    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-    <span>Favorites</span>
+  <button class="tab-item" data-tab="memory" onclick="navigateTo('memory')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span>Memory</span>
   </button>
-  <button class="tab-item" data-tab="chat" onclick="navigateTo('chat')">
-    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <button class="tab-item tab-center" data-tab="chat" onclick="navigateTo('chat')">
+    <div class="tab-center-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
     <span>Chat</span>
   </button>
-  <button class="tab-item" data-tab="us" onclick="navigateTo('us')">
-    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    <span>Us</span>
+  <button class="tab-item" data-tab="together" onclick="navigateTo('together')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span>Together</span>
   </button>
-  <button class="tab-item" data-tab="more" onclick="navigateTo('more')">
-    <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-    <span>More</span>
+  <button class="tab-item" data-tab="mine" onclick="navigateTo('mine')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span>Mine</span>
   </button>
 </nav>
 
@@ -209,135 +246,69 @@
 <div class="plus-menu-overlay" id="plusMenuOverlay" onclick="closePlusMenu()"></div>
 <div class="plus-menu" id="plusMenu">
   <div class="plus-menu-grid">
-    <button class="plus-menu-item" onclick="closePlusMenu();pickPhoto()">
-      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
-      <span class="pm-label">Photo</span>
-    </button>
-    <button class="plus-menu-item" onclick="closePlusMenu();pickFile()">
-      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-      <span class="pm-label">File</span>
-    </button>
-    <button class="plus-menu-item" onclick="closePlusMenu();pickCamera()">
-      <div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-      <span class="pm-label">Camera</span>
-    </button>
+    <button class="plus-menu-item" onclick="closePlusMenu();pickPhoto()"><div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><span class="pm-label">Photo</span></button>
+    <button class="plus-menu-item" onclick="closePlusMenu();pickFile()"><div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span class="pm-label">File</span></button>
+    <button class="plus-menu-item" onclick="closePlusMenu();pickCamera()"><div class="pm-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div><span class="pm-label">Camera</span></button>
   </div>
 </div>
 
-<!-- ============ 隐藏的 file input ============ -->
+<!-- ============ 隐藏 file input ============ -->
 <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="fileInput" accept=".txt,.md,.json,.csv,.log,.xml,.html,.css,.js,.py,.java,.c,.cpp,.ts,.yaml,.yml,.toml,.ini,.cfg,.conf" multiple style="display:none" onchange="handleFileSelect(event)">
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="stickerImportInput" accept="image/*" multiple style="display:none" onchange="handleStickerImport(event)">
 <input type="file" id="claudeImportInput" accept=".json" style="display:none" onchange="handleClaudeImport(event)">
+<input type="file" id="userAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'user')">
+<input type="file" id="aiAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'ai')">
 
 <!-- ============ 表情包面板 ============ -->
 <div class="sticker-panel" id="stickerPanel">
-  <div class="sticker-panel-header">
-    <h3>Stickers</h3>
-    <button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">Import</button>
-    <button class="sticker-panel-close" onclick="toggleStickerPanel()">
-      <svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="sticker-grid" id="stickerGrid">
-    <div class="sticker-empty">No stickers yet<br>Tap "Import" to add</div>
-  </div>
-  <div class="sticker-panel-footer">
-    <button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">Manage</button>
-    <span style="flex:1;font-size:11px;color:var(--text-light);text-align:right" id="stickerCount"></span>
-  </div>
+  <div class="sticker-panel-header"><h3>Stickers</h3><button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">Import</button><button class="sticker-panel-close" onclick="toggleStickerPanel()"><svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="sticker-grid" id="stickerGrid"><div class="sticker-empty">No stickers yet<br>Tap "Import" to add</div></div>
+  <div class="sticker-panel-footer"><button class="sticker-edit-btn" id="stickerEditBtn" onclick="toggleStickerEdit()">Manage</button><span style="flex:1;font-size:11px;color:var(--text-light);text-align:right" id="stickerCount"></span></div>
 </div>
 
 <!-- ============ 设置页 ============ -->
 <div class="overlay-page" id="settingsPage">
-  <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('settingsPage')">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Settings</h2>
-  </div>
+  <div class="overlay-header"><button class="overlay-back" onclick="closePage('settingsPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Settings</h2></div>
   <div class="overlay-body">
-    <div class="settings-group">
-      <h3>API Configuration</h3>
+    <div class="settings-group"><h3>API Configuration</h3>
       <div class="setting-row"><label>Endpoint</label><input type="url" id="setApiUrl" placeholder="https://your-proxy.com/v1"></div>
       <div class="setting-row"><label>API Key</label><input type="password" id="setApiKey" placeholder="sk-..."></div>
       <div class="setting-row"><label>Model</label><div class="model-row"><input type="text" id="setModel" placeholder="gpt-4o / claude-sonnet-4-20250514"><button class="fetch-model-btn" id="fetchModelBtn" onclick="fetchModels()">Fetch</button></div></div>
     </div>
-    <div class="settings-group">
-      <h3>Character</h3>
+    <div class="settings-group"><h3>Character</h3>
       <div class="setting-row"><label>Name</label><input type="text" id="setCharName" placeholder="Little"></div>
       <div class="setting-row"><label>Nickname</label><input type="text" id="setCharNickname" placeholder="Leave empty to use Name"><p style="font-size:11px;color:var(--text-light);margin-top:4px">Set a nickname — it will display in header & input, and AI will know about it</p></div>
     </div>
-    <div class="settings-group">
-      <h3>Profile</h3>
+    <div class="settings-group"><h3>Profile</h3>
       <div class="setting-row"><label>Your Name</label><input type="text" id="setUserName" placeholder="Your name"><p style="font-size:11px;color:var(--text-light);margin-top:4px">Displayed on Home page title</p></div>
-      <div class="setting-row"><label>Anniversary</label><input type="date" id="setAnniversary"><p style="font-size:11px;color:var(--text-light);margin-top:4px">The day you started together — used for "days" counter</p></div>
+      <div class="setting-row"><label>Anniversary</label><input type="date" id="setAnniversary"><p style="font-size:11px;color:var(--text-light);margin-top:4px">The day you started together</p></div>
     </div>
-    <div class="settings-group">
-      <h3>Persona</h3>
-      <div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="You are a gentle AI assistant..."></textarea></div>
-    </div>
-    <div class="settings-group">
-      <h3>Memory</h3>
+    <div class="settings-group"><h3>Persona</h3><div class="setting-row"><label>System Prompt</label><textarea id="setSystemPrompt" placeholder="You are a gentle AI assistant..."></textarea></div></div>
+    <div class="settings-group"><h3>Memory</h3>
       <div class="setting-row"><label>Auto Memory</label><select id="setAutoMemory"><option value="on">On</option><option value="off">Off</option></select></div>
       <div class="setting-row"><label>Jina API Key</label><input type="password" id="setJinaKey" placeholder="jina_..."></div>
     </div>
-    <div class="settings-group">
-      <h3>Thinking</h3>
-      <div class="setting-row"><label>Chain of Thought</label><select id="setThinking"><option value="off">Off</option><option value="on">On</option></select></div>
-    </div>
-    <div class="settings-group">
-      <h3>Reply Style</h3>
-      <div class="setting-row"><label>Split Reply</label><select id="setSplitReply"><option value="off">Off — Single bubble</option><option value="on">On — Multiple bubbles</option></select></div>
-    </div>
-    <div class="settings-group">
-      <h3>Custom CSS</h3>
-      <div class="setting-row"><textarea id="setCustomCSS" placeholder="/* Your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5;"></textarea></div>
-    </div>
-    <div class="settings-group">
-      <h3>Import</h3>
-      <div class="setting-row">
-        <label>Import Claude conversations</label>
-        <p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data (conversations.json)</p>
-        <button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button>
-      </div>
-    </div>
+    <div class="settings-group"><h3>Thinking</h3><div class="setting-row"><label>Chain of Thought</label><select id="setThinking"><option value="off">Off</option><option value="on">On</option></select></div></div>
+    <div class="settings-group"><h3>Reply Style</h3><div class="setting-row"><label>Split Reply</label><select id="setSplitReply"><option value="off">Off — Single bubble</option><option value="on">On — Multiple bubbles</option></select></div></div>
+    <div class="settings-group"><h3>Custom CSS</h3><div class="setting-row"><textarea id="setCustomCSS" placeholder="/* Your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5"></textarea></div></div>
+    <div class="settings-group"><h3>Import</h3><div class="setting-row"><label>Import Claude conversations</label><p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data</p><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button></div></div>
     <button class="save-btn" onclick="saveSettings()">Save</button>
   </div>
 </div>
 
 <!-- ============ 模型选择页 ============ -->
 <div class="overlay-page" id="modelPickerPage">
-  <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('modelPickerPage')">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Select Model</h2>
-  </div>
-  <div class="overlay-body">
-    <div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="Search models..." oninput="filterModels()"></div>
-    <div id="modelListContainer"><div class="model-list-empty">Tap "Fetch" to load</div></div>
-  </div>
+  <div class="overlay-header"><button class="overlay-back" onclick="closePage('modelPickerPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Select Model</h2></div>
+  <div class="overlay-body"><div class="model-search-wrap"><input type="text" id="modelSearchInput" placeholder="Search models..." oninput="filterModels()"></div><div id="modelListContainer"><div class="model-list-empty">Tap "Fetch" to load</div></div></div>
 </div>
 
 <!-- ============ 记忆库 ============ -->
 <div class="overlay-page" id="memoryPage">
-  <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('memoryPage')">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Memory</h2>
-  </div>
+  <div class="overlay-header"><button class="overlay-back" onclick="closePage('memoryPage')"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Memory</h2></div>
   <div class="overlay-body">
-    <div class="memory-add-box">
-      <h3>Add Manually</h3>
-      <div class="memory-add-row">
-        <select id="memAddCategory"><option value="profile">Profile</option><option value="fact" selected>Fact</option><option value="warm">Warm</option><option value="corridor">Note</option></select>
-        <textarea id="memAddText" rows="1" placeholder="Memory content..." oninput="autoResize(this)"></textarea>
-      </div>
-      <div style="display:flex;justify-content:flex-end;"><button class="memory-add-btn" onclick="addManualMemory()">Add</button></div>
-    </div>
+    <div class="memory-add-box"><h3>Add Manually</h3><div class="memory-add-row"><select id="memAddCategory"><option value="profile">Profile</option><option value="fact" selected>Fact</option><option value="warm">Warm</option><option value="corridor">Note</option></select><textarea id="memAddText" rows="1" placeholder="Memory content..." oninput="autoResize(this)"></textarea></div><div style="display:flex;justify-content:flex-end"><button class="memory-add-btn" onclick="addManualMemory()">Add</button></div></div>
     <div class="memory-stats" id="memoryStats"></div>
     <div id="memoryList"><div class="memory-empty">No memories yet</div></div>
   </div>
@@ -345,67 +316,28 @@
 
 <!-- ============ 导入选择浮层 ============ -->
 <div class="import-overlay" id="importOverlay">
-  <div class="overlay-header">
-    <button class="overlay-back" onclick="closeImport()">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Import Chats</h2>
-  </div>
+  <div class="overlay-header"><button class="overlay-back" onclick="closeImport()"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Import Chats</h2></div>
   <div style="padding:0 16px 8px;font-size:13px;color:var(--text-light)" id="importInfo"></div>
   <div class="import-list" id="importList"></div>
-  <div class="import-actions">
-    <button class="import-cancel-btn" onclick="closeImport()">Cancel</button>
-    <button class="import-confirm-btn" id="importConfirmBtn" onclick="confirmImport()" disabled>Import Selected</button>
-  </div>
+  <div class="import-actions"><button class="import-cancel-btn" onclick="closeImport()">Cancel</button><button class="import-confirm-btn" id="importConfirmBtn" onclick="confirmImport()" disabled>Import Selected</button></div>
 </div>
 
 <!-- ============ 思维链浮层 ============ -->
 <div class="thinking-overlay" id="thinkingOverlay">
-  <div class="thinking-overlay-header">
-    <button class="overlay-back" onclick="closeThinking()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <h2>Thought Process</h2>
-    <div style="width:36px"></div>
-  </div>
+  <div class="thinking-overlay-header"><button class="overlay-back" onclick="closeThinking()"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><h2>Thought Process</h2><div style="width:36px"></div></div>
   <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
 </div>
 
-<!-- ============ 图片查看 ============ -->
+<!-- ============ 图片/重命名/HTML预览 ============ -->
 <div class="img-viewer" id="imgViewer" onclick="closeImgViewer()"><img id="imgViewerSrc" src=""></div>
-
-<!-- ============ 重命名弹窗 ============ -->
-<div class="rename-modal" id="renameModal">
-  <div class="rename-box">
-    <h3>Rename</h3>
-    <input type="text" id="renameInput" placeholder="New name..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()">
-    <div class="rename-btns">
-      <button class="rename-cancel" onclick="closeRename()">Cancel</button>
-      <button class="rename-confirm" onclick="confirmRename()">Done</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ HTML 预览浮层 ============ -->
+<div class="rename-modal" id="renameModal"><div class="rename-box"><h3>Rename</h3><input type="text" id="renameInput" placeholder="New name..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()"><div class="rename-btns"><button class="rename-cancel" onclick="closeRename()">Cancel</button><button class="rename-confirm" onclick="confirmRename()">Done</button></div></div></div>
 <div class="html-preview-overlay" id="htmlPreviewOverlay">
-  <div class="html-preview-toolbar">
-    <button class="html-preview-toolbar-btn" onclick="closeHtmlPreview()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <div class="html-preview-toolbar-title" id="htmlPreviewTitle">Preview</div>
-    <button class="html-preview-toolbar-btn" onclick="openHtmlNewTab()" title="Open in new tab">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-    </button>
-    <button class="html-preview-toolbar-btn" onclick="downloadHtml()" title="Download">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    </button>
-  </div>
-  <iframe class="html-preview-iframe" id="htmlPreviewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+  <div class="html-preview-toolbar"><button class="html-preview-toolbar-btn" onclick="closeHtmlPreview()"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="html-preview-toolbar-title" id="htmlPreviewTitle">Preview</div><button class="html-preview-toolbar-btn" onclick="openHtmlNewTab()"><svg class="icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button><button class="html-preview-toolbar-btn" onclick="downloadHtml()"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button></div>
+  <iframe class="html-preview-iframe" id="htmlPreviewFrame" sandbox="allow-scripts"></iframe>
 </div>
 
 <div class="toast" id="toast"></div>
 <style id="customCSSTag"></style>
-
 <script src="app.js"></script>
 </body>
 </html>
