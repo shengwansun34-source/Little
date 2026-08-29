@@ -972,6 +972,7 @@ function closeImgViewer(){document.getElementById('imgViewer').classList.remove(
 
 // ==================== HTML 预览系统 ====================
 let htmlBlockStore={};
+let currentHtmlPreviewName='index.html';
 function processHtmlBlocks(html){
   const re=/<pre><code class="[^"]*language-html[^"]*">([\s\S]*?)<\/code><\/pre>/g;
   let match;const blocks=[];
@@ -985,12 +986,14 @@ function processHtmlBlocks(html){
   let result=html;
   blocks.forEach((b,i)=>{
     const cardId='hc_'+Date.now()+'_'+i;
-    htmlBlockStore[cardId]=b.code;
+    const titleMatch=b.code.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    const fileName=(titleMatch&&titleMatch[1].trim())?titleMatch[1].trim()+'.html':'index.html';
+    htmlBlockStore[cardId]={code:b.code,fileName:fileName};
     const sizeB=(new Blob([b.code])).size;
     const sizeStr=sizeB<1024?sizeB+' B':(sizeB/1024).toFixed(1)+' KB';
     const card='<div class="html-file-card" onclick="previewHtml(\''+cardId+'\')">'
       +'<div class="html-file-card-icon"><svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>'
-      +'<div class="html-file-card-info"><div class="html-file-card-name">index.html</div><div class="html-file-card-meta">HTML Document · '+sizeStr+'</div></div>'
+      +'<div class="html-file-card-info"><div class="html-file-card-name">'+escHtml(fileName)+'</div><div class="html-file-card-meta">HTML Document · '+sizeStr+'</div></div>'
       +'<div class="html-file-card-arrow"><svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>'
       +'</div>';
     result=result.replace(b.full,card);
@@ -998,18 +1001,18 @@ function processHtmlBlocks(html){
   return result;
 }
 function previewHtml(cardId){
-  const code=htmlBlockStore[cardId];if(!code)return;
-  currentHtmlPreviewCode=code;
-  document.getElementById('htmlPreviewTitle').textContent='Preview';
-  document.getElementById('htmlPreviewFrame').srcdoc=code;
+  const item=htmlBlockStore[cardId];if(!item)return;
+  currentHtmlPreviewCode=item.code;
+  currentHtmlPreviewName=item.fileName;
+  document.getElementById('htmlPreviewTitle').textContent=item.fileName;
+  document.getElementById('htmlPreviewFrame').srcdoc=item.code;
   document.getElementById('htmlPreviewOverlay').classList.add('open');
 }
 function closeHtmlPreview(){document.getElementById('htmlPreviewOverlay').classList.remove('open');document.getElementById('htmlPreviewFrame').srcdoc='';}
 function openHtmlNewTab(){const blob=new Blob([currentHtmlPreviewCode],{type:'text/html'});window.open(URL.createObjectURL(blob),'_blank');}
-function downloadHtml(){const blob=new Blob([currentHtmlPreviewCode],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='index.html';a.click();URL.revokeObjectURL(a.href);}
-function toggleHtmlFold(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
+function downloadHtml(){const blob=new Blob([currentHtmlPreviewCode],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=currentHtmlPreviewName||'index.html';a.click();URL.revokeObjectURL(a.href);}
 
-// ==================== 复制 & 重新回复 ====================
+  // ==================== 复制 & 重新回复 ====================
 function copyMsgText(msgIdx){
   const chat=currentChat();if(!chat)return;
   const m=chat.messages.filter(x=>x.role==='user'||x.role==='assistant')[msgIdx];if(!m)return;
