@@ -29,9 +29,148 @@ body {
   stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
   display:inline-block; vertical-align:middle; flex-shrink:0;
 }
-.icon-sm { width:16px; height:16px; }
+.icon-sm { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .icon-lg { width:24px; height:24px; }
 
+/* ==================== 页面系统 ==================== */
+.page {
+  display:flex; flex-direction:column; flex:1; overflow:hidden;
+  min-height:0;
+}
+
+/* ==================== 底部 Tab 栏 ==================== */
+.bottom-tabs {
+  display:flex; align-items:center; justify-content:space-around;
+  background:var(--surface);
+  border-top:1px solid var(--primary-light);
+  padding:4px 0 calc(var(--safe-bottom) + 2px);
+  z-index:100; flex-shrink:0;
+}
+.bottom-tabs.hidden { display:none; }
+.tab-item {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  border:none; background:none; cursor:pointer;
+  padding:4px 8px; color:var(--text-light);
+  transition:color .2s; min-width:0; flex:1;
+}
+.tab-item.active { color:var(--primary); }
+.tab-icon {
+  width:22px; height:22px; fill:none; stroke:currentColor;
+  stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+}
+.tab-item.active .tab-icon { stroke-width:2.2; }
+.tab-item span {
+  font-size:10px; font-weight:500; letter-spacing:0.2px;
+  white-space:nowrap;
+}
+
+/* ==================== HOME 页面 ==================== */
+.home-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:calc(var(--safe-top) + 6px) 16px 6px;
+  background:var(--surface);
+  border-bottom:1px solid var(--primary-light);
+  min-height:calc(var(--safe-top) + 44px);
+}
+.home-header-title {
+  font-size:16px; font-weight:600; color:var(--text); letter-spacing:0.3px;
+}
+.home-body {
+  flex:1; overflow-y:auto; padding:20px 16px 32px;
+  -webkit-overflow-scrolling:touch;
+}
+
+.home-title-section {
+  text-align:center; padding:24px 0 20px;
+}
+.home-names {
+  font-size:22px; font-weight:700; color:var(--text);
+  letter-spacing:0.8px;
+}
+.home-since {
+  font-size:10px; color:var(--text-light); letter-spacing:2.5px;
+  margin-top:8px; text-transform:uppercase;
+}
+.home-days-wrap {
+  margin-top:6px; display:flex; align-items:baseline;
+  justify-content:center; gap:6px;
+}
+.home-days-num {
+  font-size:64px; font-weight:200; color:var(--primary);
+  line-height:1; letter-spacing:-2px;
+  font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
+}
+.home-days-label {
+  font-size:14px; color:var(--text-light); letter-spacing:1px;
+  font-weight:400;
+}
+
+.home-quote-card {
+  background:var(--surface); border-radius:var(--radius);
+  padding:18px 20px; margin:8px 0 24px;
+  box-shadow:0 2px 12px var(--shadow);
+  position:relative;
+}
+.home-quote-text {
+  font-size:14px; line-height:1.7; color:var(--text);
+  font-style:italic; letter-spacing:0.2px;
+}
+.home-quote-date {
+  font-size:11px; color:var(--text-light); margin-top:10px;
+  text-align:right; letter-spacing:0.5px;
+}
+.home-quote-loading {
+  color:var(--text-light); font-style:normal;
+}
+
+.home-section-title {
+  font-size:13px; color:var(--text-light); letter-spacing:1.5px;
+  margin-bottom:12px; font-weight:500;
+  display:flex; align-items:center; gap:6px;
+  font-style:italic;
+}
+.home-section-title::before {
+  content:''; display:inline-block; width:3px; height:3px;
+  border-radius:50%; background:var(--text-light);
+}
+
+.home-traces { display:flex; flex-direction:column; gap:10px; }
+.home-trace-item {
+  background:var(--surface); border-radius:var(--radius-sm);
+  padding:14px 16px; box-shadow:0 1px 6px var(--shadow);
+}
+.home-trace-text {
+  font-size:13px; line-height:1.65; color:var(--text);
+}
+.home-trace-date {
+  font-size:10px; color:var(--text-light); margin-top:8px;
+  text-align:right; letter-spacing:0.5px;
+}
+.home-trace-empty {
+  text-align:center; color:var(--text-light); padding:30px 0;
+  font-size:13px; line-height:1.8;
+}
+
+/* ==================== MORE 页面 ==================== */
+.more-menu { display:flex; flex-direction:column; gap:8px; padding-top:8px; }
+.more-item {
+  display:flex; align-items:center; gap:14px;
+  background:var(--surface); border-radius:var(--radius);
+  padding:16px; cursor:pointer; transition:background .15s;
+}
+.more-item:active { background:var(--surface2); }
+.more-item-icon {
+  width:40px; height:40px; border-radius:12px;
+  background:var(--surface2); display:flex;
+  align-items:center; justify-content:center;
+  color:var(--primary); flex-shrink:0;
+}
+.more-item-info { flex:1; min-width:0; }
+.more-item-title { font-size:15px; font-weight:600; color:var(--text); }
+.more-item-desc { font-size:12px; color:var(--text-light); margin-top:2px; }
+.more-item-arrow { color:var(--text-light); flex-shrink:0; }
+
+/* ==================== CHAT 顶栏 ==================== */
 .header {
   display:flex; align-items:center; justify-content:space-between;
   padding:calc(var(--safe-top) + 6px) 12px 6px;
@@ -54,16 +193,17 @@ body {
 }
 .header-btn:active { transform:scale(.9); }
 
+/* ==================== 侧栏 ==================== */
 .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:200; }
 .sidebar-overlay.open { display:block; }
 .sidebar {
-  position:fixed; left:-280px; top:0; bottom:0; width:280px;
+  position:fixed; right:-280px; top:0; bottom:0; width:280px;
   background:var(--surface); z-index:201;
-  transition:left .28s cubic-bezier(.4,0,.2,1);
+  transition:right .28s cubic-bezier(.4,0,.2,1);
   display:flex; flex-direction:column;
   padding-top:calc(var(--safe-top) + 12px);
 }
-.sidebar.open { left:0; }
+.sidebar.open { right:0; }
 .sidebar-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 16px; }
 .sidebar-header h2 { font-size:20px; color:var(--text); letter-spacing:0.5px; }
 .new-chat-btn {
@@ -91,6 +231,7 @@ body {
 }
 .chat-item-btn:active { background:var(--surface2); color:var(--text); }
 
+/* ==================== 聊天区域 ==================== */
 .chat-area {
   flex:1; overflow-y:auto; padding:12px 16px 8px;
   -webkit-overflow-scrolling:touch; scroll-behavior:smooth;
@@ -127,6 +268,7 @@ body {
 }
 .msg-action-btn:active { color:var(--primary); background:var(--surface2); }
 
+/* ==================== HTML 文件卡片 & 预览 ==================== */
 .html-file-card {
   display:flex; align-items:center; gap:10px;
   background:var(--surface2); border-radius:12px; padding:10px 14px;
@@ -174,6 +316,7 @@ body {
 .html-preview-toolbar-btn:active { transform:scale(.9); }
 .html-preview-iframe { flex:1; border:none; width:100%; background:#fff; }
 
+/* ==================== Markdown 渲染 ==================== */
 .msg.assistant .msg-bubble p { margin:0 0 8px 0; }
 .msg.assistant .msg-bubble p:last-child { margin-bottom:0; }
 .msg.assistant .msg-bubble ul, .msg.assistant .msg-bubble ol { margin:0 0 8px 18px; }
@@ -203,6 +346,7 @@ body {
 .msg-image { max-width:200px; max-height:200px; border-radius:12px; margin-bottom:6px; display:block; cursor:pointer; object-fit:cover; }
 .msg.user .msg-image { border-radius:12px 4px 12px 12px; }
 
+/* ==================== 思维链 ==================== */
 .thinking-toggle {
   display:flex; align-items:center; gap:6px; padding:6px 0; margin-bottom:2px; cursor:pointer;
   font-size:13px; color:var(--text-light); -webkit-user-select:none; user-select:none;
@@ -212,6 +356,7 @@ body {
 .thinking-preview { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .thinking-arrow { flex-shrink:0; font-size:12px; color:#bbb; }
 
+/* ==================== 输入中动画 ==================== */
 .typing-indicator {
   display:none; padding:10px 14px; background:var(--surface);
   border-radius:4px 18px 18px 18px; box-shadow:0 1px 4px var(--shadow);
@@ -226,6 +371,7 @@ body {
 .typing-dot:nth-child(3) { animation-delay:.4s; }
 @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
 
+/* ==================== 附件预览 ==================== */
 .attach-preview {
   display:none; padding:6px 12px 2px; background:var(--surface);
   border-top:1px solid var(--primary-light); flex-wrap:wrap; gap:8px; align-items:center;
@@ -247,6 +393,7 @@ body {
   display:flex; align-items:center; justify-content:center;
 }
 
+/* ==================== 输入区 ==================== */
 .input-section {
   background:var(--surface); border-top:1px solid var(--primary-light);
   padding-bottom:calc(var(--safe-bottom) + 2px);
@@ -299,6 +446,7 @@ body {
 .ib-circle-btn:active { color:var(--primary); border-color:var(--primary); }
 .ib-circle-btn.active { color:var(--primary); border-color:var(--primary); }
 
+/* ==================== 加号菜单 ==================== */
 .plus-menu-overlay { display:none; position:fixed; inset:0; z-index:149; }
 .plus-menu-overlay.open { display:block; }
 .plus-menu {
@@ -322,6 +470,7 @@ body {
 }
 .plus-menu-item .pm-label { font-size:10px; color:var(--text-light); white-space:nowrap; }
 
+/* ==================== 表情包面板 ==================== */
 .sticker-panel {
   display:none; position:fixed; bottom:0; left:0; right:0;
   background:var(--surface); z-index:150; border-top:1px solid var(--primary-light);
@@ -369,6 +518,7 @@ body {
 }
 .sticker-edit-btn.active { background:var(--accent); color:var(--text-white); }
 
+/* ==================== Overlay 页面 ==================== */
 .overlay-page {
   display:none; position:fixed; inset:0; background:var(--bg); z-index:300;
   flex-direction:column; padding-top:calc(var(--safe-top) + 8px);
@@ -382,6 +532,7 @@ body {
 }
 .overlay-body { flex:1; overflow-y:auto; padding:0 16px 32px; -webkit-overflow-scrolling:touch; }
 
+/* ==================== 设置页 ==================== */
 .settings-group { background:var(--surface); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
 .settings-group h3 { font-size:12px; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; font-weight:600; }
 .setting-row { margin-bottom:12px; }
@@ -423,6 +574,7 @@ body {
 .model-list-item.current { border:2px solid var(--primary); background:var(--primary-light); }
 .model-list-empty { text-align:center; color:var(--text-light); padding:40px; font-size:14px; }
 
+/* ==================== 记忆 ==================== */
 .memory-item {
   background:var(--surface); border-radius:var(--radius-sm);
   padding:12px; margin-bottom:8px; font-size:14px; line-height:1.5;
@@ -468,16 +620,19 @@ body {
   color:var(--text-white); border-radius:var(--radius-sm); font-size:13px; font-weight:600; cursor:pointer;
 }
 
+/* ==================== 思维链浮层 ==================== */
 .thinking-overlay { display:none; position:fixed; inset:0; background:var(--bg); z-index:400; flex-direction:column; padding-top:calc(var(--safe-top) + 8px); }
 .thinking-overlay.open { display:flex; }
 .thinking-overlay-header { display:flex; align-items:center; padding:8px 16px 16px; gap:12px; border-bottom:1px solid var(--primary-light); }
 .thinking-overlay-header h2 { font-size:18px; flex:1; text-align:center; font-weight:700; letter-spacing:0.5px; }
 .thinking-overlay-body { flex:1; overflow-y:auto; padding:20px 16px 32px; font-size:15px; line-height:1.7; color:var(--text); white-space:pre-wrap; word-break:break-word; }
 
+/* ==================== 图片查看 ==================== */
 .img-viewer { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:500; justify-content:center; align-items:center; cursor:pointer; }
 .img-viewer.open { display:flex; }
 .img-viewer img { max-width:92%; max-height:88vh; object-fit:contain; border-radius:8px; }
 
+/* ==================== 重命名弹窗 ==================== */
 .rename-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:500; justify-content:center; align-items:center; }
 .rename-modal.open { display:flex; }
 .rename-box { background:var(--surface); border-radius:var(--radius); padding:24px; width:280px; box-shadow:0 8px 32px rgba(0,0,0,.15); }
@@ -489,6 +644,7 @@ body {
 .rename-cancel { background:var(--surface2); color:var(--text); }
 .rename-confirm { background:var(--primary); color:var(--text-white); }
 
+/* ==================== 导入浮层 ==================== */
 .import-overlay { display:none; position:fixed; inset:0; background:var(--bg); z-index:350; flex-direction:column; padding-top:calc(var(--safe-top) + 8px); }
 .import-overlay.open { display:flex; }
 .import-list { flex:1; overflow-y:auto; padding:0 16px 32px; -webkit-overflow-scrolling:touch; }
@@ -515,6 +671,7 @@ body {
 .import-confirm-btn { background:var(--primary); color:var(--text-white); }
 .import-confirm-btn:disabled { opacity:.4; }
 
+/* ==================== 空状态 & Toast ==================== */
 .empty-state {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; color:var(--text-light); text-align:center; padding:40px;
