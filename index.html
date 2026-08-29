@@ -155,12 +155,11 @@
         <div class="mc-title">Memory Bank</div>
         <div class="mc-count" id="memBankCount">0 memories</div>
       </div>
-<!-- 把 Light Traces 的 onclick 从 showToast 改为 openTracesPage -->
-<div class="mem-card" onclick="openTracesPage()">
-  <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-  <div class="mc-title">Light Traces</div>
- <div class="mc-count" id="tracesCount">0 traces</div>
-</div>
+      <div class="mem-card" onclick="openTracesPage()">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div class="mc-title">Light Traces</div>
+        <div class="mc-count" id="tracesCount">0 traces</div>
+      </div>
       <div class="mem-card" onclick="showToast('Coming soon')">
         <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
         <div class="mc-title">Photos</div>
@@ -171,23 +170,17 @@
         <div class="mc-title">Daily List</div>
         <div class="mc-count">Coming soon</div>
       </div>
-<!-- 把 Mood 的 onclick 改为 openMoodPage -->
-<div class="mem-card" onclick="openMoodPage()">
-  <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg></div>
-  <div class="mc-title">Mood</div>
-  <div class="mc-count" id="moodCount">0 entries</div>
-</div>
-<!-- ============ Whispers 页面 ============ -->
-<div class="overlay-page" id="whispersPage">
-  <div class="overlay-header">
-    <button class="overlay-back" onclick="closePage('whispersPage')">
-      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <h2>Whispers</h2>
-  </div>
-  <div class="overlay-body">
-    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Words that AI quietly left for you</p>
-    <div id="whispersFullList"><div class="memory-empty">No whispers yet</div></div>
+      <div class="mem-card" onclick="openMoodPage()">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg></div>
+        <div class="mc-title">Mood</div>
+        <div class="mc-count" id="moodCount">0 entries</div>
+      </div>
+      <div class="mem-card" onclick="openWhispersPage()">
+        <div class="mc-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="mc-title">Whispers</div>
+        <div class="mc-count" id="whisperCount">0 whispers</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -269,7 +262,7 @@
 <input type="file" id="aiAvatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event,'ai')">
 <input type="file" id="backupImportInput" accept=".json" multiple style="display:none" onchange="handleBackupImport(event)">
 
-  <!-- ============ 表情包面板 ============ -->
+<!-- ============ 表情包面板 ============ -->
 <div class="sticker-panel" id="stickerPanel">
   <div class="sticker-panel-header"><h3>Stickers</h3><button class="sticker-import-btn" onclick="document.getElementById('stickerImportInput').click()">Import</button><button class="sticker-panel-close" onclick="toggleStickerPanel()"><svg class="icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="sticker-grid" id="stickerGrid"><div class="sticker-empty">No stickers yet<br>Tap "Import" to add</div></div>
@@ -301,18 +294,18 @@
     <div class="settings-group"><h3>Thinking</h3><div class="setting-row"><label>Chain of Thought</label><select id="setThinking"><option value="off">Off</option><option value="on">On</option></select></div></div>
     <div class="settings-group"><h3>Reply Style</h3><div class="setting-row"><label>Split Reply</label><select id="setSplitReply"><option value="off">Off — Single bubble</option><option value="on">On — Multiple bubbles</option></select></div></div>
     <div class="settings-group"><h3>AI Activity</h3>
-  <div class="setting-row">
-    <label>Autonomous Activity</label>
-    <select id="setAiActivity">
-      <option value="off">Off</option>
-      <option value="30">30% chance</option>
-      <option value="50">50% chance</option>
-      <option value="70">70% chance</option>
-      <option value="100">Always</option>
-    </select>
-    <p style="font-size:11px;color:var(--text-light);margin-top:4px">After chatting, AI may record mood, write whispers, etc.</p>
-  </div>
-</div>
+      <div class="setting-row">
+        <label>Autonomous Activity</label>
+        <select id="setAiActivity">
+          <option value="off">Off</option>
+          <option value="30">30% chance</option>
+          <option value="50">50% chance</option>
+          <option value="70">70% chance</option>
+          <option value="100">Always</option>
+        </select>
+        <p style="font-size:11px;color:var(--text-light);margin-top:4px">After chatting, AI may record mood, write whispers, etc.</p>
+      </div>
+    </div>
     <div class="settings-group"><h3>Custom CSS</h3><div class="setting-row"><textarea id="setCustomCSS" placeholder="/* Your CSS here */" style="min-height:120px;font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.5"></textarea></div></div>
     <div class="settings-group"><h3>Import</h3><div class="setting-row"><label>Import Claude conversations</label><p style="font-size:12px;color:var(--text-light);margin-bottom:8px">Select the JSON file from Claude's exported data</p><button class="fetch-model-btn" style="width:100%" onclick="document.getElementById('claudeImportInput').click()">Select File</button></div></div>
     <button class="save-btn" onclick="saveSettingsPage()">Save</button>
@@ -332,6 +325,55 @@
     <div class="memory-add-box"><h3>Add Manually</h3><div class="memory-add-row"><select id="memAddCategory"><option value="profile">Profile</option><option value="fact" selected>Fact</option><option value="warm">Warm</option><option value="corridor">Note</option></select><textarea id="memAddText" rows="1" placeholder="Memory content..." oninput="autoResize(this)"></textarea></div><div style="display:flex;justify-content:flex-end"><button class="memory-add-btn" onclick="addManualMemory()">Add</button></div></div>
     <div class="memory-stats" id="memoryStats"></div>
     <div id="memoryList"><div class="memory-empty">No memories yet</div></div>
+  </div>
+</div>
+
+<!-- ============ Light Traces 页面 ============ -->
+<div class="overlay-page" id="tracesPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('tracesPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Light Traces</h2>
+  </div>
+  <div class="overlay-body">
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Fragments of feelings left behind after each conversation</p>
+    <div id="tracesFullList"><div class="memory-empty">No traces yet</div></div>
+  </div>
+</div>
+
+<!-- ============ Mood 页面 ============ -->
+<div class="overlay-page" id="moodPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('moodPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Mood</h2>
+  </div>
+  <div class="overlay-body">
+    <div class="mood-today" id="moodToday">
+      <div class="mood-today-empty">
+        <svg class="mood-icon-lg" viewBox="0 0 48 48" fill="none" stroke="var(--text-light)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="20"/><path d="M16 30s3 4 8 4 8-4 8-4"/><circle cx="18" cy="18" r="1.5" fill="var(--text-light)" stroke="none"/><circle cx="30" cy="18" r="1.5" fill="var(--text-light)" stroke="none"/></svg>
+        <p>No mood recorded today</p>
+        <p style="font-size:12px;color:var(--text-light);margin-top:4px">AI will record mood after chatting</p>
+      </div>
+    </div>
+    <div class="mood-history-title">History</div>
+    <div id="moodHistoryList"><div class="memory-empty">No mood entries yet</div></div>
+  </div>
+</div>
+
+<!-- ============ Whispers 页面 ============ -->
+<div class="overlay-page" id="whispersPage">
+  <div class="overlay-header">
+    <button class="overlay-back" onclick="closePage('whispersPage')">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Whispers</h2>
+  </div>
+  <div class="overlay-body">
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Words that AI quietly left for you</p>
+    <div id="whispersFullList"><div class="memory-empty">No whispers yet</div></div>
   </div>
 </div>
 
@@ -388,7 +430,6 @@
       </button>
       <div class="backup-progress" id="exportProgress"></div>
     </div>
-
     <div class="settings-group">
       <h3>Import</h3>
       <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">
@@ -408,7 +449,7 @@
     </div>
   </div>
 </div>
-  
+
 <!-- ============ 导入选择浮层 ============ -->
 <div class="import-overlay" id="importOverlay">
   <div class="overlay-header"><button class="overlay-back" onclick="closeImport()"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><h2>Import Chats</h2></div>
@@ -423,9 +464,9 @@
   <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
 </div>
 
-<!-- ============ 图片/重命名/HTML预览 ============ -->
+<!-- ============ 图片查看/Trace编辑/重命名/HTML预览 ============ -->
 <div class="img-viewer" id="imgViewer" onclick="closeImgViewer()"><img id="imgViewerSrc" src=""></div>
-<!-- ============ Trace 编辑弹窗 ============ -->
+
 <div class="trace-edit-modal" id="traceEditModal">
   <div class="trace-edit-box">
     <h3>Edit Trace</h3>
@@ -436,7 +477,9 @@
     </div>
   </div>
 </div>
+
 <div class="rename-modal" id="renameModal"><div class="rename-box"><h3>Rename</h3><input type="text" id="renameInput" placeholder="New name..." maxlength="50" onkeydown="if(event.key==='Enter')confirmRename()"><div class="rename-btns"><button class="rename-cancel" onclick="closeRename()">Cancel</button><button class="rename-confirm" onclick="confirmRename()">Done</button></div></div></div>
+
 <div class="html-preview-overlay" id="htmlPreviewOverlay">
   <div class="html-preview-toolbar"><button class="html-preview-toolbar-btn" onclick="closeHtmlPreview()"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><div class="html-preview-toolbar-title" id="htmlPreviewTitle">Preview</div><button class="html-preview-toolbar-btn" onclick="openHtmlNewTab()"><svg class="icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button><button class="html-preview-toolbar-btn" onclick="downloadHtml()"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button></div>
   <iframe class="html-preview-iframe" id="htmlPreviewFrame" sandbox="allow-scripts"></iframe>
