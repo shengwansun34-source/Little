@@ -1,4 +1,4 @@
-const CACHE_NAME = 'little-v1.3.2';
+const CACHE_NAME = 'little-v1.3.3';
 const URLS = ['./', './index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', e => {
