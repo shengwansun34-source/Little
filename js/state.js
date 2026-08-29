@@ -9,7 +9,7 @@ let state={
     apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',charNickname:'',
     userName:'',anniversary:'',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
-    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off',aiActivity:'50'
+    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off',aiActivity:'50',fontFamily:'system',fontSize:'normal'
   }),
   lastChatTime:DB.get('lastChatTime',null),
   generating:false,
@@ -31,6 +31,8 @@ if(!state.settings.splitReply)state.settings.splitReply='off';
 if(!state.settings.userName&&state.settings.userName!=='')state.settings.userName='';
 if(!state.settings.anniversary&&state.settings.anniversary!=='')state.settings.anniversary='';
 if(!state.settings.aiActivity)state.settings.aiActivity='50';
+if(!state.settings.fontFamily)state.settings.fontFamily='system';
+if(!state.settings.fontSize)state.settings.fontSize='normal';
 
 // Profile 兼容
 if(!state.profile.basic)state.profile.basic={name:'',birthday:'',location:'',occupation:''};
@@ -43,12 +45,16 @@ let currentTab='home';
 let fetchedModels=[];
 let pendingAttachments=[];
 let renamingChatId=null;
+let editingMessageIndex=null;
 let stickerEditing=false;
 let pendingImportData=[];
 let currentAbortController=null;
 let currentHtmlPreviewCode='';
 let currentHtmlPreviewName='index.html';
 let htmlBlockStore={};
+let replyQueue=[];
+let processingReplyQueue=false;
+let cancelQueuedReplies=false;
 
 let cachedUserAvatar=null;
 let cachedAiAvatar=null;
@@ -57,15 +63,15 @@ let cachedAiAvatar=null;
 function saveSettings(){DB.set('settings',state.settings);DB.set('lastChatTime',state.lastChatTime);}
 function saveProfile(){DB.set('profile',state.profile);}
 function saveCurrentChatId(){DB.set('currentChat',state.currentChatId);}
-async function saveCurrentChat(){
-  if(state.currentChatData){
-    await chatStore.put(state.currentChatData);
-    const idx=state.chatMetas.findIndex(m=>m.id===state.currentChatData.id);
-    const meta={id:state.currentChatData.id,title:state.currentChatData.title,created:state.currentChatData.created};
-    if(idx>=0)state.chatMetas[idx]=meta;
-    else state.chatMetas.push(meta);
-  }
+async function saveChatData(chat){
+  if(!chat)return;
+  await chatStore.put(chat);
+  const idx=state.chatMetas.findIndex(m=>m.id===chat.id);
+  const meta={id:chat.id,title:chat.title,created:chat.created};
+  if(idx>=0)state.chatMetas[idx]=meta;
+  else state.chatMetas.push(meta);
 }
+async function saveCurrentChat(){await saveChatData(state.currentChatData);}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 function now(){return new Date();}
 function fmtTime(d){const dt=new Date(d);return `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;}
@@ -85,6 +91,13 @@ function getTimeContext(){
 function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function renderMarkdown(text){if(typeof marked!=='undefined'){try{return marked.parse(text);}catch{}}return escHtml(text).replace(/\n/g,'<br>');}
 function applyCustomCSS(){document.getElementById('customCSSTag').textContent=state.settings.customCSS||'';}
+function applyTypography(){
+  const families={system:"-apple-system, 'SF Pro Text', 'PingFang SC', sans-serif",serif:"Georgia, 'Songti SC', 'SimSun', serif",rounded:"'Arial Rounded MT Bold', 'PingFang SC', sans-serif",mono:"'SF Mono', Menlo, Consolas, monospace"};
+  const scales={small:'0.9',normal:'1',large:'1.12',xlarge:'1.25'};
+  const root=document.documentElement;
+  root.style.setProperty('--app-font-family',families[state.settings.fontFamily]||families.system);
+  root.style.setProperty('--font-scale',scales[state.settings.fontSize]||scales.normal);
+}
 
 // ==================== Profile 工具函数 ====================
 function getProfileContext(){

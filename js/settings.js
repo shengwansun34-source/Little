@@ -218,6 +218,23 @@ function renderModelList(){
 function filterModels(){renderModelList();}
 function pickModel(id){document.getElementById('setModel').value=id;showToast('Selected: '+id);closePage('modelPickerPage');}
 
+// ==================== Bluetooth Low Energy ====================
+let connectedBluetoothDevice=null;
+async function connectBluetoothDevice(){
+  const status=document.getElementById('bluetoothStatus');
+  if(!navigator.bluetooth){if(status)status.textContent='Web Bluetooth is not supported in this browser.';showToast('Bluetooth is unavailable');return;}
+  try{
+    if(status)status.textContent='Choose a nearby Bluetooth device…';
+    const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['battery_service']});
+    const server=await device.gatt.connect();connectedBluetoothDevice=device;
+    if(status)status.textContent='Connected: '+(device.name||'Unnamed device');
+    device.addEventListener('gattserverdisconnected',()=>{if(status)status.textContent='Disconnected';connectedBluetoothDevice=null;});
+    showToast('Bluetooth connected');
+    // `server` is retained by the browser connection; device-specific controls can be added after service discovery.
+    void server;
+  }catch(err){if(err.name==='NotFoundError'){if(status)status.textContent='No device selected.';return;}if(status)status.textContent='Connection failed: '+err.message;showToast('Bluetooth connection failed');}
+}
+
 // ==================== 设置页 ====================
 function openSettings(){
   const s=state.settings;
@@ -233,6 +250,8 @@ function openSettings(){
   document.getElementById('setJinaKey').value=s.jinaKey||'';
   document.getElementById('setThinking').value=s.thinking||'off';
   document.getElementById('setSplitReply').value=s.splitReply||'off';
+  document.getElementById('setFontFamily').value=s.fontFamily||'system';
+  document.getElementById('setFontSize').value=s.fontSize||'normal';
   document.getElementById('setCustomCSS').value=s.customCSS||'';
   document.getElementById('setAiActivity').value=s.aiActivity||'50';
   document.getElementById('settingsPage').classList.add('open');
@@ -251,10 +270,12 @@ function saveSettingsPage(){
     jinaKey:document.getElementById('setJinaKey').value.trim(),
     thinking:document.getElementById('setThinking').value,
     splitReply:document.getElementById('setSplitReply').value,
+    fontFamily:document.getElementById('setFontFamily').value,
+    fontSize:document.getElementById('setFontSize').value,
     customCSS:document.getElementById('setCustomCSS').value,
     aiActivity:document.getElementById('setAiActivity').value
   };
-  saveSettings();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateGlobalHeader();
+  saveSettings();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateGlobalHeader();
   showToast('Saved');closePage('settingsPage');
 }
 function saveSettings_page(){saveSettingsPage();}
@@ -283,21 +304,31 @@ async function renderMemoryList(){
       return b.time-a.time;
     });
 
-    el.innerHTML=all.map(m=>{
-      const cn={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
-      const coreBtn=m.core
-        ?'<button class="mem-core-btn active" onclick="toggleCoreMemory(\''+m.id+'\')" title="Core Memory"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent3)" stroke="var(--accent3)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>'
-        :'<button class="mem-core-btn" onclick="toggleCoreMemory(\''+m.id+'\')" title="Set as Core"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text-light)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
-      const weightStr=m.weight!==undefined&&m.weight<1.0?' · w:'+m.weight.toFixed(2):'';
-      const tagBadges=(m.tags||[]).map(t=>'<span class="mem-tag-badge">'+escHtml(t)+'</span>').join('');
-      return '<div class="memory-item'+(m.core?' core-memory':'')+'">'
-        +'<div><div class="memory-item-text"><span class="memory-tag '+m.category+'">'+cn[m.category]+'</span>'+escHtml(m.text)+'</div>'
-        +'<div class="memory-item-meta">'+fmtTime(m.time)+(m.vector?' · vectorized':'')+weightStr+tagBadges+'</div></div>'
-        +'<div class="mem-item-actions">'+coreBtn
-        +'<button class="memory-item-del" onclick="deleteMemory(\''+m.id+'\')">✕</button></div>'
-        +'</div>';
+    const folders={};
+    all.forEach(m=>{
+      // A tag is a folder name; untagged memories stay in their category folder.
+      const folder=(m.tags&&m.tags[0])||cnFolderName(m.category);
+      (folders[folder]||(folders[folder]=[])).push(m);
+    });
+    el.innerHTML=Object.entries(folders).map(([folder,memories])=>{
+      const items=memories.map(m=>renderMemoryItem(m)).join('');
+      return '<section class="memory-folder"><div class="memory-folder-head"><span class="memory-folder-icon"></span><span>'+escHtml(folder)+'</span><span class="memory-folder-count">'+memories.length+' memories</span></div>'+items+'</section>';
     }).join('');
   }catch(e){el.innerHTML='<div class="memory-empty">Load error</div>';}
+}
+
+function cnFolderName(category){return {profile:'Profile',warm:'Warm moments',fact:'Facts',corridor:'Notes'}[category]||'Unsorted';}
+function renderMemoryItem(m){
+  const cn={profile:'Profile',warm:'Warm',fact:'Fact',corridor:'Note'};
+  const coreBtn=m.core
+    ?'<button class="mem-core-btn active" onclick="toggleCoreMemory(\''+m.id+'\')" title="Core Memory">★</button>'
+    :'<button class="mem-core-btn" onclick="toggleCoreMemory(\''+m.id+'\')" title="Set as Core">☆</button>';
+  const weightStr=m.weight!==undefined&&m.weight<1.0?' · w:'+m.weight.toFixed(2):'';
+  const tagBadges=(m.tags||[]).map(t=>'<span class="mem-tag-badge">'+escHtml(t)+'</span>').join('');
+  return '<div class="memory-item'+(m.core?' core-memory':'')+'">'
+    +'<div><div class="memory-item-text"><span class="memory-tag '+m.category+'">'+(cn[m.category]||'Note')+'</span>'+escHtml(m.text)+'</div>'
+    +'<div class="memory-item-meta">'+fmtTime(m.time)+(m.vector?' · vectorized':'')+weightStr+tagBadges+'</div></div>'
+    +'<div class="mem-item-actions">'+coreBtn+'<button class="memory-item-del" onclick="deleteMemory(\''+m.id+'\')">✕</button></div></div>';
 }
 
 async function toggleCoreMemory(id){
@@ -606,7 +637,7 @@ async function handleBackupImport(e){
     saveCurrentChatId();
   }
 
-  renderChatList();renderMessages();applyCustomCSS();updateModelTag();
+  renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();
   updateHeaderTitle();updateInputHint();updateGlobalHeader();
   applyAvatarsToDOM();updateExportCounts();
 
@@ -680,7 +711,7 @@ async function init(){
 
     await loadAvatars();
 
-    renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+    renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();applyAvatarsToDOM();
     checkPeriodReminder();
     checkMemoryDecay(); // v2.0: 记忆衰减检查
@@ -693,7 +724,7 @@ async function init(){
     if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
   }catch(e){
     console.error('[Little] Init error:',e);
-    renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
+    renderChatList();renderMessages();applyCustomCSS();applyTypography();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();
     setTimeout(hideSplash,1800);
   }
