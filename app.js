@@ -949,6 +949,284 @@ async function renderMemoryList(){
 }
 async function deleteMemory(id){await vectorStore.remove(id);showToast('Deleted');renderMemoryList();}
 
+// ==================== 数据备份（导出/导入） ====================
+function openBackupPage(){
+  updateExportCounts();
+  document.getElementById('exportProgress').innerHTML='';
+  document.getElementById('importProgress').innerHTML='';
+  document.getElementById('backupPage').classList.add('open');
+}
+
+async function updateExportCounts(){
+  try{
+    const chats=await chatStore.getAll();
+    document.getElementById('expChatsDesc').textContent=chats.length+' conversations';
+  }catch{document.getElementById('expChatsDesc').textContent='All conversations';}
+  try{
+    const mems=await vectorStore.getAll();
+    document.getElementById('expMemoriesDesc').textContent=mems.length+' memories';
+  }catch{document.getElementById('expMemoriesDesc').textContent='Memory bank data';}
+  try{
+    const stks=await stickerStore.getAll();
+    document.getElementById('expStickersDesc').textContent=stks.length+' stickers';
+  }catch{document.getElementById('expStickersDesc').textContent='Sticker images';}
+}
+
+function downloadJSON(data,filename){
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function bpLine(icon,text){
+  const icons={
+    done:'<svg class="bp-icon done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    fail:'<svg class="bp-icon fail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    wait:'<svg class="bp-icon wait" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+  };
+  return '<div class="bp-item">'+(icons[icon]||'')+' <span class="bp-text">'+text+'</span></div>';
+}
+
+async function startExport(){
+  const prog=document.getElementById('exportProgress');
+  const btn=document.getElementById('exportBtn');
+  btn.disabled=true;btn.textContent='Exporting...';
+  prog.innerHTML=bpLine('wait','Preparing data...');
+  const ts=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  let count=0;
+
+  try{
+    // 1. 对话
+    if(document.getElementById('expChats').checked){
+      prog.innerHTML+=bpLine('wait','Exporting chats...');
+      const chats=await chatStore.getAll();
+      if(chats.length>0){
+        downloadJSON({type:'little_chats',version:'1.2.0',exported:Date.now(),data:chats},'little_chats_'+ts+'.json');
+        count++;
+        prog.innerHTML=prog.innerHTML.replace('Exporting chats...','Chats exported ('+chats.length+')');
+      }else{
+        prog.innerHTML=prog.innerHTML.replace('Exporting chats...','No chats to export');
+      }
+    }
+
+    // 小延迟防止浏览器吞下载
+    await new Promise(r=>setTimeout(r,600));
+
+    // 2. 记忆
+    if(document.getElementById('expMemories').checked){
+      prog.innerHTML+=bpLine('wait','Exporting memories...');
+      const mems=await vectorStore.getAll();
+      if(mems.length>0){
+        downloadJSON({type:'little_memories',version:'1.2.0',exported:Date.now(),data:mems},'little_memories_'+ts+'.json');
+        count++;
+        prog.innerHTML=prog.innerHTML.replace('Exporting memories...','Memories exported ('+mems.length+')');
+      }else{
+        prog.innerHTML=prog.innerHTML.replace('Exporting memories...','No memories to export');
+      }
+    }
+
+    await new Promise(r=>setTimeout(r,600));
+
+    // 3. 表情包
+    if(document.getElementById('expStickers').checked){
+      prog.innerHTML+=bpLine('wait','Exporting stickers...');
+      const stks=await stickerStore.getAll();
+      if(stks.length>0){
+        downloadJSON({type:'little_stickers',version:'1.2.0',exported:Date.now(),data:stks},'little_stickers_'+ts+'.json');
+        count++;
+        prog.innerHTML=prog.innerHTML.replace('Exporting stickers...','Stickers exported ('+stks.length+')');
+      }else{
+        prog.innerHTML=prog.innerHTML.replace('Exporting stickers...','No stickers to export');
+      }
+    }
+
+    await new Promise(r=>setTimeout(r,600));
+
+    // 4. 设置 + 头像 + 小数据
+    if(document.getElementById('expSettings').checked){
+      prog.innerHTML+=bpLine('wait','Exporting settings...');
+      const bundle={
+        settings:state.settings,
+        currentChatId:state.currentChatId,
+        lastChatTime:state.lastChatTime,
+        dailyQuote:DB.get('dailyQuote',null),
+        lightTraces:DB.get('lightTraces',[]),
+        currentTab:DB.get('currentTab','home'),
+        userAvatar:cachedUserAvatar,
+        aiAvatar:cachedAiAvatar
+      };
+      downloadJSON({type:'little_settings',version:'1.2.0',exported:Date.now(),data:bundle},'little_settings_'+ts+'.json');
+      count++;
+      prog.innerHTML=prog.innerHTML.replace('Exporting settings...','Settings & avatars exported');
+    }
+
+    // 替换第一行
+    prog.innerHTML=prog.innerHTML.replace('Preparing data...',count>0?'All done! '+count+' file'+(count>1?'s':'')+' exported':'Nothing selected');
+    // 将所有 wait icon 替换为 done
+    prog.innerHTML=prog.innerHTML.replace(/bp-icon wait/g,'bp-icon done');
+
+    if(count>0)showToast('Exported '+count+' file'+(count>1?'s':''));
+  }catch(err){
+    prog.innerHTML+=bpLine('fail','Error: '+err.message);
+    showToast('Export failed');
+  }finally{
+    btn.disabled=false;btn.textContent='Export Selected';
+  }
+}
+
+async function handleBackupImport(e){
+  const files=Array.from(e.target.files);
+  if(files.length===0)return;
+  e.target.value='';
+
+  const mode=document.getElementById('importMode').value;
+  const prog=document.getElementById('importProgress');
+  prog.innerHTML=bpLine('wait','Reading '+files.length+' file'+(files.length>1?'s':'')+'...');
+
+  let totalChats=0,totalMems=0,totalStks=0,didSettings=false;
+
+  for(const file of files){
+    try{
+      const text=await file.text();
+      const json=JSON.parse(text);
+      if(!json.type||!json.data){
+        prog.innerHTML+=bpLine('fail',file.name+' — invalid format');
+        continue;
+      }
+
+      if(json.type==='little_chats'){
+        prog.innerHTML+=bpLine('wait','Importing chats...');
+        const chats=json.data;
+        if(mode==='overwrite'){
+          // 清空现有对话
+          const existing=await chatStore.getAll();
+          for(const c of existing)await chatStore.remove(c.id);
+        }
+        let added=0,skipped=0;
+        for(const chat of chats){
+          if(!chat||!chat.id)continue;
+          if(mode==='merge'){
+            const existing=await chatStore.get(chat.id);
+            if(existing){skipped++;continue;}
+          }
+          await chatStore.put(chat);
+          added++;
+        }
+        totalChats+=added;
+        prog.innerHTML=prog.innerHTML.replace('Importing chats...','Chats: +'+added+(skipped>0?', skipped '+skipped:''));
+      }
+
+      else if(json.type==='little_memories'){
+        prog.innerHTML+=bpLine('wait','Importing memories...');
+        const mems=json.data;
+        if(mode==='overwrite'){
+          const existing=await vectorStore.getAll();
+          for(const m of existing)await vectorStore.remove(m.id);
+        }
+        let added=0,skipped=0;
+        for(const mem of mems){
+          if(!mem||!mem.id)continue;
+          if(mode==='merge'){
+            const all=await vectorStore.getAll();
+            if(all.find(m=>m.id===mem.id)){skipped++;continue;}
+          }
+          await vectorStore.add(mem);
+          added++;
+        }
+        totalMems+=added;
+        prog.innerHTML=prog.innerHTML.replace('Importing memories...','Memories: +'+added+(skipped>0?', skipped '+skipped:''));
+      }
+
+      else if(json.type==='little_stickers'){
+        prog.innerHTML+=bpLine('wait','Importing stickers...');
+        const stks=json.data;
+        if(mode==='overwrite'){
+          const existing=await stickerStore.getAll();
+          for(const s of existing)await stickerStore.remove(s.id);
+        }
+        let added=0,skipped=0;
+        for(const stk of stks){
+          if(!stk||!stk.id)continue;
+          if(mode==='merge'){
+            const all=await stickerStore.getAll();
+            if(all.find(s=>s.id===stk.id)){skipped++;continue;}
+          }
+          await stickerStore.add(stk);
+          added++;
+        }
+        totalStks+=added;
+        prog.innerHTML=prog.innerHTML.replace('Importing stickers...','Stickers: +'+added+(skipped>0?', skipped '+skipped:''));
+      }
+
+      else if(json.type==='little_settings'){
+        prog.innerHTML+=bpLine('wait','Importing settings...');
+        const d=json.data;
+        if(d.settings){
+          // 合并模式下保留当前 API 配置
+          if(mode==='merge'){
+            const keep={apiUrl:state.settings.apiUrl,apiKey:state.settings.apiKey};
+            state.settings={...d.settings,...keep};
+          }else{
+            state.settings=d.settings;
+          }
+          saveSettings();
+        }
+        if(d.lastChatTime)state.lastChatTime=d.lastChatTime;
+        if(d.dailyQuote)DB.set('dailyQuote',d.dailyQuote);
+        if(d.lightTraces)DB.set('lightTraces',d.lightTraces);
+        if(d.currentTab)DB.set('currentTab',d.currentTab);
+        // 头像
+        if(d.userAvatar){await avatarStore.set('user',d.userAvatar);cachedUserAvatar=d.userAvatar;}
+        if(d.aiAvatar){await avatarStore.set('ai',d.aiAvatar);cachedAiAvatar=d.aiAvatar;}
+        didSettings=true;
+        prog.innerHTML=prog.innerHTML.replace('Importing settings...','Settings & avatars restored');
+      }
+
+      else{
+        prog.innerHTML+=bpLine('fail',file.name+' — unknown type: '+json.type);
+      }
+
+    }catch(err){
+      prog.innerHTML+=bpLine('fail',file.name+' — '+err.message);
+    }
+  }
+
+  // 刷新状态
+  state.chatMetas=await chatStore.getAllMeta();
+  if(state.currentChatId){
+    state.currentChatData=await chatStore.get(state.currentChatId);
+    if(!state.currentChatData&&state.chatMetas.length>0){
+      state.currentChatId=state.chatMetas.sort((a,b)=>b.created-a.created)[0].id;
+      state.currentChatData=await chatStore.get(state.currentChatId);
+      saveCurrentChatId();
+    }
+  }else if(state.chatMetas.length>0){
+    state.currentChatId=state.chatMetas.sort((a,b)=>b.created-a.created)[0].id;
+    state.currentChatData=await chatStore.get(state.currentChatId);
+    saveCurrentChatId();
+  }
+
+  renderChatList();renderMessages();applyCustomCSS();updateModelTag();
+  updateHeaderTitle();updateInputHint();updateGlobalHeader();
+  applyAvatarsToDOM();updateExportCounts();
+
+  // 完成
+  prog.innerHTML=prog.innerHTML.replace('Reading '+files.length+' file'+(files.length>1?'s':'')+'...','Import complete!');
+  prog.innerHTML=prog.innerHTML.replace(/bp-icon wait/g,'bp-icon done');
+
+  const summary=[];
+  if(totalChats>0)summary.push(totalChats+' chats');
+  if(totalMems>0)summary.push(totalMems+' memories');
+  if(totalStks>0)summary.push(totalStks+' stickers');
+  if(didSettings)summary.push('settings');
+  showToast(summary.length>0?'Imported: '+summary.join(', '):'Import done');
+}
+
 // ==================== 数据迁移（localStorage → IndexedDB） ====================
 async function migrateData(){
   // 1. 迁移对话数据
