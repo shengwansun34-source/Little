@@ -1065,3 +1065,66 @@ body {
 
 /* ==================== 滚动条隐藏 ==================== */
 ::-webkit-scrollbar { width: 0; }
+
+/* ==================== 数据备份页面 ==================== */
+.backup-export-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.backup-check-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 12px; cursor: pointer; transition: background .15s;
+}
+.backup-check-item:active { background: var(--bg2); }
+.backup-check-item input[type="checkbox"] {
+  display: none;
+}
+.backup-check-mark {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--primary-light);
+  flex-shrink: 0; position: relative;
+  transition: all .2s;
+}
+.backup-check-item input:checked + .backup-check-mark {
+  background: var(--primary); border-color: var(--primary);
+}
+.backup-check-item input:checked + .backup-check-mark::after {
+  content: '';
+  position: absolute; left: 5px; top: 2px;
+  width: 6px; height: 10px;
+  border: solid white; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.backup-check-info { flex: 1; min-width: 0; }
+.backup-check-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+.backup-check-desc {
+  font-size: 12px; color: var(--text-light); margin-top: 2px;
+}
+.backup-progress {
+  margin-top: 12px; font-size: 13px; color: var(--text-light);
+  min-height: 0; transition: all .3s;
+}
+.backup-progress:empty { margin-top: 0; }
+.backup-progress .bp-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+}
+.backup-progress .bp-icon {
+  width: 18px; height: 18px; flex-shrink: 0;
+}
+.backup-progress .bp-icon.done { color: var(--accent2); }
+.backup-progress .bp-icon.fail { color: #e88; }
+.backup-progress .bp-icon.wait { color: var(--text-light); }
+.backup-progress .bp-text { flex: 1; }
+.backup-import-summary {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 12px; margin-top: 12px;
+}
+.backup-import-summary .bis-title {
+  font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px;
+}
+.backup-import-summary .bis-row {
+  font-size: 12px; color: var(--text-light); padding: 2px 0;
+}
