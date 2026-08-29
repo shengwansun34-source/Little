@@ -18,68 +18,194 @@
 </head>
 <body>
 
-<div class="header">
-  <div class="header-left">
-    <button class="header-btn" onclick="toggleSidebar()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+<!-- ============ HOME 页面 ============ -->
+<div class="page" id="homePage">
+  <div class="home-header">
+    <div style="width:36px"></div>
+    <div class="home-header-title">Home</div>
+    <button class="header-btn" id="homeRefreshBtn" onclick="refreshDailyQuote()">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
     </button>
   </div>
-  <div class="header-title" id="headerTitle">Little</div>
-  <div class="header-right">
-    <button class="header-btn" onclick="openMemory()">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="24" x2="14" y2="24"/></svg>
-    </button>
-    <button class="header-btn" onclick="openSettings()">
-      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-  </div>
-</div>
-
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <h2>Chats</h2>
-    <button class="new-chat-btn" onclick="newChat()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-  </div>
-  <div class="chat-list" id="chatList"></div>
-</div>
-
-<div class="chat-area" id="chatArea">
-  <div class="empty-state">
-    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-    <p>What's on your mind?</p>
-  </div>
-</div>
-
-<div class="attach-preview" id="attachPreview"></div>
-
-<div class="input-section">
-  <div class="input-main">
-    <div class="input-wrap">
-      <textarea id="msgInput" rows="1" placeholder="Reply to Little" oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
+  <div class="home-body">
+    <!-- 标题区 -->
+    <div class="home-title-section">
+      <div class="home-names" id="homeNames">You &amp; Little</div>
+      <div class="home-since">TOGETHER SINCE</div>
+      <div class="home-days-wrap">
+        <span class="home-days-num" id="homeDaysNum">0</span>
+        <span class="home-days-label">days</span>
+      </div>
     </div>
-    <button class="send-circle-btn" id="sendBtn" onclick="handleSendStop()">
-      <svg class="send-icon-svg icon" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-      <div class="stop-square"></div>
-    </button>
+    <!-- 每日一句 -->
+    <div class="home-quote-card" id="homeQuoteCard">
+      <div class="home-quote-text" id="homeQuoteText">Tap refresh to get today's words...</div>
+      <div class="home-quote-date" id="homeQuoteDate"></div>
+    </div>
+    <!-- Light Traces -->
+    <div class="home-section-title">
+      <span>light traces</span>
+    </div>
+    <div class="home-traces" id="homeTraces">
+      <div class="home-trace-empty">No traces yet. Chat more to create memories.</div>
+    </div>
   </div>
-  <div class="input-bottom">
-    <button class="ib-plus" onclick="togglePlusMenu()">
-      <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-    <div class="model-tag" id="modelTag" onclick="openSettings()">Not set</div>
-    <div class="ib-right-actions">
-      <button class="ib-circle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
+</div>
+
+<!-- ============ CHAT 页面 ============ -->
+<div class="page" id="chatPage" style="display:none">
+  <div class="header">
+    <div class="header-left">
+      <button class="header-btn" onclick="navigateTo('home')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 14 15 14 15 21"/></svg>
+      </button>
+    </div>
+    <div class="header-title" id="headerTitle">Little</div>
+    <div class="header-right">
+      <button class="header-btn" onclick="toggleSidebar()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Chats</h2>
+      <button class="new-chat-btn" onclick="newChat()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <div class="chat-list" id="chatList"></div>
+  </div>
+
+  <div class="chat-area" id="chatArea">
+    <div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p>What's on your mind?</p>
+    </div>
+  </div>
+
+  <div class="attach-preview" id="attachPreview"></div>
+
+  <div class="input-section">
+    <div class="input-main">
+      <div class="input-wrap">
+        <textarea id="msgInput" rows="1" placeholder="Reply to Little" oninput="autoResize(this);updateSendBtn()" onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="send-circle-btn" id="sendBtn" onclick="handleSendStop()">
+        <svg class="send-icon-svg icon" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        <div class="stop-square"></div>
+      </button>
+    </div>
+    <div class="input-bottom">
+      <button class="ib-plus" onclick="togglePlusMenu()">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="model-tag" id="modelTag" onclick="openSettings()">Not set</div>
+      <div class="ib-right-actions">
+        <button class="ib-circle-btn" id="stickerToggleBtn" onclick="toggleStickerPanel()">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- ============ 收藏页面（占位） ============ -->
+<div class="page" id="favPage" style="display:none">
+  <div class="home-header">
+    <div style="width:36px"></div>
+    <div class="home-header-title">Favorites</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="home-body">
+    <div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p>Coming soon...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 情侣空间（占位） ============ -->
+<div class="page" id="usPage" style="display:none">
+  <div class="home-header">
+    <div style="width:36px"></div>
+    <div class="home-header-title">Us</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="home-body">
+    <div class="empty-state">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <p>Coming soon...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MORE 页面 ============ -->
+<div class="page" id="morePage" style="display:none">
+  <div class="home-header">
+    <div style="width:36px"></div>
+    <div class="home-header-title">More</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="home-body">
+    <div class="more-menu">
+      <div class="more-item" onclick="openMemory()">
+        <div class="more-item-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.8-3 6.2V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-1.8C6.2 13.8 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="24" x2="14" y2="24"/></svg>
+        </div>
+        <div class="more-item-info">
+          <div class="more-item-title">Memory</div>
+          <div class="more-item-desc">View and manage memories</div>
+        </div>
+        <svg class="more-item-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="more-item" onclick="openSettings()">
+        <div class="more-item-icon">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="more-item-info">
+          <div class="more-item-title">Settings</div>
+          <div class="more-item-desc">API, character, preferences</div>
+        </div>
+        <svg class="more-item-arrow icon-sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 底部 Tab 栏 ============ -->
+<nav class="bottom-tabs" id="bottomTabs">
+  <button class="tab-item active" data-tab="home" onclick="navigateTo('home')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 14 15 14 15 21"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="tab-item" data-tab="fav" onclick="navigateTo('fav')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span>Favorites</span>
+  </button>
+  <button class="tab-item" data-tab="chat" onclick="navigateTo('chat')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Chat</span>
+  </button>
+  <button class="tab-item" data-tab="us" onclick="navigateTo('us')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span>Us</span>
+  </button>
+  <button class="tab-item" data-tab="more" onclick="navigateTo('more')">
+    <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<!-- ============ 加号菜单 ============ -->
 <div class="plus-menu-overlay" id="plusMenuOverlay" onclick="closePlusMenu()"></div>
 <div class="plus-menu" id="plusMenu">
   <div class="plus-menu-grid">
@@ -98,12 +224,14 @@
   </div>
 </div>
 
+<!-- ============ 隐藏的 file input ============ -->
 <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="fileInput" accept=".txt,.md,.json,.csv,.log,.xml,.html,.css,.js,.py,.java,.c,.cpp,.ts,.yaml,.yml,.toml,.ini,.cfg,.conf" multiple style="display:none" onchange="handleFileSelect(event)">
 <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
 <input type="file" id="stickerImportInput" accept="image/*" multiple style="display:none" onchange="handleStickerImport(event)">
 <input type="file" id="claudeImportInput" accept=".json" style="display:none" onchange="handleClaudeImport(event)">
 
+<!-- ============ 表情包面板 ============ -->
 <div class="sticker-panel" id="stickerPanel">
   <div class="sticker-panel-header">
     <h3>Stickers</h3>
@@ -121,7 +249,7 @@
   </div>
 </div>
 
-<!-- 设置页 -->
+<!-- ============ 设置页 ============ -->
 <div class="overlay-page" id="settingsPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('settingsPage')">
@@ -140,6 +268,11 @@
       <h3>Character</h3>
       <div class="setting-row"><label>Name</label><input type="text" id="setCharName" placeholder="Little"></div>
       <div class="setting-row"><label>Nickname</label><input type="text" id="setCharNickname" placeholder="Leave empty to use Name"><p style="font-size:11px;color:var(--text-light);margin-top:4px">Set a nickname — it will display in header & input, and AI will know about it</p></div>
+    </div>
+    <div class="settings-group">
+      <h3>Profile</h3>
+      <div class="setting-row"><label>Your Name</label><input type="text" id="setUserName" placeholder="Your name"><p style="font-size:11px;color:var(--text-light);margin-top:4px">Displayed on Home page title</p></div>
+      <div class="setting-row"><label>Anniversary</label><input type="date" id="setAnniversary"><p style="font-size:11px;color:var(--text-light);margin-top:4px">The day you started together — used for "days" counter</p></div>
     </div>
     <div class="settings-group">
       <h3>Persona</h3>
@@ -174,7 +307,7 @@
   </div>
 </div>
 
-<!-- 模型选择页 -->
+<!-- ============ 模型选择页 ============ -->
 <div class="overlay-page" id="modelPickerPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('modelPickerPage')">
@@ -188,7 +321,7 @@
   </div>
 </div>
 
-<!-- 记忆库 -->
+<!-- ============ 记忆库 ============ -->
 <div class="overlay-page" id="memoryPage">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closePage('memoryPage')">
@@ -210,7 +343,7 @@
   </div>
 </div>
 
-<!-- 导入选择浮层 -->
+<!-- ============ 导入选择浮层 ============ -->
 <div class="import-overlay" id="importOverlay">
   <div class="overlay-header">
     <button class="overlay-back" onclick="closeImport()">
@@ -226,6 +359,7 @@
   </div>
 </div>
 
+<!-- ============ 思维链浮层 ============ -->
 <div class="thinking-overlay" id="thinkingOverlay">
   <div class="thinking-overlay-header">
     <button class="overlay-back" onclick="closeThinking()">
@@ -237,8 +371,10 @@
   <div class="thinking-overlay-body" id="thinkingOverlayBody"></div>
 </div>
 
+<!-- ============ 图片查看 ============ -->
 <div class="img-viewer" id="imgViewer" onclick="closeImgViewer()"><img id="imgViewerSrc" src=""></div>
 
+<!-- ============ 重命名弹窗 ============ -->
 <div class="rename-modal" id="renameModal">
   <div class="rename-box">
     <h3>Rename</h3>
@@ -250,7 +386,7 @@
   </div>
 </div>
 
-<!-- HTML 预览浮层 -->
+<!-- ============ HTML 预览浮层 ============ -->
 <div class="html-preview-overlay" id="htmlPreviewOverlay">
   <div class="html-preview-toolbar">
     <button class="html-preview-toolbar-btn" onclick="closeHtmlPreview()">
