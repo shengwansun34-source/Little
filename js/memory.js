@@ -1,4 +1,4 @@
-// ==================== Little memory.js — Memory子页面 & AI活动 ====================
+// ==================== Little memory.js — Memory子页面 & AI活动 v2.0 ====================
 
 // ==================== AI 自主活动系统 ====================
 const MOOD_TYPES=[
@@ -79,6 +79,83 @@ async function triggerAiActivity(chatMessages){
     }
 
   }catch(e){console.log('[Little] AI activity error:',e);}
+}
+
+// ==================== Profile 页面 v2.0 ====================
+function openProfilePage(){
+  renderProfilePage();
+  document.getElementById('profilePage').classList.add('open');
+}
+
+function renderProfilePage(){
+  const p=state.profile;
+  // Basic
+  document.getElementById('profName').value=p.basic.name||'';
+  document.getElementById('profBirthday').value=p.basic.birthday||'';
+  document.getElementById('profLocation').value=p.basic.location||'';
+  document.getElementById('profOccupation').value=p.basic.occupation||'';
+  // Preferences
+  document.getElementById('profFood').value=p.preferences.food||'';
+  document.getElementById('profColor').value=p.preferences.color||'';
+  document.getElementById('profMusic').value=p.preferences.music||'';
+  document.getElementById('profStyle').value=p.preferences.style||'';
+  document.getElementById('profOther').value=p.preferences.other||'';
+  // People
+  renderProfilePeople();
+  // Habits & Notes
+  document.getElementById('profHabits').value=p.habits||'';
+  document.getElementById('profNotes').value=p.notes||'';
+}
+
+function renderProfilePeople(){
+  const el=document.getElementById('profPeopleList');
+  const people=state.profile.people||[];
+  if(people.length===0){
+    el.innerHTML='<div class="prof-people-empty">No people added yet</div>';
+    return;
+  }
+  el.innerHTML=people.map((pe,i)=>{
+    return '<div class="prof-person-item">'
+      +'<div class="prof-person-info"><span class="prof-person-name">'+escHtml(pe.name)+'</span>'
+      +'<span class="prof-person-relation">'+escHtml(pe.relation)+'</span></div>'
+      +'<button class="prof-person-del" onclick="removeProfilePerson('+i+')">✕</button>'
+      +'</div>';
+  }).join('');
+}
+
+function addProfilePerson(){
+  const nameEl=document.getElementById('profPersonName');
+  const relEl=document.getElementById('profPersonRelation');
+  const name=nameEl.value.trim();
+  const relation=relEl.value.trim();
+  if(!name){showToast('Enter a name');return;}
+  state.profile.people.push({name,relation:relation||'friend'});
+  saveProfile();
+  nameEl.value='';relEl.value='';
+  renderProfilePeople();
+}
+
+function removeProfilePerson(idx){
+  state.profile.people.splice(idx,1);
+  saveProfile();
+  renderProfilePeople();
+}
+
+function saveProfilePage(){
+  state.profile.basic.name=document.getElementById('profName').value.trim();
+  state.profile.basic.birthday=document.getElementById('profBirthday').value.trim();
+  state.profile.basic.location=document.getElementById('profLocation').value.trim();
+  state.profile.basic.occupation=document.getElementById('profOccupation').value.trim();
+  state.profile.preferences.food=document.getElementById('profFood').value.trim();
+  state.profile.preferences.color=document.getElementById('profColor').value.trim();
+  state.profile.preferences.music=document.getElementById('profMusic').value.trim();
+  state.profile.preferences.style=document.getElementById('profStyle').value.trim();
+  state.profile.preferences.other=document.getElementById('profOther').value.trim();
+  state.profile.habits=document.getElementById('profHabits').value.trim();
+  state.profile.notes=document.getElementById('profNotes').value.trim();
+  saveProfile();
+  showToast('Profile saved');
+  closePage('profilePage');
 }
 
 // ==================== Light Traces 完整页面 ====================
