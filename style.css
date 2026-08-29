@@ -1485,3 +1485,113 @@ body {
 }
 .event-add-field input:focus,
 .event-add-field select:focus { border-color: var(--primary); }
+
+/* ==================== Profile 页面 v2.0 ==================== */
+.prof-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 16px rgba(122, 162, 212, 0.08);
+}
+.prof-section {
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.prof-section h3 {
+  font-size: 12px; color: var(--text-light); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 12px; font-weight: 600;
+}
+.prof-field {
+  margin-bottom: 10px;
+}
+.prof-field:last-child { margin-bottom: 0; }
+.prof-field label {
+  display: block; font-size: 13px; font-weight: 500;
+  margin-bottom: 4px; color: var(--text);
+}
+.prof-field input,
+.prof-field textarea {
+  width: 100%; padding: 8px 12px;
+  border: 1.5px solid var(--primary-light);
+  border-radius: 10px; font-size: 13px;
+  color: var(--text); background: rgba(255,255,255,0.6);
+  outline: none; font-family: inherit;
+  transition: border-color .2s, background .2s;
+}
+.prof-field input:focus,
+.prof-field textarea:focus {
+  border-color: var(--primary);
+  background: rgba(255,255,255,0.9);
+}
+.prof-field textarea { resize: vertical; min-height: 50px; }
+
+.prof-add-person-row {
+  display: flex; gap: 6px; margin-top: 10px; align-items: center;
+}
+.prof-add-person-row input {
+  flex: 1; padding: 8px 10px;
+  border: 1.5px solid var(--primary-light);
+  border-radius: 10px; font-size: 12px;
+  color: var(--text); background: rgba(255,255,255,0.6);
+  outline: none; font-family: inherit;
+}
+.prof-add-person-row input:focus { border-color: var(--primary); }
+.prof-add-person-btn {
+  width: 32px; height: 32px; border: none;
+  background: var(--primary); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: white; flex-shrink: 0;
+}
+.prof-person-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid rgba(200,221,240,0.4);
+}
+.prof-person-item:last-child { border-bottom: none; }
+.prof-person-info { display: flex; gap: 8px; align-items: center; }
+.prof-person-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.prof-person-relation {
+  font-size: 11px; color: var(--text-light);
+  background: var(--surface2); padding: 2px 8px; border-radius: 8px;
+}
+.prof-person-del {
+  width: 22px; height: 22px; border: none; background: none;
+  cursor: pointer; color: var(--text-light); font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+}
+.prof-person-del:active { background: var(--surface2); }
+.prof-people-empty {
+  font-size: 12px; color: var(--text-light);
+  text-align: center; padding: 12px 0;
+}
+
+/* ==================== Memory Bank v2.0 增强 ==================== */
+.mem-card-glass {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.memory-item.core-memory {
+  border-left: 3px solid var(--accent3);
+  background: linear-gradient(135deg, rgba(247,215,148,0.08) 0%, var(--surface) 100%);
+}
+.mem-item-actions {
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: center; flex-shrink: 0;
+}
+.mem-core-btn {
+  width: 28px; height: 28px; border: none; background: none;
+  cursor: pointer; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .15s;
+}
+.mem-core-btn:active { transform: scale(0.9); background: var(--surface2); }
+.mem-core-btn.active { background: rgba(247,215,148,0.15); }
+.mem-tag-badge {
+  display: inline-block; font-size: 9px; padding: 1px 5px;
+  border-radius: 6px; background: var(--surface2);
+  color: var(--text-light); margin-left: 4px; letter-spacing: .2px;
+}
