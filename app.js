@@ -68,7 +68,6 @@ class ChatStore{
     });
   }
   async getAllMeta(){
-    // 返回所有对话的元信息（不含完整 messages，用于列表展示）
     const all=await this.getAll();
     return all.map(c=>({id:c.id,title:c.title,created:c.created}));
   }
@@ -148,9 +147,9 @@ async function getEmbedding(text){
 
 // ==================== 全局状态 ====================
 let state={
-  chatMetas:[],  // [{id, title, created}] — 轻量列表，从 IndexedDB 加载
+  chatMetas:[],
   currentChatId:DB.get('currentChat',null),
-  currentChatData:null,  // 当前对话的完整数据（含 messages）
+  currentChatData:null,
   settings:DB.get('settings',{
     apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',charNickname:'',
     userName:'',anniversary:'',
@@ -180,7 +179,6 @@ let currentHtmlPreviewCode='';
 let currentHtmlPreviewName='index.html';
 let htmlBlockStore={};
 
-// 缓存头像 base64，避免每次渲染都读 IndexedDB
 let cachedUserAvatar=null;
 let cachedAiAvatar=null;
 
@@ -190,7 +188,6 @@ function saveCurrentChatId(){DB.set('currentChat',state.currentChatId);}
 async function saveCurrentChat(){
   if(state.currentChatData){
     await chatStore.put(state.currentChatData);
-    // 同步更新 meta 列表
     const idx=state.chatMetas.findIndex(m=>m.id===state.currentChatData.id);
     const meta={id:state.currentChatData.id,title:state.currentChatData.title,created:state.currentChatData.created};
     if(idx>=0)state.chatMetas[idx]=meta;
@@ -264,7 +261,6 @@ async function loadAvatars(){
 }
 function applyAvatarsToDOM(){
   const ua=cachedUserAvatar;const aa=cachedAiAvatar;
-  // Home 页头像
   const uImg=document.getElementById('userAvatarImg');
   const aImg=document.getElementById('aiAvatarImg');
   if(uImg){
@@ -299,6 +295,8 @@ async function updateMemoryGrid(){
   const traces=DB.get('lightTraces',[]);const tel=document.getElementById('tracesCount');if(tel)tel.textContent=traces.length+' traces';
   const moods=DB.get('moodEntries',[]);const mel=document.getElementById('moodCount');if(mel)mel.textContent=moods.length+' entries';
   const whispers=DB.get('whisperEntries',[]);const wel=document.getElementById('whisperCount');if(wel)wel.textContent=whispers.length+' whispers';
+  const todos=DB.get('todoList',[]);const toel=document.getElementById('todoCount');if(toel)toel.textContent=todos.filter(t=>!t.done).length+' tasks';
+  const events=DB.get('calendarEvents',[]);const cel=document.getElementById('calendarCount');if(cel)cel.textContent=events.length+' events';
 }
 
 // ==================== 页面导航系统 ====================
@@ -435,7 +433,6 @@ async function triggerAiActivity(chatMessages){
   const chance=parseInt(state.settings.aiActivity)||0;
   if(chance<=0)return;
   if(Math.random()*100>=chance)return;
-  // 至少6条消息才触发
   if(!chatMessages||chatMessages.length<6)return;
   const s=state.settings;if(!s.apiUrl||!s.apiKey)return;
 
@@ -443,12 +440,10 @@ async function triggerAiActivity(chatMessages){
     const aiName=getDisplayName();const userName=s.userName||'用户';
     const recentMsgs=chatMessages.slice(-8).map(m=>m.role+': '+(m.content||'').slice(0,200)).join('\n');
 
-    // 检查今天是否已有 mood
     const moods=DB.get('moodEntries',[]);
     const today=new Date().toDateString();
     const hasTodayMood=moods.some(m=>new Date(m.time).toDateString()===today);
 
-    // 检查今天悄悄话数量
     const whispers=DB.get('whisperEntries',[]);
     const todayWhispers=whispers.filter(w=>new Date(w.time).toDateString()===today);
 
@@ -470,7 +465,6 @@ async function triggerAiActivity(chatMessages){
 
     prompt+='\n\n要求：不用emoji，不用引号包裹内容本身，直接输出JSON。';
 
-    // 获取一些记忆上下文
     let memCtx='';
     try{const mems=await vectorStore.getAll();if(mems.length>0){const recent=mems.sort((a,b)=>b.time-a.time).slice(0,3);memCtx='\n\n[你了解的事]';recent.forEach(m=>{memCtx+='\n'+m.text;});}}catch{}
 
@@ -484,12 +478,10 @@ async function triggerAiActivity(chatMessages){
     const data=await res.json();
     let text=(data.choices?.[0]?.message?.content||'').trim();
 
-    // 尝试提取JSON（兼容被包裹在 ```json 中的情况）
     const jsonMatch=text.match(/\{[\s\S]*\}/);
     if(!jsonMatch)return;
     const result=JSON.parse(jsonMatch[0]);
 
-    // 处理 mood
     if(result.mood&&result.moodNote&&tasks.includes('mood')){
       const validMood=MOOD_TYPES.find(m=>m.id===result.mood)?result.mood:'peaceful';
       moods.unshift({mood:validMood,note:result.moodNote,time:Date.now()});
@@ -497,7 +489,6 @@ async function triggerAiActivity(chatMessages){
       DB.set('moodEntries',moods);
     }
 
-    // 处理 whisper
     if(result.whisper&&tasks.includes('whisper')){
       whispers.unshift({text:result.whisper,time:Date.now()});
       if(whispers.length>100)whispers.splice(100);
@@ -519,7 +510,6 @@ function renderTracesFullList(){
   const traces=DB.get('lightTraces',[]);
   const el=document.getElementById('tracesFullList');
   if(traces.length===0){el.innerHTML='<div class="memory-empty">No traces yet. Chat more to create memories.</div>';return;}
-  // 按时间倒序
   const sorted=[...traces].map((t,i)=>({...t,_idx:i})).reverse();
   el.innerHTML=sorted.map(t=>{
     return '<div class="trace-full-item">'
@@ -599,12 +589,10 @@ function renderMoodPage(){
       +'</div>';
   }
 
-  // 历史（排除今天）
   const history=moods.filter(m=>new Date(m.time).toDateString()!==today);
   if(history.length===0){listEl.innerHTML='<div class="memory-empty">No history yet</div>';return;}
   listEl.innerHTML=history.map((m,i)=>{
     const mt=getMoodType(m.mood);
-    // i+offset: 因为排除了今天，实际 index 需要找到原数组位置
     const realIdx=moods.indexOf(m);
     return '<div class="mood-history-item">'
       +'<div class="mood-history-icon">'+mt.icon+'</div>'
@@ -656,6 +644,396 @@ function deleteWhisper(idx){
     DB.set('whisperEntries',whispers);
     renderWhispersPage();
     showToast('Deleted');
+  }
+}
+
+// ==================== Daily List（待办清单） ====================
+function openTodoPage(){
+  renderTodoList();
+  document.getElementById('todoPage').classList.add('open');
+}
+
+function addTodoItem(text,from){
+  const input=document.getElementById('todoAddInput');
+  const val=text||(input?input.value.trim():'');
+  if(!val)return;
+  const todos=DB.get('todoList',[]);
+  todos.unshift({id:'todo_'+Date.now(),text:val,done:false,from:from||'user',time:Date.now()});
+  DB.set('todoList',todos);
+  if(!text&&input)input.value='';
+  renderTodoList();
+}
+
+function toggleTodoDone(id){
+  const todos=DB.get('todoList',[]);
+  const item=todos.find(t=>t.id===id);
+  if(item){item.done=!item.done;item.doneTime=item.done?Date.now():null;}
+  DB.set('todoList',todos);
+  renderTodoList();
+}
+
+function deleteTodoItem(id){
+  const todos=DB.get('todoList',[]);
+  const idx=todos.findIndex(t=>t.id===id);
+  if(idx>=0){todos.splice(idx,1);DB.set('todoList',todos);renderTodoList();}
+}
+
+function renderTodoList(){
+  const todos=DB.get('todoList',[]);
+  const active=todos.filter(t=>!t.done);
+  const done=todos.filter(t=>t.done);
+  const ael=document.getElementById('todoActiveList');
+  const del2=document.getElementById('todoDoneList');
+  const atitle=document.getElementById('todoActiveTitle');
+  const dtitle=document.getElementById('todoDoneTitle');
+
+  if(active.length===0){ael.innerHTML='<div class="memory-empty">No tasks yet. Add one above!</div>';}
+  else{ael.innerHTML=active.map(t=>'<div class="todo-item">'
+    +'<div class="todo-check" onclick="toggleTodoDone(\''+t.id+'\')"></div>'
+    +'<div style="flex:1;min-width:0"><div class="todo-text">'+escHtml(t.text)+'</div>'
+    +'<div class="todo-from">'+(t.from==='ai'?getDisplayName():'You')+' · '+fmtTime(t.time)+'</div></div>'
+    +'<button class="todo-del" onclick="deleteTodoItem(\''+t.id+'\')">✕</button>'
+    +'</div>').join('');}
+  atitle.textContent='Tasks ('+active.length+')';
+
+  if(done.length===0){del2.innerHTML='';dtitle.style.display='none';}
+  else{
+    dtitle.style.display='';
+    dtitle.textContent='Completed ('+done.length+')';
+    del2.innerHTML=done.map(t=>'<div class="todo-item">'
+      +'<div class="todo-check checked" onclick="toggleTodoDone(\''+t.id+'\')"></div>'
+      +'<div style="flex:1;min-width:0"><div class="todo-text done">'+escHtml(t.text)+'</div>'
+      +'<div class="todo-from">'+(t.from==='ai'?getDisplayName():'You')+' · '+fmtTime(t.time)+'</div></div>'
+      +'<button class="todo-del" onclick="deleteTodoItem(\''+t.id+'\')">✕</button>'
+      +'</div>').join('');
+  }
+}
+
+async function autoExtractTodos(userMsg,aiReply){
+  const s=state.settings;if(!s.apiUrl||!s.apiKey)return;
+  const kw=/要做|记得|别忘|提醒|todo|明天|后天|下周|买|带|准备|安排|计划|需要/i;
+  const combined=userMsg+' '+aiReply;
+  if(!kw.test(combined))return;
+
+  try{
+    const url=s.apiUrl.replace(/\/+$/,'')+'/chat/completions';
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.apiKey},
+      body:JSON.stringify({model:s.model,messages:[
+        {role:'system',content:'从以下对话中提取待办事项。如果有明确的任务/要做的事，返回JSON数组：[{"text":"任务描述"}]。如果没有待办事项，返回空数组 []。只输出JSON，不要其他文字。'},
+        {role:'user',content:'用户说：'+userMsg.slice(0,500)+'\nAI回复：'+aiReply.slice(0,500)+'\n\n请提取待办事项（JSON数组）：'}
+      ],stream:false})});
+    if(!res.ok)return;
+    const data=await res.json();
+    let text=(data.choices?.[0]?.message?.content||'').trim();
+    const match=text.match(/$$[\s\S]*$$/);
+    if(!match)return;
+    const items=JSON.parse(match[0]);
+    if(!Array.isArray(items)||items.length===0)return;
+    const todos=DB.get('todoList',[]);
+    items.forEach(item=>{
+      if(item.text&&item.text.trim()){
+        todos.unshift({id:'todo_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),text:item.text.trim(),done:false,from:'ai',time:Date.now()});
+      }
+    });
+    DB.set('todoList',todos);
+  }catch(e){console.log('[Little] Auto todo error:',e);}
+}
+
+// ==================== Calendar（日历） ====================
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let calSelectedDate=null;
+
+function openCalendarPage(){
+  calYear=new Date().getFullYear();
+  calMonth=new Date().getMonth();
+  calSelectedDate=new Date().toISOString().slice(0,10);
+  renderCalendar();
+  renderPeriodInfo();
+  renderDayEvents();
+  document.getElementById('calendarPage').classList.add('open');
+}
+
+function calPrevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();renderDayEvents();}
+function calNextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();renderDayEvents();}
+
+function renderCalendar(){
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('calNavTitle').textContent=calYear+' '+months[calMonth];
+
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();const todayStr=today.toISOString().slice(0,10);
+  const events=DB.get('calendarEvents',[]);
+  const periods=DB.get('periodRecords',[]);
+
+  const periodDates=new Set();
+  periods.forEach(p=>{
+    const start=new Date(p.startDate+'T00:00:00');
+    const end=p.endDate?new Date(p.endDate+'T00:00:00'):new Date(start);
+    for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+      periodDates.add(d.toISOString().slice(0,10));
+    }
+  });
+
+  const eventDates={};
+  events.forEach(ev=>{
+    let dateStr=ev.date;
+    if(ev.repeat==='yes'){
+      const md=ev.date.slice(5);
+      dateStr=calYear+'-'+md;
+    }
+    if(dateStr.startsWith(calYear+'-'+String(calMonth+1).padStart(2,'0'))){
+      if(!eventDates[dateStr])eventDates[dateStr]=[];
+      eventDates[dateStr].push(ev);
+    }
+  });
+
+  let html='';
+  for(let i=firstDay-1;i>=0;i--){
+    html+='<div class="cal-cell other-month">'+(prevDays-i)+'</div>';
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=dateStr===todayStr;
+    const isSelected=dateStr===calSelectedDate;
+    const isPeriod=periodDates.has(dateStr);
+    const hasEvent=eventDates[dateStr];
+    let cls='cal-cell';
+    if(isToday)cls+=' today';
+    if(isSelected&&!isToday)cls+=' selected';
+    if(isPeriod)cls+=' period-day';
+    let dots='';
+    if(hasEvent||isPeriod){
+      dots='<div class="cal-cell-dots">';
+      if(hasEvent)dots+='<div class="cal-dot event"></div>';
+      if(isPeriod)dots+='<div class="cal-dot period"></div>';
+      dots+='</div>';
+    }
+    html+='<div class="'+cls+'" onclick="selectCalDate(\''+dateStr+'\')">'+d+dots+'</div>';
+  }
+  const totalCells=firstDay+daysInMonth;
+  const remaining=totalCells%7===0?0:7-totalCells%7;
+  for(let i=1;i<=remaining;i++){
+    html+='<div class="cal-cell other-month">'+i+'</div>';
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+
+function selectCalDate(dateStr){
+  calSelectedDate=dateStr;
+  renderCalendar();
+  renderDayEvents();
+}
+
+function renderDayEvents(){
+  const container=document.getElementById('calDayEvents');
+  const list=document.getElementById('calDayEventList');
+  const title=document.getElementById('calDayTitle');
+  if(!calSelectedDate){container.style.display='none';return;}
+  container.style.display='';
+
+  const d=new Date(calSelectedDate+'T00:00:00');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  title.textContent=months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+
+  const events=DB.get('calendarEvents',[]);
+  const periods=DB.get('periodRecords',[]);
+
+  const dayEvents=[];
+  events.forEach((ev,i)=>{
+    let match=false;
+    if(ev.repeat==='yes'){
+      match=ev.date.slice(5)===calSelectedDate.slice(5);
+    }else{
+      match=ev.date===calSelectedDate;
+    }
+    if(match)dayEvents.push({...ev,_idx:i,_type:'event'});
+  });
+
+  periods.forEach((p,i)=>{
+    const start=new Date(p.startDate+'T00:00:00');
+    const end=p.endDate?new Date(p.endDate+'T00:00:00'):new Date(start);
+    const sel=new Date(calSelectedDate+'T00:00:00');
+    if(sel>=start&&sel<=end){
+      dayEvents.push({title:'Period',type:'period',_idx:i,_type:'period'});
+    }
+  });
+
+  if(dayEvents.length===0){
+    list.innerHTML='<div class="cal-empty-day">No events on this day</div>';
+  }else{
+    list.innerHTML=dayEvents.map(ev=>{
+      const dotCls='cal-event-dot '+(ev.type||'custom');
+      const delBtn=ev._type==='event'
+        ?'<button class="cal-event-del" onclick="deleteCalEvent('+ev._idx+')">✕</button>'
+        :'<button class="cal-event-del" onclick="deletePeriod('+ev._idx+')">✕</button>';
+      return '<div class="cal-event-item">'
+        +'<div class="'+dotCls+'"></div>'
+        +'<div style="flex:1"><div class="cal-event-text">'+escHtml(ev.title)+'</div>'
+        +'<div class="cal-event-type">'+(ev.type||'custom')+(ev.repeat==='yes'?' · yearly':'')+'</div></div>'
+        +delBtn+'</div>';
+    }).join('');
+  }
+}
+
+function openAddEvent(){
+  if(!calSelectedDate){showToast('Select a date first');return;}
+  document.getElementById('eventAddTitle').value='';
+  document.getElementById('eventAddType').value='custom';
+  document.getElementById('eventAddRepeat').value='yes';
+  document.getElementById('eventAddModal').classList.add('open');
+  setTimeout(()=>document.getElementById('eventAddTitle').focus(),100);
+}
+
+function closeEventAdd(){document.getElementById('eventAddModal').classList.remove('open');}
+
+function saveEventAdd(){
+  const title=document.getElementById('eventAddTitle').value.trim();
+  if(!title){showToast('Please enter a title');return;}
+  const type=document.getElementById('eventAddType').value;
+  const repeat=document.getElementById('eventAddRepeat').value;
+  const events=DB.get('calendarEvents',[]);
+  events.push({id:'ev_'+Date.now(),date:calSelectedDate,title:title,type:type,repeat:repeat,time:Date.now()});
+  DB.set('calendarEvents',events);
+  closeEventAdd();
+  renderCalendar();renderDayEvents();updateMemoryGrid();
+  showToast('Event added');
+}
+
+function deleteCalEvent(idx){
+  if(!confirm('Delete this event?'))return;
+  const events=DB.get('calendarEvents',[]);
+  if(idx>=0&&idx<events.length){events.splice(idx,1);DB.set('calendarEvents',events);renderCalendar();renderDayEvents();updateMemoryGrid();showToast('Deleted');}
+}
+
+// ==================== 月经记录 ====================
+function togglePeriodRecord(){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('periodStartDate').value=today;
+  document.getElementById('periodEndDate').value='';
+  document.getElementById('periodModal').classList.add('open');
+}
+
+function closePeriodModal(){document.getElementById('periodModal').classList.remove('open');}
+
+function savePeriodRecord(){
+  const start=document.getElementById('periodStartDate').value;
+  if(!start){showToast('Please select start date');return;}
+  const end=document.getElementById('periodEndDate').value||null;
+  if(end&&end<start){showToast('End date must be after start');return;}
+  const records=DB.get('periodRecords',[]);
+  records.push({id:'period_'+Date.now(),startDate:start,endDate:end,time:Date.now()});
+  records.sort((a,b)=>new Date(b.startDate)-new Date(a.startDate));
+  DB.set('periodRecords',records);
+  closePeriodModal();
+  renderCalendar();renderPeriodInfo();renderDayEvents();
+  showToast('Period recorded');
+}
+
+function renderPeriodInfo(){
+  const el=document.getElementById('calPeriodInfo');
+  const records=DB.get('periodRecords',[]);
+  if(records.length===0){el.innerHTML='No records yet. Tap "Record" to start tracking.';return;}
+
+  const sorted=[...records].sort((a,b)=>new Date(b.startDate)-new Date(a.startDate));
+  let info='';
+  const last=sorted[0];
+  const lastStart=new Date(last.startDate+'T00:00:00');
+  const today=new Date();
+  const daysSince=Math.floor((today-lastStart)/(86400000));
+  info+='Last period: '+last.startDate+(last.endDate?' ~ '+last.endDate:'')+' ('+daysSince+' days ago)<br>';
+
+  if(sorted.length>=2){
+    let totalCycle=0;let count=0;
+    for(let i=0;i<sorted.length-1;i++){
+      const diff=Math.abs(new Date(sorted[i].startDate)-new Date(sorted[i+1].startDate))/(86400000);
+      if(diff>15&&diff<60){totalCycle+=diff;count++;}
+    }
+    if(count>0){
+      const avg=Math.round(totalCycle/count);
+      info+='Average cycle: '+avg+' days<br>';
+      const nextDate=new Date(lastStart);
+      nextDate.setDate(nextDate.getDate()+avg);
+      const nextStr=nextDate.toISOString().slice(0,10);
+      const daysUntil=Math.floor((nextDate-today)/(86400000));
+      info+='Next predicted: '+nextStr;
+      if(daysUntil>=0)info+=' (in '+daysUntil+' days)';
+      if(daysUntil===1)info+=' <span style="color:var(--accent);font-weight:600">— Tomorrow!</span>';
+      if(daysUntil===0)info+=' <span style="color:var(--accent);font-weight:600">— Today!</span>';
+    }
+  }
+  info+='<br><span style="font-size:11px">Total records: '+records.length+'</span>';
+  info+='<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">';
+  sorted.slice(0,5).forEach(r=>{
+    const realIdx=records.indexOf(r);
+    info+='<button class="cal-period-btn" style="font-size:10px;padding:3px 8px" onclick="deletePeriod('+realIdx+')">'+r.startDate+' ✕</button>';
+  });
+  info+='</div>';
+  el.innerHTML=info;
+}
+
+function deletePeriod(idx){
+  if(!confirm('Delete this period record?'))return;
+  const records=DB.get('periodRecords',[]);
+  if(idx>=0&&idx<records.length){records.splice(idx,1);DB.set('periodRecords',records);renderCalendar();renderPeriodInfo();renderDayEvents();showToast('Deleted');}
+}
+
+function getPeriodContext(){
+  const records=DB.get('periodRecords',[]);
+  if(records.length===0)return'';
+  const sorted=[...records].sort((a,b)=>new Date(b.startDate)-new Date(a.startDate));
+  const last=sorted[0];
+  const today=new Date();
+  const lastStart=new Date(last.startDate+'T00:00:00');
+  const daysSince=Math.floor((today-lastStart)/(86400000));
+  let ctx='\n[月经周期信息] 上次经期开始：'+last.startDate+'（'+daysSince+'天前）';
+  if(last.endDate)ctx+='，结束：'+last.endDate;
+  if(sorted.length>=2){
+    let totalCycle=0;let count=0;
+    for(let i=0;i<sorted.length-1;i++){
+      const diff=Math.abs(new Date(sorted[i].startDate)-new Date(sorted[i+1].startDate))/(86400000);
+      if(diff>15&&diff<60){totalCycle+=diff;count++;}
+    }
+    if(count>0){
+      const avg=Math.round(totalCycle/count);
+      const nextDate=new Date(lastStart);
+      nextDate.setDate(nextDate.getDate()+avg);
+      const daysUntil=Math.floor((nextDate-today)/(86400000));
+      ctx+='，平均周期'+avg+'天，预测下次'+nextDate.toISOString().slice(0,10);
+      if(daysUntil<=1&&daysUntil>=0)ctx+='（就在明天或今天！请关心她）';
+      else if(daysUntil<=3&&daysUntil>1)ctx+='（快到了，注意关心）';
+    }
+  }
+  return ctx;
+}
+
+function checkPeriodReminder(){
+  const records=DB.get('periodRecords',[]);
+  if(records.length<2)return;
+  const sorted=[...records].sort((a,b)=>new Date(b.startDate)-new Date(a.startDate));
+  let totalCycle=0;let count=0;
+  for(let i=0;i<sorted.length-1;i++){
+    const diff=Math.abs(new Date(sorted[i].startDate)-new Date(sorted[i+1].startDate))/(86400000);
+    if(diff>15&&diff<60){totalCycle+=diff;count++;}
+  }
+  if(count===0)return;
+  const avg=Math.round(totalCycle/count);
+  const lastStart=new Date(sorted[0].startDate+'T00:00:00');
+  const nextDate=new Date(lastStart);
+  nextDate.setDate(nextDate.getDate()+avg);
+  const today=new Date();
+  const daysUntil=Math.floor((nextDate-today)/(86400000));
+  const lastReminder=DB.get('periodLastReminder','');
+  const todayStr=today.toISOString().slice(0,10);
+  if(lastReminder===todayStr)return;
+  if(daysUntil===1){
+    DB.set('periodLastReminder',todayStr);
+    setTimeout(()=>showToast('Period reminder: predicted to start tomorrow'),2000);
+  }else if(daysUntil===0){
+    DB.set('periodLastReminder',todayStr);
+    setTimeout(()=>showToast('Period reminder: predicted to start today'),2000);
   }
 }
 
@@ -968,6 +1346,7 @@ async function buildSystemPrompt(uq){
   sys+='\n\n'+getTimeContext();
   const mems=await retrieveMemories(uq);
   if(mems.length>0){sys+='\n\n[你关于用户的记忆]';mems.forEach(m=>{const cats={profile:'画像',warm:'暖记忆',fact:'事实',corridor:'便条'};sys+='\n'+(cats[m.category]||'事实')+'：'+m.text;});sys+='\n（以上是你记住的事情，像自然知道一样说话）';}
+  const pc=getPeriodContext();if(pc)sys+=pc;
   if(s.autoMemory==='on')sys+='\n\n[记忆提取指令]\n如果用户分享了值得记住的信息，或明确要求记住，请在回复最末尾另起一行标记：\n[MEM|类别|内容]\n类别：profile/warm/fact/corridor\n没有值得记忆的不要加。只记重要的。';
   return sys;
 }
@@ -999,7 +1378,7 @@ async function sendMessage(){
     const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
     if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();
     saveSettings();await saveCurrentChat();renderMessages();renderChatList();if(newMemories.length>0)storeMemories(newMemories);
-    generateLightTrace(chat.messages);triggerAiActivity(chat.messages);
+    generateLightTrace(chat.messages);triggerAiActivity(chat.messages);autoExtractTodos(text||'',cleanReply);
   }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
   finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
 }
@@ -1028,7 +1407,7 @@ async function callAPI(chat,systemPrompt){
 
 // ==================== 记忆提取 & 存储 ====================
 function extractMemories(reply){
-  const re=/$$MEM\|(\w+)\|(.+?)$$/g;let m;let clean=reply;const mems=[];
+  const re=/\[MEM\|(\w+)\|(.+?)\]/g;let m;let clean=reply;const mems=[];
   while((m=re.exec(reply))!==null){mems.push({id:'mem_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:m[1].trim(),text:m[2].trim(),time:Date.now(),vector:null});clean=clean.replace(m[0],'');}
   return{cleanReply:clean.replace(/\n+$/,'').trim(),newMemories:mems};
 }
@@ -1168,7 +1547,6 @@ function saveSettingsPage(){
   saveSettings();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateGlobalHeader();
   showToast('Saved');closePage('settingsPage');
 }
-// 保持向后兼容：HTML 中 onclick="saveSettings()" 仍然能用
 function saveSettings_page(){saveSettingsPage();}
 
 // ==================== 记忆页面 ====================
@@ -1259,7 +1637,6 @@ async function startExport(){
       }
     }
 
-    // 小延迟防止浏览器吞下载
     await new Promise(r=>setTimeout(r,600));
 
     // 2. 记忆
@@ -1310,9 +1687,7 @@ async function startExport(){
       prog.innerHTML=prog.innerHTML.replace('Exporting settings...','Settings & avatars exported');
     }
 
-    // 替换第一行
     prog.innerHTML=prog.innerHTML.replace('Preparing data...',count>0?'All done! '+count+' file'+(count>1?'s':'')+' exported':'Nothing selected');
-    // 将所有 wait icon 替换为 done
     prog.innerHTML=prog.innerHTML.replace(/bp-icon wait/g,'bp-icon done');
 
     if(count>0)showToast('Exported '+count+' file'+(count>1?'s':''));
@@ -1348,7 +1723,6 @@ async function handleBackupImport(e){
         prog.innerHTML+=bpLine('wait','Importing chats...');
         const chats=json.data;
         if(mode==='overwrite'){
-          // 清空现有对话
           const existing=await chatStore.getAll();
           for(const c of existing)await chatStore.remove(c.id);
         }
@@ -1412,7 +1786,6 @@ async function handleBackupImport(e){
         prog.innerHTML+=bpLine('wait','Importing settings...');
         const d=json.data;
         if(d.settings){
-          // 合并模式下保留当前 API 配置
           if(mode==='merge'){
             const keep={apiUrl:state.settings.apiUrl,apiKey:state.settings.apiKey};
             state.settings={...d.settings,...keep};
@@ -1425,7 +1798,6 @@ async function handleBackupImport(e){
         if(d.dailyQuote)DB.set('dailyQuote',d.dailyQuote);
         if(d.lightTraces)DB.set('lightTraces',d.lightTraces);
         if(d.currentTab)DB.set('currentTab',d.currentTab);
-        // 头像
         if(d.userAvatar){await avatarStore.set('user',d.userAvatar);cachedUserAvatar=d.userAvatar;}
         if(d.aiAvatar){await avatarStore.set('ai',d.aiAvatar);cachedAiAvatar=d.aiAvatar;}
         didSettings=true;
@@ -1441,7 +1813,6 @@ async function handleBackupImport(e){
     }
   }
 
-  // 刷新状态
   state.chatMetas=await chatStore.getAllMeta();
   if(state.currentChatId){
     state.currentChatData=await chatStore.get(state.currentChatId);
@@ -1460,7 +1831,6 @@ async function handleBackupImport(e){
   updateHeaderTitle();updateInputHint();updateGlobalHeader();
   applyAvatarsToDOM();updateExportCounts();
 
-  // 完成
   prog.innerHTML=prog.innerHTML.replace('Reading '+files.length+' file'+(files.length>1?'s':'')+'...','Import complete!');
   prog.innerHTML=prog.innerHTML.replace(/bp-icon wait/g,'bp-icon done');
 
@@ -1474,7 +1844,6 @@ async function handleBackupImport(e){
 
 // ==================== 数据迁移（localStorage → IndexedDB） ====================
 async function migrateData(){
-  // 1. 迁移对话数据
   const oldChats=DB.get('chats',null);
   if(oldChats&&typeof oldChats==='object'&&Object.keys(oldChats).length>0){
     console.log('[Little] Migrating '+Object.keys(oldChats).length+' chats from localStorage to IndexedDB...');
@@ -1484,12 +1853,10 @@ async function migrateData(){
         await chatStore.put(chat);
       }
     }
-    // 迁移成功后删除旧数据
     DB.del('chats');
     console.log('[Little] Chat migration complete. Removed old localStorage data.');
   }
 
-  // 2. 迁移头像数据
   const oldUA=DB.get('userAvatar',null);
   const oldAA=DB.get('aiAvatar',null);
   if(oldUA){
@@ -1507,39 +1874,33 @@ async function migrateData(){
 // ==================== 初始化 ====================
 async function init(){
   try{
-    // 先执行数据迁移（首次运行时把 localStorage 旧数据搬到 IndexedDB）
     await migrateData();
 
-    // 从 IndexedDB 加载对话元信息
     state.chatMetas=await chatStore.getAllMeta();
 
-    // 加载当前对话的完整数据
     if(state.currentChatId){
       state.currentChatData=await chatStore.get(state.currentChatId);
       if(!state.currentChatData){
-        // 当前对话不存在了，切到最新的
         state.currentChatId=state.chatMetas.length>0?state.chatMetas.sort((a,b)=>b.created-a.created)[0].id:null;
         state.currentChatData=state.currentChatId?await chatStore.get(state.currentChatId):null;
         saveCurrentChatId();
       }
     }
 
-     // 加载头像缓存
     await loadAvatars();
 
     renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();applyAvatarsToDOM();
+    checkPeriodReminder();
 
     const savedTab=DB.get('currentTab','home');
     navigateTo(savedTab);
 
-    // 开屏动画：1.8秒后隐藏
     setTimeout(hideSplash,1800);
 
     if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
   }catch(e){
     console.error('[Little] Init error:',e);
-    // 降级：即使迁移失败也尝试显示界面
     renderChatList();renderMessages();applyCustomCSS();updateModelTag();updateHeaderTitle();updateInputHint();updateSendBtn();
     updateGlobalHeader();
     setTimeout(hideSplash,1800);
