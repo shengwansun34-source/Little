@@ -1,5 +1,5 @@
-const CACHE_NAME = 'little-v1.3.3';
-const URLS = ['./', './index.html', './style.css', './app.js', './manifest.json'];
+const CACHE_NAME = 'little-v1.3.4';
+const URLS = ['./', './index.html', './style.css', 'js/db.js','js/state.js','js/home.js','js/memory.js','js/chat.js','js/settings.js',, './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(URLS)).then(() => self.skipWaiting()));
