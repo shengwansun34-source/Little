@@ -225,10 +225,10 @@ function handleChatBackgroundUpload(e){
     const max=1280;let width=image.width,height=image.height;
     if(width>max||height>max){const ratio=Math.min(max/width,max/height);width=Math.round(width*ratio);height=Math.round(height*ratio);}
     const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;canvas.getContext('2d').drawImage(image,0,0,width,height);
-    state.settings.chatBackgroundImage=canvas.toDataURL('image/webp',.82);saveSettings();applyChatBackground();showToast('Chat background updated');
+    avatarStore.set(state.settings.chatBackgroundAssetId||'chatBackground',canvas.toDataURL('image/webp',.82)).then(()=>{saveSettings();applyChatBackground();showToast('Chat background updated');}).catch(()=>showToast('Unable to save background'));
   };image.src=reader.result;};reader.readAsDataURL(file);
 }
-function clearChatBackground(){state.settings.chatBackgroundImage='';saveSettings();applyChatBackground();showToast('Photo background removed');}
+function clearChatBackground(){avatarStore.remove(state.settings.chatBackgroundAssetId||'chatBackground').then(()=>{saveSettings();applyChatBackground();showToast('Photo background removed');});}
 
 // ==================== Bluetooth Low Energy ====================
 let connectedBluetoothDevice=null;
@@ -270,7 +270,8 @@ function openSettings(){
   document.getElementById('settingsPage').classList.add('open');
 }
 function saveSettingsPage(){
-  state.settings={
+  const {chatBackgroundImage,...currentSettings}=state.settings; // migrate legacy localStorage image data out of settings
+  state.settings={...currentSettings,
     apiUrl:document.getElementById('setApiUrl').value.trim(),
     apiKey:document.getElementById('setApiKey').value.trim(),
     model:document.getElementById('setModel').value.trim(),
@@ -286,7 +287,7 @@ function saveSettingsPage(){
     fontFamily:document.getElementById('setFontFamily').value,
     fontSize:document.getElementById('setFontSize').value,
     chatBackground:document.getElementById('setChatBackground').value,
-    chatBackgroundImage:state.settings.chatBackgroundImage||'',
+    chatBackgroundAssetId:state.settings.chatBackgroundAssetId||'chatBackground',
     customCSS:document.getElementById('setCustomCSS').value,
     aiActivity:document.getElementById('setAiActivity').value
   };
@@ -321,9 +322,9 @@ async function renderMemoryList(){
 
     const folders={};
     all.forEach(m=>{
-      // A tag is a folder name; untagged memories stay in their category folder.
-      const folder=(m.tags&&m.tags[0])||cnFolderName(m.category);
-      (folders[folder]||(folders[folder]=[])).push(m);
+      // Index a memory under every tag so each tag folder is complete.
+      const folderNames=m.tags&&m.tags.length?m.tags:[cnFolderName(m.category)];
+      folderNames.forEach(folder=>{(folders[folder]||(folders[folder]=[])).push(m);});
     });
     el.innerHTML=Object.entries(folders).map(([folder,memories])=>{
       const items=memories.map(m=>renderMemoryItem(m)).join('');

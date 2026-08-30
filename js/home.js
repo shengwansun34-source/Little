@@ -6,10 +6,11 @@ function updateHomePage(){
   const aiName=getDisplayName();
   document.getElementById('homeNames').textContent=userName+' & '+aiName;
   const ann=state.settings.anniversary;
+  let diff=0;
   if(ann){
     const start=new Date(ann);start.setHours(0,0,0,0);
     const today=new Date();today.setHours(0,0,0,0);
-    const diff=Math.floor((today-start)/(1000*60*60*24));
+    diff=Math.floor((today-start)/(1000*60*60*24));
     document.getElementById('homeDaysNum').textContent=Math.max(0,diff);
     const dateStr=ann.replace(/-/g,'.');
     document.getElementById('homeSinceText').textContent='since '+dateStr;

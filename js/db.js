@@ -106,6 +106,10 @@ class AvatarStore{
       tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);
     });
   }
+  async remove(id){
+    const db=await this.open();
+    return new Promise((r,j)=>{const tx=db.transaction(this.storeName,'readwrite');tx.objectStore(this.storeName).delete(id);tx.oncomplete=()=>r();tx.onerror=(e)=>j(e);});
+  }
 }
 const avatarStore=new AvatarStore();
 

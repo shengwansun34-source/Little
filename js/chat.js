@@ -79,7 +79,7 @@ function updateSendBtn(){
   // Keep Send available while a reply is in progress so messages can be queued.
   if(hasContent){btn.classList.add('show','send-mode');btn.classList.remove('stop-mode');}
   else if(state.generating){btn.classList.add('show','stop-mode');btn.classList.remove('send-mode');}
-  else{btn.classList.remove('show','send-mode','stop-mode');}
+  else{btn.classList.add('show','send-mode');btn.classList.remove('stop-mode');}
 }
 function handleSendStop(){
   const input=document.getElementById('msgInput');
@@ -221,8 +221,9 @@ function renderMessages(){
       thinkingHtml='<div class="thinking-toggle" onclick="openThinking(this.dataset.think)" data-think="'+escHtml(m.thinking)+'"><span class="thinking-label">Thinking</span><span class="thinking-preview">'+escHtml(preview)+'</span><span class="thinking-arrow">›</span></div>';
     }
     if(m.sticker){
-      if(m.role==='assistant') html+='<div class="msg assistant">'+aAv+'<div class="msg-inner">'+thinkingHtml+'<img class="msg-sticker" src="'+m.sticker+'" onclick="viewImage(this.src)"><div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div></div>';
-      else html+='<div class="msg user"><div class="msg-inner"><img class="msg-sticker" src="'+m.sticker+'" onclick="viewImage(this.src)"><div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div>'+uAv+'</div>';
+      const stickerText=m.content&&m.content!=='[用户发送了一个表情包]'?'<div class="msg-bubble">'+(m.role==='assistant'?renderMarkdown(m.content):escHtml(m.content).replace(/\n/g,'<br>'))+'</div>':'';
+      if(m.role==='assistant') html+='<div class="msg assistant">'+aAv+'<div class="msg-inner">'+thinkingHtml+stickerText+'<img class="msg-sticker" src="'+m.sticker+'" onclick="viewImage(this.src)"><div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div></div>';
+      else html+='<div class="msg user"><div class="msg-inner">'+stickerText+'<img class="msg-sticker" src="'+m.sticker+'" onclick="viewImage(this.src)"><div class="msg-time">'+(m.time?fmtTime(m.time):'')+'</div></div>'+uAv+'</div>';
       return;
     }
     let imagesHtml='';if(m.images&&m.images.length>0)imagesHtml=m.images.map(img=>'<img class="msg-image" src="'+img+'" onclick="viewImage(this.src)">').join('');
@@ -312,28 +313,16 @@ async function renderStickerGrid(){
 }
 async function deleteSticker(id){await stickerStore.remove(id);showToast('Deleted');renderStickerGrid();}
 async function sendSticker(id){
-  if(state.generating)return;const all=await stickerStore.getAll();const sticker=all.find(s=>s.id===id);if(!sticker)return;
+  const all=await stickerStore.getAll();const sticker=all.find(s=>s.id===id);if(!sticker)return;
   if(!state.settings.apiUrl||!state.settings.apiKey){showToast('Configure API first');openSettings();return;}
   if(!state.currentChatId){
-    const cid='chat_'+Date.now();
-    const chat={id:cid,title:'New Chat',messages:[],created:Date.now()};
-    await chatStore.put(chat);
-    state.chatMetas.push({id:cid,title:chat.title,created:chat.created});
-    state.currentChatId=cid;state.currentChatData=chat;saveCurrentChatId();
+    const cid='chat_'+Date.now();const chat={id:cid,title:'New Chat',messages:[],created:Date.now()};
+    await chatStore.put(chat);state.chatMetas.push({id:cid,title:chat.title,created:chat.created});state.currentChatId=cid;state.currentChatData=chat;saveCurrentChatId();
   }
-  const chat=currentChat();
-  chat.messages.push({role:'user',content:'[用户发送了一个表情包]',sticker:sticker.data,time:Date.now()});
+  const chat=currentChat();chat.messages.push({role:'user',content:'[用户发送了一个表情包]',sticker:sticker.data,time:Date.now()});
   if(chat.messages.filter(m=>m.role==='user').length===1)chat.title='Sticker chat';
-  await saveCurrentChat();renderMessages();renderChatList();toggleStickerPanel();
-  state.generating=true;updateSendBtn();
-  const typing=document.getElementById('typing');if(typing)typing.classList.add('show');scrollToBottom();
-  try{const sp=await buildSystemPrompt('用户发送了一个表情包');const result=await callAPI(chat,sp);
-    const{cleanReply,newMemories}=extractMemories(result.content);const ro={role:'assistant',content:cleanReply,time:Date.now()};
-    if(result.thinking)ro.thinking=result.thinking;chat.messages.push(ro);state.lastChatTime=Date.now();saveSettings();await saveCurrentChat();renderMessages();renderChatList();
-    if(newMemories.length>0)storeMemories(newMemories);generateLightTrace(chat.messages);triggerAiActivity(chat.messages);
-    autoExtractProfile(''||'',cleanReply);
-  }catch(err){if(err.name!=='AbortError')showToast('Error: '+err.message);}
-  finally{state.generating=false;currentAbortController=null;updateSendBtn();const t=document.getElementById('typing');if(t)t.classList.remove('show');}
+  await saveCurrentChat();renderMessages();renderChatList();toggleStickerPanel();updateSendBtn();
+  showToast('Sent — tap the round button when you want Little to reply');
 }
 
 // ==================== 记忆系统 v2.0 ====================

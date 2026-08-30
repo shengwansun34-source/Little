@@ -9,7 +9,7 @@ let state={
     apiUrl:'',apiKey:'',model:'gpt-4o',charName:'Little',charNickname:'',
     userName:'',anniversary:'',
     systemPrompt:'你是 Little，一个温柔、真诚的 AI。你会自然地记住关于用户的事情，像老朋友一样。读完记忆后像已经知道一样说话，不要说"根据我的记忆"这种话。不知道的事就直说不知道，绝不编造。',
-    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off',aiActivity:'50',fontFamily:'system',fontSize:'normal',chatBackground:'mist',chatBackgroundImage:''
+    autoMemory:'on',jinaKey:'',thinking:'off',customCSS:'',splitReply:'off',aiActivity:'50',fontFamily:'system',fontSize:'normal',chatBackground:'mist',chatBackgroundAssetId:'chatBackground'
   }),
   lastChatTime:DB.get('lastChatTime',null),
   generating:false,
@@ -34,7 +34,7 @@ if(!state.settings.aiActivity)state.settings.aiActivity='50';
 if(!state.settings.fontFamily)state.settings.fontFamily='system';
 if(!state.settings.fontSize)state.settings.fontSize='normal';
 if(!state.settings.chatBackground)state.settings.chatBackground='mist';
-if(state.settings.chatBackgroundImage===undefined)state.settings.chatBackgroundImage='';
+if(!state.settings.chatBackgroundAssetId)state.settings.chatBackgroundAssetId='chatBackground';
 
 // Profile 兼容
 if(!state.profile.basic)state.profile.basic={name:'',birthday:'',location:'',occupation:''};
@@ -100,10 +100,10 @@ function applyTypography(){
   root.style.setProperty('--app-font-family',families[state.settings.fontFamily]||families.system);
   root.style.setProperty('--font-scale',scales[state.settings.fontSize]||scales.normal);
 }
-function applyChatBackground(){
-  const presets={mist:'linear-gradient(160deg,#eaf3ff,#f6f9fd)',blush:'linear-gradient(160deg,#fff1f4,#f7edf7)',lavender:'linear-gradient(160deg,#eeecff,#f5f7ff)',paper:'#f8fafc'};
+async function applyChatBackground(){
+  const presets={mist:'linear-gradient(160deg,#eaf3ff,#f6f9fd)',blush:'linear-gradient(160deg,#fff1f4,#f7edf7)',lavender:'linear-gradient(160deg,#eeecff,#f5f7ff)',paper:'linear-gradient(#f8fafc,#f8fafc)'};
   const area=document.getElementById('chatArea');if(!area)return;
-  const image=state.settings.chatBackgroundImage;
+  const image=await avatarStore.get(state.settings.chatBackgroundAssetId||'chatBackground');
   area.style.backgroundImage=image?'linear-gradient(rgba(248,251,255,.62),rgba(248,251,255,.62)), url("'+image.replace(/"/g,'\\"')+'")':(presets[state.settings.chatBackground]||presets.mist);
   area.style.backgroundSize=image?'cover':'auto';area.style.backgroundPosition='center';
 }
